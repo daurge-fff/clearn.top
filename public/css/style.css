@@ -1,0 +1,320 @@
+/* public/css/style.css */
+:root {
+    --bg-color: #0d0f1a;
+    --text-color: #e0e0e0;
+    --header-bg: rgba(13, 15, 26, 0.8);
+    --popup-bg: #1e233a; 
+    --card-bg: rgba(30, 35, 58, 0.5);
+    --card-border: rgba(100, 110, 180, 0.3);
+    --accent-color-1: #00f2fe;
+    --accent-color-2: #c43ad6;
+    --shadow-color: rgba(0, 242, 254, 0.2);
+    --font-main: 'Roboto', sans-serif;
+    --font-headings: 'Onest', sans-serif; 
+}
+
+[data-theme="light"] {
+    --bg-color: #f5f6fa;
+    --text-color: #2f3542;
+    --header-bg: rgba(245, 246, 250, 0.85);
+    --popup-bg: #ffffff; 
+    --card-bg: #ffffff;
+    --card-border: #dfe4ea;
+    --accent-color-1: #3742fa;
+    --accent-color-2: #ff4757;
+    --shadow-color: rgba(47, 53, 66, 0.1);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* === Кастомный курсор === */
+body {
+    cursor: url(/cursors/default.cur), auto;
+    font-family: var(--font-main);
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    line-height: 1.6;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+a, button, input[type="range"], .form-submit-button, .header-controls, .quantity-selector, .lesson-quantity, .course-card, .why-us-card, .tariff-card, .payment-system-card, .close-button, .lang-dropdown li {
+    cursor: url(/cursors/pointer.cur), pointer;
+}
+
+.container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
+
+header { position: fixed; width: 100%; top: 0; z-index: 1000; padding: 15px 0; background-color: var(--header-bg); backdrop-filter: blur(10px); border-bottom: 1px solid var(--card-border); }
+header .container { display: flex; justify-content: space-between; align-items: center; }
+.logo { font-family: var(--font-headings); font-size: 1.5rem; color: var(--accent-color-1); text-decoration: none; font-weight: 800; }
+header nav { display: flex; gap: 30px; }
+header nav a { color: var(--text-color); text-decoration: none; font-size: 1rem; font-weight: 700; transition: color 0.3s ease; }
+header nav a:hover { color: var(--accent-color-1); }
+.header-controls { display: flex; align-items: center; gap: 15px; }
+#theme-switcher { background: none; border: 1px solid var(--card-border); cursor: pointer; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; transition: background-color 0.3s, border-color 0.3s; }
+#theme-switcher:hover { background-color: var(--card-bg); border-color: var(--accent-color-1); }
+#theme-switcher img { width: 22px; height: 22px; }
+.language-switcher { position: relative; }
+.current-lang { background: none; border: 1px solid var(--card-border); border-radius: 20px; padding: 5px 12px; display: flex; align-items: center; gap: 8px; color: var(--text-color); font-family: var(--font-main); font-weight: 700; }
+.current-lang img { width: 20px; height: 20px; }
+
+.lang-dropdown { 
+    display: none; 
+    position: absolute; 
+    top: 120%; 
+    right: 0; 
+    background-color: var(--popup-bg); 
+    border: 1px solid var(--card-border); 
+    border-radius: 8px; 
+    list-style: none; 
+    padding: 5px; 
+    box-shadow: 0 5px 15px var(--shadow-color); 
+    min-width: 120px; 
+    z-index: 1001;
+    opacity: 0;
+    transform: translateY(-10px);
+    visibility: hidden;
+    transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s ease;
+}
+.language-switcher.is-active .lang-dropdown { 
+    display: block; 
+    opacity: 1;
+    transform: translateY(0);
+    visibility: visible;
+}
+.lang-dropdown li { padding: 8px 12px; border-radius: 5px; display: flex; align-items: center; gap: 10px; }
+.lang-dropdown li:hover { background-color: var(--accent-color-1); color: var(--bg-color); }
+[data-theme="light"] .lang-dropdown li:hover { color: #fff; }
+.lang-dropdown li img { width: 20px; height: 20px; }
+
+.hero { height: 100vh; display: flex; align-items: center; justify-content: center; text-align: center; position: relative; overflow: hidden; padding-top: 80px; }
+
+.hero-content {
+    padding: 0 20px;
+}
+.hero-content h1 { 
+    font-family: var(--font-headings); 
+    font-size: clamp(2.8rem, 6vw, 4.5rem); 
+    line-height: 1.2;
+    margin-bottom: 20px; 
+    font-weight: 800; 
+    background: linear-gradient(90deg, var(--accent-color-1), var(--accent-color-2)); 
+    -webkit-background-clip: text; 
+    -webkit-text-fill-color: transparent; 
+    background-clip: text; 
+    text-fill-color: transparent; 
+}
+.hero-content p { font-size: 1.2rem; max-width: 600px; margin: 0 auto 30px; opacity: 0.8; }
+.cta-button { display: inline-block; padding: 15px 40px; background: var(--accent-color-1); color: var(--bg-color); text-decoration: none; font-weight: 700; border: none; border-radius: 50px; transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); box-shadow: 0 4px 15px rgba(0, 242, 254, 0.2); }
+[data-theme="light"] .cta-button { color: #fff; }
+.cta-button:hover { transform: translateY(-5px) scale(1.05); box-shadow: 0 10px 25px var(--shadow-color); background: linear-gradient(90deg, var(--accent-color-1), var(--accent-color-2)); color: #fff; }
+
+section { padding: 100px 0; }
+.section-title { font-family: var(--font-headings); font-size: 2.8rem; text-align: center; margin-bottom: 20px; font-weight: 800; color: var(--accent-color-1); }
+.section-subtitle { text-align: center; max-width: 600px; margin: 0 auto 60px; font-size: 1.1rem; opacity: 0.8; }
+.courses-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 30px; }
+.course-card { background-color: var(--card-bg); border: 1px solid var(--card-border); padding: 30px; border-radius: 12px; backdrop-filter: blur(5px); transition: transform 0.3s, box-shadow 0.3s; display: flex; flex-direction: column; width: 350px; text-align: center; }
+.course-card:hover { transform: translateY(-10px); box-shadow: 0 15px 30px var(--shadow-color); }
+.course-icon-wrapper { width: 60px; height: 60px; margin: 0 auto 20px auto; background-color: var(--accent-color-1); color: var(--bg-color); border-radius: 12px; display: flex; align-items: center; justify-content: center; }
+.course-icon-wrapper svg { width: 32px; height: 32px; }
+.course-age { align-self: center; display: inline-block; background-color: var(--accent-color-2); color: #fff; padding: 3px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: 700; margin-bottom: 15px; }
+.course-card h3, .tariff-card h3 { font-family: var(--font-headings); font-size: 1.5rem; margin-bottom: 10px; color: var(--accent-color-1); font-weight: 800; }
+.course-card p { flex-grow: 1; margin-bottom: 20px; opacity: 0.9; }
+.details-button, .buy-button { padding: 12px 20px; border: 2px solid var(--accent-color-1); color: var(--accent-color-1); background: transparent; border-radius: 50px; font-weight: 700; transition: background-color 0.3s, color 0.3s; margin-top: auto; }
+.details-button:hover, .buy-button:hover { background-color: var(--accent-color-1); color: #fff; }
+[data-theme="light"] .details-button:hover, [data-theme="light"] .buy-button:hover { color: var(--bg-color); }
+
+.why-us-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 30px; }
+.why-us-card { text-align: center; padding: 30px; background-color: var(--card-bg); border-radius: 12px; border: 1px solid var(--card-border); transition: transform 0.3s, box-shadow 0.3s; flex-basis: 300px; flex-grow: 1; max-width: 380px; }
+.why-us-card:hover { transform: translateY(-10px); box-shadow: 0 15px 30px var(--shadow-color); }
+.why-us-card h3 { font-family: var(--font-headings); font-size: 1.5rem; margin-bottom: 15px; color: var(--accent-color-2); }
+.tariffs-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; }
+.tariff-card { text-align: center; background-color: var(--card-bg); border: 1px solid var(--card-border); padding: 30px; border-radius: 12px; transition: transform 0.3s, box-shadow 0.3s; display: flex; flex-direction: column; }
+.tariff-card:hover { transform: translateY(-10px); box-shadow: 0 15px 30px var(--shadow-color); }
+.tariff-price { font-size: 2.5rem; font-family: var(--font-headings); color: var(--accent-color-1); margin-bottom: 15px; font-weight: 800; }
+.tariff-description { flex-grow: 1; margin-bottom: 20px; opacity: 0.9; }
+.about-me .container { display: flex; align-items: center; gap: 50px; }
+.my-photo { width: 250px; height: 250px; border-radius: 50%; object-fit: cover; border: 5px solid var(--accent-color-1); box-shadow: 0 0 25px var(--shadow-color); }
+.about-text h2 { font-family: var(--font-headings); font-size: 2rem; margin-bottom: 20px; font-weight: 800; }
+.contact-button { display: inline-block; margin-top: 20px; padding: 12px 25px; border: 2px solid var(--accent-color-2); color: var(--accent-color-2); text-decoration: none; font-weight: 700; border-radius: 50px; transition: background-color 0.3s, color 0.3s; }
+.contact-button:hover { background-color: var(--accent-color-2); color: #fff; }
+[data-theme="light"] .contact-button:hover { color: var(--bg-color); }
+
+.contact-form-section { background-color: rgba(0,0,0,0.1); }
+[data-theme="light"] .contact-form-section { background-color: #fff; }
+#feedback-form { max-width: 600px; margin: 0 auto; }
+.form-group { position: relative; margin-bottom: 30px; }
+.form-group input, .form-group textarea { width: 100%; padding: 15px; background: transparent; border: none; border-bottom: 2px solid var(--card-border); color: var(--text-color); font-size: 1rem; font-family: var(--font-main); transition: border-color 0.3s; }
+.form-group textarea { resize: vertical; min-height: 80px; }
+.form-group label { position: absolute; top: 15px; left: 5px; color: var(--text-color); opacity: 0.7; transition: all 0.3s; pointer-events: none; }
+.form-group input:focus, .form-group textarea:focus { outline: none; border-bottom-color: var(--accent-color-1); }
+.form-group input:focus + label, .form-group input:not(:placeholder-shown) + label, .form-group textarea:focus + label, .form-group textarea:not(:placeholder-shown) + label { top: -15px; left: 0; font-size: 0.8rem; color: var(--accent-color-1); opacity: 1; }
+.form-group input::placeholder, .form-group textarea::placeholder { color: transparent; }
+#feedback-form { text-align: center; }
+.form-submit-button { display: inline-block; padding: 15px 40px; border: none; border-radius: 50px; font-family: var(--font-headings); font-size: 1rem; font-weight: 700; color: var(--bg-color); background-color: var(--accent-color-1); transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); }
+[data-theme="light"] .form-submit-button { color: #fff; }
+.form-submit-button:hover { color: #fff; background: linear-gradient(90deg, var(--accent-color-1), var(--accent-color-2)); transform: translateY(-5px) scale(1.05); box-shadow: 0 10px 20px var(--shadow-color); }
+.form-submit-button:disabled { background-color: var(--card-border); color: var(--text-color); cursor: not-allowed; transform: none; box-shadow: none; opacity: 0.7; }
+#form-status { text-align: center; margin-top: 20px; font-weight: 700; min-height: 1.2em; }
+footer { background-color: #0a0c14; padding: 40px 0; text-align: center; font-size: 0.9rem; border-top: 1px solid var(--card-border); }
+[data-theme="light"] footer { background-color: #e6e8ed; }
+footer a { color: var(--accent-color-1); text-decoration: none; }
+.modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; overflow: hidden; background-color: rgba(13, 15, 26, 0.7); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0.3s ease; }
+.modal.is-open { opacity: 1; visibility: visible; }
+.modal-content { background-color: var(--popup-bg); padding: 40px; border: 1px solid var(--card-border); width: 90%; max-width: 700px; border-radius: 16px; position: relative; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5); transform: scale(0.95); transition: transform 0.3s ease; }
+.modal.is-open .modal-content { transform: scale(1); }
+.close-button { color: var(--text-color); position: absolute; top: 15px; right: 20px; font-size: 32px; font-weight: bold; line-height: 1; transition: color 0.3s ease, transform 0.3s ease; }
+.close-button:hover { color: var(--accent-color-2); transform: rotate(90deg); }
+#modal-title { font-family: var(--font-headings); color: var(--accent-color-1); margin-bottom: 25px; padding-right: 40px; font-weight: 800; }
+#modal-body ul { list-style: none; padding-left: 0; max-height: 60vh; overflow-y: auto; }
+#modal-body li { padding: 12px 5px; border-bottom: 1px solid var(--card-border); font-size: 1rem; line-height: 1.5; }
+#modal-body li:last-child { border-bottom: none; }
+#modal-body ul::-webkit-scrollbar { width: 8px; }
+#modal-body ul::-webkit-scrollbar-track { background: transparent; }
+#modal-body ul::-webkit-scrollbar-thumb { background-color: var(--accent-color-1); border-radius: 20px; border: 3px solid var(--bg-color); }
+.animate-on-scroll { opacity: 0; transform: translateY(30px); transition: opacity 0.6s ease-out, transform 0.6s ease-out; }
+.animate-on-scroll.visible { opacity: 1; transform: translateY(0); }
+@media (max-width: 768px) { .hero-content p { font-size: 1rem; } header nav { display: none; } .about-me .container { flex-direction: column; text-align: center; } }
+#payment-modal .modal-content { max-width: 550px; }
+.payment-details strong { color: var(--accent-color-1); }
+.quantity-selector { margin: 30px 0; }
+.quantity-selector label { display: block; margin-bottom: 15px; font-weight: 700; }
+.slider-container { display: flex; align-items: center; gap: 20px; }
+input[type="range"] { -webkit-appearance: none; appearance: none; width: 100%; height: 8px; background: var(--card-border); border-radius: 5px; outline: none; opacity: 0.7; transition: opacity .2s; }
+input[type="range"]:hover { opacity: 1; }
+input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 24px; height: 24px; background: var(--accent-color-1); border-radius: 50%; }
+input[type="range"]::-moz-range-thumb { width: 24px; height: 24px; background: var(--accent-color-1); border-radius: 50%; }
+#quantity-value { font-size: 1.5rem; font-weight: 800; color: var(--accent-color-1); min-width: 40px; text-align: center; }
+.price-breakdown { background-color: var(--bg-color); padding: 20px; border-radius: 8px; margin: 20px 0; border: 1px solid var(--card-border); }
+.price-breakdown p { display: flex; justify-content: space-between; font-size: 0.9rem; opacity: 0.8; }
+.total-price { display: flex; justify-content: space-between; font-size: 1.5rem; margin-top: 15px; padding-top: 15px; border-top: 1px solid var(--card-border); }
+#modal-total-price { font-weight: 800; color: var(--accent-color-1); }
+.payment-system-chooser h4 { margin-top: 30px; margin-bottom: 15px; }
+.payment-system-chooser .systems { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; }
+.payment-system-card { border: 2px solid var(--card-border); padding: 15px; border-radius: 8px; text-align: center; transition: all 0.2s ease-in-out; }
+.payment-system-card:hover { border-color: var(--accent-color-2); transform: translateY(-3px); }
+.payment-system-card.active { border-color: var(--accent-color-1); background-color: var(--accent-color-1); color: var(--bg-color); box-shadow: 0 0 15px var(--shadow-color); font-weight: 700; }
+#final-pay-button { margin-top: 30px; width: 100%; }
+#final-pay-button:disabled { background: var(--card-border); color: var(--text-color); cursor: not-allowed; transform: none; box-shadow: none; }
+[data-theme="light"] .payment-system-card.active { color: #fff; }
+
+/* ===================================== */
+/* === НОВЫЕ СТИЛИ ДЛЯ БЛОКА "ОБО МНЕ" === */
+/* ===================================== */
+
+.about-me {
+    overflow: hidden; /* Чтобы декоративные элементы не вылезали */
+}
+
+.about-content-wrapper {
+    display: grid;
+    grid-template-columns: 1fr 1.5fr; /* Асимметричная сетка: фото | текст */
+    align-items: center;
+    gap: 50px;
+}
+
+.about-image-column {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Декоративная фигура на фоне */
+.image-bg-shape {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(45deg, var(--accent-color-1), var(--accent-color-2));
+    border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
+    opacity: 0.15;
+    z-index: -1;
+    animation: morph 8s ease-in-out infinite;
+    transition: all 0.5s ease;
+}
+
+/* Анимация для фигуры */
+@keyframes morph {
+    0% { border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%; }
+    50% { border-radius: 60% 40% 30% 70% / 70% 50% 50% 30%; }
+    100% { border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%; }
+}
+
+/* Новые стили для фото */
+.my-photo {
+    width: 100%;
+    max-width: 350px;
+    height: auto;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+    border-radius: 24px; /* Ушли от круга к современному скругленному квадрату */
+    border: 3px solid var(--card-border);
+    transition: transform 0.4s ease, box-shadow 0.4s ease;
+}
+
+.about-image-column:hover .my-photo {
+    transform: scale(1.05) rotate(-2deg);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+}
+
+.about-image-column:hover .image-bg-shape {
+    transform: scale(1.1);
+    opacity: 0.25;
+}
+
+/* Стили для текстовой колонки */
+.about-text-column h2 {
+    font-size: 2.5rem;
+    margin-bottom: 20px;
+    font-weight: 800;
+}
+
+.about-text-column p {
+    margin-bottom: 30px;
+    opacity: 0.8;
+    line-height: 1.7;
+}
+
+.key-principles {
+    list-style: none;
+    padding: 0;
+    margin-bottom: 30px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px; /* Расстояние между пунктами */
+}
+
+.key-principles li {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+
+.key-principles svg {
+    width: 28px;
+    height: 28px;
+    color: var(--accent-color-1);
+    flex-shrink: 0; /* Чтобы иконка не сжималась */
+}
+
+/* Адаптивность для блока "Обо мне" */
+@media (max-width: 992px) {
+    .about-content-wrapper {
+        grid-template-columns: 1fr; /* На планшетах и мобильных - одна колонка */
+        gap: 40px;
+        text-align: center;
+    }
+    .about-image-column {
+        order: -1; /* Фотография будет сверху */
+    }
+    .key-principles {
+        align-items: center; /* Центрируем пункты */
+    }
+    .key-principles li {
+        justify-content: center; /* Центрируем содержимое пунктов */
+    }
+    .contact-button {
+        margin: 0 auto;
+    }
+}
