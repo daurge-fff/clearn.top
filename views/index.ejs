@@ -4,12 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Code & Learn - Kids Programming Lessons</title>
-    <link rel="stylesheet" href="/css/style.css?v=1.8"> 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="/css/style.css?v=2.0"> 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;800&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://www.paypal.com/sdk/js?client-id=AW0dqJsHalJPtYIElJ_ZlY2Dt7N0NmiYLzRPEG8NrUMk-VMvj2mCl71V4UtDbZ7dpHcPlRaDrieETnhJ&currency=EUR&intent=capture&vault=true&locale=en_US"></script>
 </head>
 <body dir="ltr">
 
@@ -43,29 +43,27 @@
     </header>
 
     <main>
+        <!-- Секции hero, why-us, courses, tariffs, about, contact-form без изменений -->
         <section class="hero">
             <div class="hero-content">
-                <h1 class="animate-on-scroll" data-translate="hero_h1">Code & Learn</h1>
+                <h1 class="animate-on-scroll" data-translate="hero_h1">Unlock the world of code. <br> Create your future</h1>
                 <p class="animate-on-scroll" data-translate="hero_p">Individual programming lessons for children from 5 years old. <br> From Scratch to Python and game development in Roblox.</p>
-                <a href="#tariffs" class="cta-button animate-on-scroll" data-translate="hero_cta">Get Started</a>
+                <a href="#tariffs" class="cta-button animate-on-scroll" data-translate="hero_cta">Start Learning</a>
             </div>
-            <div class="hero-bg"></div>
         </section>
-
         <section id="why-us" class="why-us">
             <div class="container">
                 <h2 class="section-title animate-on-scroll" data-translate="why_us_title">Why Us</h2>
                 <div class="why-us-grid">
-                    <div class="why-us-card animate-on-scroll"><h3 data-translate="why_us_1_h">Индивидуальный подход</h3><p data-translate="why_us_1_p">Каждый урок адаптируется под темп, интересы и уровень ученика.</p></div>
-                    <div class="why-us-card animate-on-scroll"><h3 data-translate="why_us_2_h">Обучение через игру</h3><p data-translate="why_us_2_p">Мы учимся, создавая игры, анимации и настоящие проекты.</p></div>
-                    <div class="why-us-card animate-on-scroll"><h3 data-translate="why_us_3_h">Навыки для будущего</h3><p data-translate="why_us_3_p">Мы учим не просто кодить, а решать задачи.</p></div>
+                    <div class="why-us-card animate-on-scroll"><h3 data-translate="why_us_1_h">Individual Approach</h3><p data-translate="why_us_1_p">Each lesson is tailored to the student's pace, interests, and level.</p></div>
+                    <div class="why-us-card animate-on-scroll"><h3 data-translate="why_us_2_h">Game-Based Learning</h3><p data-translate="why_us_2_p">We learn through creating games, animations, and real projects.</p></div>
+                    <div class="why-us-card animate-on-scroll"><h3 data-translate="why_us_3_h">Future-Ready Skills</h3><p data-translate="why_us_3_p">We teach not just coding, but also problem-solving.</p></div>
                 </div>
             </div>
         </section>
-
         <section id="courses">
             <div class="container">
-                <h2 class="section-title animate-on-scroll" data-translate="courses_title">Направления обучения</h2>
+                <h2 class="section-title animate-on-scroll" data-translate="courses_title">Learning Paths</h2>
                 <div class="courses-grid">
                     <% Object.keys(courses).forEach(key => { %>
                         <div class="course-card animate-on-scroll" data-course-key="<%= key %>">
@@ -73,81 +71,89 @@
                                 <% if (key === 'roblox') { %><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12.15,2.15L15.1,3.53L16.47,6.5L19.85,6.15L20.85,9.2L23,10.5L22.5,14L23,17.5L20.85,18.8L19.85,21.85L16.47,21.5L15.1,24.47L12.15,25.85L9.2,24.47L7.85,21.5L4.47,21.85L3.47,18.8L1.3,17.5L1.8,14L1.3,10.5L3.47,9.2L4.47,6.15L7.85,6.5L9.2,3.53L12.15,2.15M9.87,8.22L8.22,9.87L11.35,13L8.22,16.12L9.87,17.77L13,14.65L16.12,17.77L17.77,16.12L14.65,13L17.77,9.87L16.12,8.22L13,11.35L9.87,8.22Z"/></svg><% } else if (key === 'scratch') { %><svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.46,8.14C19.83,8.5 20,8.96 20,9.5C20,10.42 19.5,11.21 18.79,11.66C18.91,12.22 19,12.83 19,13.5C19,15.19 18.25,16.67 17,17.5V19C17,20.11 16.1,21 15,21H9C7.89,21 7,20.11 7,19V17.5C5.75,16.67 5,15.19 5,13.5C5,12.83 5.09,12.22 5.21,11.66C4.5,11.21 4,10.42 4,9.5C4,8.96 4.17,8.5 4.54,8.14C3.86,7.4 3.5,6.5 3.5,5.5C3.5,3.84 4.84,2.5 6.5,2.5C7.86,2.5 9,3.3 9.37,4.5H14.63C15,3.3 16.14,2.5 17.5,2.5C19.16,2.5 20.5,3.84 20.5,5.5C20.5,6.5 20.14,7.4 19.46,8.14Z"/></svg><% } else if (key === 'junior') { %><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,4A8,8 0 0,1 20,12C20,13.42 19.53,14.74 18.75,15.83L13,10.08V4.25C12.67,4.09 12.34,4 12,4M17.74,17.74C16.33,19 14.28,19.83 12,19.95V14.5L17.74,17.74M11,19.95C8.36,19.54 6.38,17.84 5.4,15.4L11,11.5V19.95M4,12A8,8 0 0,1 11,4.05V9.08L5.17,11.25C4.47,10.74 4.09,9.88 4.09,9C4.09,9 4,12 4,12Z"/></svg><% } else if (key === 'minecraft') { %><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4,2H20A2,2 0 0,1 22,4V20A2,2 0 0,1 20,22H4A2,2 0 0,1 2,20V4A2,2 0 0,1 4,2M6,6V10H10V6H6M12,6V10H18V6H12M6,12V18H10V12H6M12,12V18H18V12H12Z"/></svg><% } else if (key === 'python') { %><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12.89,3L14.85,3.42L15.26,5.39L17.23,5.81L17.65,7.78L19.61,8.2L19.19,10.17L20.18,12.09L19.19,14L19.61,15.94L17.65,16.36L17.23,18.33L15.26,18.74L14.85,20.71L12.89,21.13L10.93,20.71L10.5,18.74L8.57,18.33L8.13,16.36L6.18,15.94L6.6,14L5.6,12.09L6.6,10.17L6.18,8.2L8.13,7.78L8.57,5.81L10.5,5.39L10.93,3.42L12.89,3M11.5,8.5A2.5,2.5 0 0,0 9,11A2.5,2.5 0 0,0 11.5,13.5A2.5,2.5 0 0,0 14,11A2.5,2.5 0 0,0 11.5,8.5M12.5,15.5A2.5,2.5 0 0,0 15,13A2.5,2.5 0 0,0 12.5,10.5A2.5,2.5 0 0,0 10,13A2.5,2.5 0 0,0 12.5,15.5Z"/></svg><% } %>
                             </div>
                             <h3></h3><span class="course-age"></span><p></p>
-                            <button class="details-button" data-translate="details_button">Подробнее о курсе</button>
+                            <button class="details-button" data-translate="details_button">Course Details</button>
                         </div>
                     <% }); %>
                 </div>
             </div>
         </section>
-
         <section id="tariffs">
-            <div class="container">
-                <h2 class="section-title animate-on-scroll" data-translate="tariffs_title">Тарифы и оплата</h2>
-                <div class="tariffs-grid">
-                    <div class="tariff-card animate-on-scroll">
-                        <h3 data-translate="tariff_25_h">Урок 25 минут</h3>
-                        <p class="tariff-price">10 EUR</p>
-                        <p class="tariff-description" data-translate="tariff_25_p">Идеально для самых маленьких (5-7 лет) и для поддержания концентрации.</p>
-                        <button class="buy-button" data-duration="25" data-translate="tariff_button">Выбрать</button>
-                    </div>
-                    <div class="tariff-card animate-on-scroll">
-                        <h3 data-translate="tariff_50_h">Урок 50 минут</h3>
-                        <p class="tariff-price">20 EUR</p>
-                        <p class="tariff-description" data-translate="tariff_50_p">Стандартный формат для глубокого погружения в тему для детей от 8 лет.</p>
-                        <button class="buy-button" data-duration="50" data-translate="tariff_button">Выбрать</button>
+        <div class="container">
+            <h2 class="section-title animate-on-scroll" data-translate="tariffs_title">Pricing and Payment</h2>
+            <div class="tariffs-grid">
+                <!-- Обычные тарифы -->
+                <div class="tariff-card animate-on-scroll">
+                    <h3 data-translate="tariff_25_h">25 Minute Lesson</h3>
+                    <p class="tariff-price">10 EUR</p>
+                    <p class="tariff-description" data-translate="tariff_25_p">Ideal for the youngest (5-7 years) and for maintaining concentration.</p>
+                    <button class="buy-button" data-duration="25" data-translate="tariff_button">Select</button>
+                </div>
+                <div class="tariff-card animate-on-scroll">
+                    <h3 data-translate="tariff_50_h">50 Minute Lesson</h3>
+                    <p class="tariff-price">20 EUR</p>
+                    <p class="tariff-description" data-translate="tariff_50_p">Standard format for a deep dive into topics for children aged 8 and up.</p>
+                    <button class="buy-button" data-duration="50" data-translate="tariff_button">Select</button>
+                </div>
+
+                <div class="donation-card-wrapper animate-on-scroll">
+                    <div id="donate-card" class="donation-card clickable">
+                        <div class="donation-icon">
+                            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12,21.35L10.55,20.03C5.4,15.36 2,12.27 2,8.5C2,5.41 4.42,3 7.5,3C9.24,3 10.91,3.81 12,5.08C13.09,3.81 14.76,3 16.5,3C19.58,3 22,5.41 22,8.5C22,12.27 18.6,15.36 13.45,20.03L12,21.35Z"/></svg>
+                        </div>
+                        <div class="donation-text">
+                            <h3 data-translate="donation_card_title">Support the Project</h3>
+                            <p data-translate="donation_card_desc">Your contribution helps me create new lessons and improve the platform.</p>
+                        </div>
+                        <div class="donation-arrow">→</div>
                     </div>
                 </div>
             </div>
-        </section>
-
+        </div>
+    </section>
         <section id="about" class="about-me">
             <div class="container">
                 <div class="about-content-wrapper animate-on-scroll">
-                    <!-- Колонка с фотографией -->
                     <div class="about-image-column">
                         <div class="image-bg-shape"></div>
                         <img src="/images/german_photo.jpg" alt="German Vitiaz" class="my-photo">
                     </div>
-                    <!-- Колонка с текстом -->
                     <div class="about-text-column">
-                        <h2 data-translate="about_title">German Vitiaz, ваш проводник в мир IT</h2>
-                        <p data-translate="about_p">Привет! Я преподаватель и энтузиаст программирования. Моя цель — показать детям, что код это не скучные символы, а мощный инструмент для творчества и самовыражения.</p>
+                        <h2 data-translate="about_title">German Vitiaz, your guide to the IT world</h2>
+                        <p data-translate="about_p">Hi! I'm a programming teacher and enthusiast. My goal is to show children that code isn't boring symbols, but a powerful tool for creativity and self-expression.</p>
                         <ul class="key-principles">
                             <li>
                                 <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M12,14C16.42,14 20,15.79 20,18V20H4V18C4,15.79 7.58,14 12,14Z" /></svg>
-                                <span data-translate="about_principle_1">Индивидуальный подход к каждому</span>
+                                <span data-translate="about_principle_1">Individual approach to each student</span>
                             </li>
                             <li>
                                 <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16.5,9L13.5,12L16.5,15H22V9M9,16.5V22H15L12,13.5L9,16.5M7.5,9H2V15H7.5L10.5,12L7.5,9Z" /></svg>
-                                <span data-translate="about_principle_2">Обучение через создание игр и проектов</span>
+                                <span data-translate="about_principle_2">Learning through creating games and projects</span>
                             </li>
                             <li>
                                 <svg viewBox="0 0 24 24" fill="currentColor"><path d="M5,17.59L15.59,7H9V5H19V15H17V8.41L6.41,19L5,17.59Z" /></svg>
-                                <span data-translate="about_principle_3">Развитие навыков для будущего</span>
+                                <span data-translate="about_principle_3">Developing skills for the future</span>
                             </li>
                         </ul>
-                        
-                        <a href="https://t.me/daurge" target="_blank" class="contact-button" data-translate="about_contact">Связаться в Telegram</a>
+                        <a href="https://t.me/daurge" target="_blank" class="contact-button" data-translate="about_contact">Contact on Telegram</a>
                     </div>
                 </div>
             </div>
         </section>
-
         <section id="contact-form" class="contact-form-section">
             <div class="container animate-on-scroll">
-                <h2 class="section-title" data-translate="form_title">Остались вопросы?</h2>
-                <p class="section-subtitle" data-translate="form_p">Оставьте свои контакты, и я свяжусь с вами.</p>
+                <h2 class="section-title" data-translate="form_title">Have Questions?</h2>
+                <p class="section-subtitle" data-translate="form_p">Leave your contact information, and I will get in touch with you.</p>
                 <form id="feedback-form">
                     <div class="form-group">
-                        <input type="text" id="name" name="name" required placeholder=" "><label for="name" data-translate="form_name">Ваше имя</label>
+                        <input type="text" id="name" name="name" required placeholder=" "><label for="name" data-translate="form_name">Your Name</label>
                     </div>
                     <div class="form-group">
-                        <input type="text" id="contact" name="contact" required placeholder=" "><label for="contact" data-translate="form_contact">Ваш Telegram или телефон</label>
+                        <input type="text" id="contact" name="contact" required placeholder=" "><label for="contact" data-translate="form_contact">Your Telegram or Phone</label>
                     </div>
                     <div class="form-group">
-                        <textarea id="message" name="message" rows="3" placeholder=" "></textarea><label for="message" data-translate="form_message">Ваш вопрос (необязательно)</label>
+                        <textarea id="message" name="message" rows="3" placeholder=" "></textarea><label for="message" data-translate="form_message">Your Question (optional)</label>
                     </div>
-                    <button type="submit" class="form-submit-button" data-translate="form_button">Отправить заявку</button>
+                    <button type="submit" class="form-submit-button" data-translate="form_button">Send Request</button>
                     <p id="form-status"></p>
                 </form>
             </div>
@@ -155,14 +161,70 @@
     </main>
 
     <footer>
-        <div class="container">
-            <p>© 2025 German Vitiaz | Code & Learn (<a href="https://clearn.top" target="_blank">clearn.top</a>)</p>
-            <p><span data-translate="footer_contact">Contact:</span> <a href="https://t.me/daurge" target="_blank">Telegram @daurge</a></p>
+        <div class="container footer-content">
+            <div class="footer-main">
+                <p>© 2025 German Vitiaz | Code & Learn (<a href="https://clearn.top" target="_blank">clearn.top</a>)</p>
+                <p><span data-translate="footer_contact">Contact:</span> <a href="https://t.me/daurge" target="_blank">Telegram @daurge</a></p>
+            </div>
         </div>
     </footer>
 
     <div id="course-modal" class="modal"><div class="modal-content"><span class="close-button">×</span><h2 id="modal-title"></h2><div id="modal-body"></div></div></div>
-    <div id="payment-modal" class="modal"><div class="modal-content"><span class="close-button">×</span><h2 data-translate="payment_modal_title">Payment</h2><div class="payment-details"><p><strong></strong>Your tariff: <span id="modal-tariff-name"></span></p><div class="quantity-selector"><label for="lesson-quantity" data-translate="payment_modal_quantity">Lessons quantity: </label><div class="slider-container"><input type="range" id="lesson-quantity" min="1" max="20" value="1" step="1"><span id="quantity-value">1</span></div></div><div class="price-breakdown"><p><span data-translate="payment_modal_price_per_lesson">Cost per lesson: </span> <span id="modal-price-per-lesson"></span></p><p><span data-translate="payment_modal_discount">Discount: </span> <span id="modal-discount">0%</span></p><h3 class="total-price"><span data-translate="payment_modal_total">Total: </span> <span id="modal-total-price"></span></h3></div><div class="payment-system-chooser"><h4 data-translate="payment_modal_choose_system">Choose payment system</h4><div class="systems"></div></div></div><button id="final-pay-button" class="form-submit-button" data-translate="payment_modal_pay_button" disabled>Pay</button></div></div>
+    
+    <div id="payment-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 data-translate="payment_modal_title">Payment</h2>
+                <span class="close-button">×</span>
+            </div>
+
+            <div class="modal-body">
+                <div class="payment-details">
+                    <p><strong><span data-translate="payment_modal_tariff">Your tariff:</span></strong> <span id="modal-tariff-name"></span></p>
+                    
+                    <div class="quantity-selector" id="lesson-quantity-selector">
+                        <label for="lesson-quantity" data-translate="payment_modal_quantity">Lessons quantity:</label>
+                        <div class="slider-container">
+                            <input type="range" id="lesson-quantity" min="1" max="20" value="1" step="1">
+                            <span id="quantity-value">1</span>
+                        </div>
+                    </div>
+
+                    <div class="quantity-selector" id="donation-amount-selector" style="display: none;">
+                        <label for="donation-amount" data-translate="payment_modal_donation_amount">Donation amount:</label>
+                        <div class="donation-input-container">
+                            <input type="number" id="donation-amount" min="1" max="1000" value="10" step="1">
+                            <span>EUR</span>
+                        </div>
+                    </div>
+
+                    <div class="price-breakdown">
+                        <p><span data-translate="payment_modal_price_per_lesson">Cost per lesson:</span> <span id="modal-price-per-lesson"></span></p>
+                        <p><span data-translate="payment_modal_discount">Discount:</span> <span id="modal-discount">0%</span></p>
+                        <h3 class="total-price"><span data-translate="payment_modal_total">Total:</span> <span id="modal-total-price"></span></h3>
+                    </div>
+                    <div class="payment-system-chooser">
+                        <h4 data-translate="payment_modal_choose_system">Choose payment system</h4>
+                        <div class="systems"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FOOTER: Фиксированная нижняя часть -->
+            <div class="modal-footer">
+                <div class="terms-agreement">
+                    <input type="checkbox" id="terms-checkbox">
+                    <label for="terms-checkbox">
+                        <span data-translate="payment_modal_agree_1">I agree to the</span>
+                        <a href="/terms" target="_blank" data-translate="payment_modal_terms">Terms of Service</a>
+                        <span data-translate="payment_modal_agree_2">and</span>
+                        <a href="/privacy" target="_blank" data-translate="payment_modal_privacy">Privacy Policy</a>.
+                    </label>
+                </div>
+                <button id="final-pay-button" class="form-submit-button" data-translate="payment_modal_pay_button" disabled>Pay</button>
+            </div>
+        </div>
+    </div>
     
     <script src="/js/translations.js?v=<%= Date.now() %>"></script>
     <script src="/js/script.js?v=<%= Date.now() %>"></script>
