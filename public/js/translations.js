@@ -26,7 +26,7 @@ const translations = {
         payment_modal_agree_2: "and",
         payment_modal_privacy: "Privacy Policy",
         donation_card_title: "Support the Project",
-        donation_card_desc: "Your contribution helps me create new lessons and improve the platform.",
+        donation_card_desc: "Your contribution helps us create new lessons and improve the platform.",
         donation_card_button: "Donate"
     },
     ru: {
@@ -56,7 +56,7 @@ const translations = {
         payment_modal_agree_2: "и",
         payment_modal_privacy: "Политикой конфиденциальности",
         donation_card_title: "Поддержать проект",
-        donation_card_desc: "Ваш вклад помогает мне создавать новые уроки и улучшать платформу.",
+        donation_card_desc: "Ваш вклад помогает нам создавать новые уроки и улучшать платформу.",
         donation_card_button: "Поддержать"
     },
     de: {
