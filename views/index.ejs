@@ -5,11 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Code & Learn - Kids Programming Lessons</title>
     <link rel="icon" href="/favicon.ico" type="image/x-icon">
-    <link rel="stylesheet" href="/css/style.css?v=2.0"> 
+    <link rel="stylesheet" href="/css/style.css?v=1.12"> 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;800&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
-    <script src="https://www.paypal.com/sdk/js?client-id=AW0dqJsHalJPtYIElJ_ZlY2Dt7N0NmiYLzRPEG8NrUMk-VMvj2mCl71V4UtDbZ7dpHcPlRaDrieETnhJ&currency=EUR&intent=capture&vault=true&locale=en_US"></script>
+    <script src="https://www.paypal.com/sdk/js?client-id=AW0dqJsHalJPtYIElJ_ZlY2Dt7N0NmiYLzRPEG8NrUMk-VMvj2mCl71V4UtDbZ7dpHcPlRaDrieETnhJ&currency=EUR&intent=capture&disable-funding=card,sepa"></script>
 </head>
 <body dir="ltr">
 
@@ -18,9 +18,9 @@
             <a href="/" class="logo">Code & Learn</a>
             <nav>
                 <a href="#courses" data-translate="nav_courses">Courses</a>
-                <a href="#tariffs" data-translate="nav_tariffs">Tariffs</a>
+                <a href="#tariffs" data-translate="nav_tariffs">Pricing</a>
                 <a href="#why-us" data-translate="nav_why_us">Why Us</a>
-                <a href="#about" data-translate="nav_about">About</a>
+                <a href="#about" data-translate="nav_about">About me</a>
             </nav>
             <div class="header-controls">
                 <div class="language-switcher">
@@ -43,7 +43,6 @@
     </header>
 
     <main>
-        <!-- Секции hero, why-us, courses, tariffs, about, contact-form без изменений -->
         <section class="hero">
             <div class="hero-content">
                 <h1 class="animate-on-scroll" data-translate="hero_h1">Unlock the world of code. <br> Create your future</h1>
@@ -51,6 +50,7 @@
                 <a href="#tariffs" class="cta-button animate-on-scroll" data-translate="hero_cta">Start Learning</a>
             </div>
         </section>
+
         <section id="why-us" class="why-us">
             <div class="container">
                 <h2 class="section-title animate-on-scroll" data-translate="why_us_title">Why Us</h2>
@@ -61,6 +61,7 @@
                 </div>
             </div>
         </section>
+
         <section id="courses">
             <div class="container">
                 <h2 class="section-title animate-on-scroll" data-translate="courses_title">Learning Paths</h2>
@@ -71,45 +72,44 @@
                                 <% if (key === 'roblox') { %><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12.15,2.15L15.1,3.53L16.47,6.5L19.85,6.15L20.85,9.2L23,10.5L22.5,14L23,17.5L20.85,18.8L19.85,21.85L16.47,21.5L15.1,24.47L12.15,25.85L9.2,24.47L7.85,21.5L4.47,21.85L3.47,18.8L1.3,17.5L1.8,14L1.3,10.5L3.47,9.2L4.47,6.15L7.85,6.5L9.2,3.53L12.15,2.15M9.87,8.22L8.22,9.87L11.35,13L8.22,16.12L9.87,17.77L13,14.65L16.12,17.77L17.77,16.12L14.65,13L17.77,9.87L16.12,8.22L13,11.35L9.87,8.22Z"/></svg><% } else if (key === 'scratch') { %><svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.46,8.14C19.83,8.5 20,8.96 20,9.5C20,10.42 19.5,11.21 18.79,11.66C18.91,12.22 19,12.83 19,13.5C19,15.19 18.25,16.67 17,17.5V19C17,20.11 16.1,21 15,21H9C7.89,21 7,20.11 7,19V17.5C5.75,16.67 5,15.19 5,13.5C5,12.83 5.09,12.22 5.21,11.66C4.5,11.21 4,10.42 4,9.5C4,8.96 4.17,8.5 4.54,8.14C3.86,7.4 3.5,6.5 3.5,5.5C3.5,3.84 4.84,2.5 6.5,2.5C7.86,2.5 9,3.3 9.37,4.5H14.63C15,3.3 16.14,2.5 17.5,2.5C19.16,2.5 20.5,3.84 20.5,5.5C20.5,6.5 20.14,7.4 19.46,8.14Z"/></svg><% } else if (key === 'junior') { %><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,4A8,8 0 0,1 20,12C20,13.42 19.53,14.74 18.75,15.83L13,10.08V4.25C12.67,4.09 12.34,4 12,4M17.74,17.74C16.33,19 14.28,19.83 12,19.95V14.5L17.74,17.74M11,19.95C8.36,19.54 6.38,17.84 5.4,15.4L11,11.5V19.95M4,12A8,8 0 0,1 11,4.05V9.08L5.17,11.25C4.47,10.74 4.09,9.88 4.09,9C4.09,9 4,12 4,12Z"/></svg><% } else if (key === 'minecraft') { %><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4,2H20A2,2 0 0,1 22,4V20A2,2 0 0,1 20,22H4A2,2 0 0,1 2,20V4A2,2 0 0,1 4,2M6,6V10H10V6H6M12,6V10H18V6H12M6,12V18H10V12H6M12,12V18H18V12H12Z"/></svg><% } else if (key === 'python') { %><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12.89,3L14.85,3.42L15.26,5.39L17.23,5.81L17.65,7.78L19.61,8.2L19.19,10.17L20.18,12.09L19.19,14L19.61,15.94L17.65,16.36L17.23,18.33L15.26,18.74L14.85,20.71L12.89,21.13L10.93,20.71L10.5,18.74L8.57,18.33L8.13,16.36L6.18,15.94L6.6,14L5.6,12.09L6.6,10.17L6.18,8.2L8.13,7.78L8.57,5.81L10.5,5.39L10.93,3.42L12.89,3M11.5,8.5A2.5,2.5 0 0,0 9,11A2.5,2.5 0 0,0 11.5,13.5A2.5,2.5 0 0,0 14,11A2.5,2.5 0 0,0 11.5,8.5M12.5,15.5A2.5,2.5 0 0,0 15,13A2.5,2.5 0 0,0 12.5,10.5A2.5,2.5 0 0,0 10,13A2.5,2.5 0 0,0 12.5,15.5Z"/></svg><% } %>
                             </div>
                             <h3></h3><span class="course-age"></span><p></p>
-                            <button class="details-button" data-translate="details_button">Course Details</button>
                         </div>
                     <% }); %>
                 </div>
             </div>
         </section>
-        <section id="tariffs">
-        <div class="container">
-            <h2 class="section-title animate-on-scroll" data-translate="tariffs_title">Pricing and Payment</h2>
-            <div class="tariffs-grid">
-                <!-- Обычные тарифы -->
-                <div class="tariff-card animate-on-scroll">
-                    <h3 data-translate="tariff_25_h">25 Minute Lesson</h3>
-                    <p class="tariff-price">10 EUR</p>
-                    <p class="tariff-description" data-translate="tariff_25_p">Ideal for the youngest (5-7 years) and for maintaining concentration.</p>
-                    <button class="buy-button" data-duration="25" data-translate="tariff_button">Select</button>
-                </div>
-                <div class="tariff-card animate-on-scroll">
-                    <h3 data-translate="tariff_50_h">50 Minute Lesson</h3>
-                    <p class="tariff-price">20 EUR</p>
-                    <p class="tariff-description" data-translate="tariff_50_p">Standard format for a deep dive into topics for children aged 8 and up.</p>
-                    <button class="buy-button" data-duration="50" data-translate="tariff_button">Select</button>
-                </div>
 
-                <div class="donation-card-wrapper animate-on-scroll">
-                    <div id="donate-card" class="donation-card clickable">
-                        <div class="donation-icon">
-                            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12,21.35L10.55,20.03C5.4,15.36 2,12.27 2,8.5C2,5.41 4.42,3 7.5,3C9.24,3 10.91,3.81 12,5.08C13.09,3.81 14.76,3 16.5,3C19.58,3 22,5.41 22,8.5C22,12.27 18.6,15.36 13.45,20.03L12,21.35Z"/></svg>
+        <section id="tariffs">
+            <div class="container">
+                <h2 class="section-title animate-on-scroll" data-translate="tariffs_title">Pricing and Payment</h2>
+                <div class="tariffs-grid">
+                    <div class="tariff-card animate-on-scroll">
+                        <h3 data-translate="tariff_25_h">25 Minute Lesson</h3>
+                        <p class="tariff-price">10 EUR</p>
+                        <p class="tariff-description" data-translate="tariff_25_p">Ideal for the youngest (5-7 years) and for maintaining concentration.</p>
+                        <button class="buy-button" data-duration="25" data-translate="tariff_button">Select</button>
+                    </div>
+                    <div class="tariff-card animate-on-scroll">
+                        <h3 data-translate="tariff_50_h">50 Minute Lesson</h3>
+                        <p class="tariff-price">20 EUR</p>
+                        <p class="tariff-description" data-translate="tariff_50_p">Standard format for a deep dive into topics for children aged 8 and up.</p>
+                        <button class="buy-button" data-duration="50" data-translate="tariff_button">Select</button>
+                    </div>
+                    <div class="donation-card-wrapper animate-on-scroll">
+                        <div id="donate-card" class="donation-card clickable">
+                            <div class="donation-icon">
+                                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12,21.35L10.55,20.03C5.4,15.36 2,12.27 2,8.5C2,5.41 4.42,3 7.5,3C9.24,3 10.91,3.81 12,5.08C13.09,3.81 14.76,3 16.5,3C19.58,3 22,5.41 22,8.5C22,12.27 18.6,15.36 13.45,20.03L12,21.35Z"/></svg>
+                            </div>
+                            <div class="donation-text">
+                                <h3 data-translate="donation_card_title">Support the Project</h3>
+                                <p data-translate="donation_card_desc">Your contribution helps me create new lessons and improve the platform.</p>
+                            </div>
+                            <div class="donation-arrow">→</div>
                         </div>
-                        <div class="donation-text">
-                            <h3 data-translate="donation_card_title">Support the Project</h3>
-                            <p data-translate="donation_card_desc">Your contribution helps me create new lessons and improve the platform.</p>
-                        </div>
-                        <div class="donation-arrow">→</div>
                     </div>
                 </div>
             </div>
-        </div>
-    </section>
+        </section>
+
         <section id="about" class="about-me">
             <div class="container">
                 <div class="about-content-wrapper animate-on-scroll">
@@ -139,6 +139,7 @@
                 </div>
             </div>
         </section>
+
         <section id="contact-form" class="contact-form-section">
             <div class="container animate-on-scroll">
                 <h2 class="section-title" data-translate="form_title">Have Questions?</h2>
@@ -166,22 +167,67 @@
                 <p>© 2025 German Vitiaz | Code & Learn (<a href="https://clearn.top" target="_blank">clearn.top</a>)</p>
                 <p><span data-translate="footer_contact">Contact:</span> <a href="https://t.me/daurge" target="_blank">Telegram @daurge</a></p>
             </div>
+            <div class="footer-legal-links">
+                <a href="/terms" data-translate="footer_terms">Terms of Service</a>
+                <span>•</span>
+                <a href="/privacy" data-translate="footer_privacy">Privacy Policy</a>
+            </div>
         </div>
     </footer>
 
-    <div id="course-modal" class="modal"><div class="modal-content"><span class="close-button">×</span><h2 id="modal-title"></h2><div id="modal-body"></div></div></div>
+    <!-- Модальное окно деталей курса -->
+    <div id="course-details-modal" class="modal">
+        <div class="modal-content-details">
+            <div class="details-grid">
+                <div class="details-left">
+                    <h2 id="details-modal-title">Course Title</h2>
+                    <p id="details-modal-short-desc">Short course description goes here.</p>
+                    <div class="details-image" id="details-modal-image"></div>
+                    <div class="details-stats">
+                        <div class="stat-item">
+                            <svg viewBox="0 0 24 24"><path d="M9,10V12H7V10H9M13,10V12H11V10H13M17,10V12H15V10H17M19,3A2,2 0 0,1 21,5V19A2,2 0 0,1 19,21H5A2,2 0 0,1 3,19V5A2,2 0 0,1 5,3H6V1H8V3H16V1H18V3H19M19,19V8H5V19H19Z" /></svg>
+                            <span id="details-modal-age"></span>
+                        </div>
+                        <div class="stat-item">
+                            <svg viewBox="0 0 24 24"><path d="M12,20A8,8 0 0,0 20,12A8,8 0 0,0 12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2M12.5,7V12.25L17,14.92L16.25,16.15L11,13V7H12.5Z" /></svg>
+                            <span id="details-modal-duration"></span>
+                        </div>
+                        <div class="stat-item">
+                            <svg viewBox="0 0 24 24"><path d="M12,3L1,9L12,15L23,9L12,3M5,13.18V17.18L12,21L19,17.18V13.18L12,17L5,13.18Z" /></svg>
+                            <span id="details-modal-format"></span>
+                        </div>
+                    </div>
+                    <button class="buy-button" id="details-modal-buy-button" data-translate="modal_enroll_button">Enroll Now</button>
+                </div>
+                <div class="details-right">
+                    <span class="close-button">×</span>
+                    <div class="details-section">
+                        <h3 data-translate="modal_what_you_learn">What the student will learn</h3>
+                        <ul id="details-modal-learning"></ul>
+                    </div>
+                    <div class="details-section">
+                        <h3 data-translate="modal_tools">Tools</h3>
+                        <ul class="tools-list" id="details-modal-tools"></ul>
+                    </div>
+                    <div class="details-section">
+                        <h3 data-translate="modal_program">Course Program</h3>
+                        <ul class="program-accordion" id="details-modal-program"></ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
     
+    <!-- Модальное окно оплаты -->
     <div id="payment-modal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
                 <h2 data-translate="payment_modal_title">Payment</h2>
                 <span class="close-button">×</span>
             </div>
-
             <div class="modal-body">
                 <div class="payment-details">
                     <p><strong><span data-translate="payment_modal_tariff">Your tariff:</span></strong> <span id="modal-tariff-name"></span></p>
-                    
                     <div class="quantity-selector" id="lesson-quantity-selector">
                         <label for="lesson-quantity" data-translate="payment_modal_quantity">Lessons quantity:</label>
                         <div class="slider-container">
@@ -189,15 +235,13 @@
                             <span id="quantity-value">1</span>
                         </div>
                     </div>
-
                     <div class="quantity-selector" id="donation-amount-selector" style="display: none;">
-                        <label for="donation-amount" data-translate="payment_modal_donation_amount">Donation amount:</label>
-                        <div class="donation-input-container">
+                         <label for="donation-amount" data-translate="payment_modal_donation_amount">Donation amount:</label>
+                         <div class="donation-input-container">
                             <input type="number" id="donation-amount" min="1" max="1000" value="10" step="1">
                             <span>EUR</span>
-                        </div>
+                         </div>
                     </div>
-
                     <div class="price-breakdown">
                         <p><span data-translate="payment_modal_price_per_lesson">Cost per lesson:</span> <span id="modal-price-per-lesson"></span></p>
                         <p><span data-translate="payment_modal_discount">Discount:</span> <span id="modal-discount">0%</span></p>
@@ -209,8 +253,6 @@
                     </div>
                 </div>
             </div>
-
-            <!-- FOOTER: Фиксированная нижняя часть -->
             <div class="modal-footer">
                 <div class="terms-agreement">
                     <input type="checkbox" id="terms-checkbox">

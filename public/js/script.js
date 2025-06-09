@@ -1,5 +1,3 @@
-// /public/js/script.js
-
 document.addEventListener('DOMContentLoaded', () => {
     // --- ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ И КОНФИГУРАЦИЯ ---
     const html = document.documentElement;
@@ -7,9 +5,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const themeSwitcher = document.getElementById('theme-switcher');
     const languageSwitcher = document.querySelector('.language-switcher');
     const feedbackForm = document.getElementById('feedback-form');
-    const courseModal = document.getElementById('course-modal');
     const paymentModal = document.getElementById('payment-modal');
     const donateCard = document.getElementById('donate-card');
+    const courseDetailsModal = document.getElementById('course-details-modal');
     const sunIcon = 'https://emojicdn.elk.sh/☀️';
     const moonIcon = 'https://emojicdn.elk.sh/🌙';
 
@@ -30,7 +28,6 @@ document.addEventListener('DOMContentLoaded', () => {
     let isDonationMode = false;
 
     // --- ОСНОВНЫЕ ФУНКЦИИ УПРАВЛЕНИЯ СТРАНИЦЕЙ ---
-
     function setLanguage(lang) {
         if (lang === 'ua') lang = 'uk';
         if (typeof translations === 'undefined' || !translations[lang]) lang = 'en';
@@ -105,14 +102,53 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // --- ФУНКЦИИ ДЛЯ МОДАЛЬНОГО ОКНА ОПЛАТЫ ---
+    // --- ФУНКЦИИ ДЛЯ МОДАЛЬНОГО ОКНА ДЕТАЛЕЙ КУРСА ---
+    function openCourseDetailsModal(courseKey) {
+        if (!courseDetailsModal) return;
 
+        const lang = localStorage.getItem('language') || 'en';
+        const t = translations[lang];
+        if (!t) return;
+        
+        courseDetailsModal.querySelector('[data-translate="modal_what_you_learn"]').textContent = t.modal_what_you_learn || "What the student will learn";
+        courseDetailsModal.querySelector('[data-translate="modal_tools"]').textContent = t.modal_tools || "Tools";
+        courseDetailsModal.querySelector('[data-translate="modal_program"]').textContent = t.modal_program || "Course Program";
+        
+        document.getElementById('details-modal-title').textContent = t[`course_${courseKey}_title`] || "Course Details";
+        document.getElementById('details-modal-short-desc').textContent = t[`course_${courseKey}_desc`] || "";
+        document.getElementById('details-modal-image').innerHTML = `<img src="${t[`course_${courseKey}_image`]}" alt="${t[`course_${courseKey}_title`] || ''}">`;
+        document.getElementById('details-modal-age').textContent = t[`course_${courseKey}_age`] || "";
+        document.getElementById('details-modal-duration').textContent = t[`course_${courseKey}_duration`] || "";
+        document.getElementById('details-modal-format').textContent = t[`course_${courseKey}_format`] || "";
+        
+        const buyButton = document.getElementById('details-modal-buy-button');
+        buyButton.textContent = t.modal_enroll_button || "Enroll Now";
+        const defaultDuration = t[`course_${courseKey}_default_duration`];
+        buyButton.onclick = () => {
+            closeCourseDetailsModal();
+            openPaymentModal(defaultDuration, false);
+        };
+        const learningList = document.getElementById('details-modal-learning');
+        learningList.innerHTML = (t[`course_${courseKey}_what_you_learn`] || []).map(item => `<li>${item}</li>`).join('');
+        const toolsList = document.getElementById('details-modal-tools');
+        toolsList.innerHTML = (t[`course_${courseKey}_tools`] || []).map(item => `<li>${item}</li>`).join('');
+        const programList = document.getElementById('details-modal-program');
+        programList.innerHTML = (t[`course_${courseKey}_modules`] || []).map(module => `
+            <li class="module-item">
+                <div class="module-title">${module.title}</div>
+                <div class="module-content"><p>${module.description}</p></div>
+            </li>`).join('');
+        courseDetailsModal.classList.add('is-open');
+    }
+    function closeCourseDetailsModal() {
+        if (courseDetailsModal) courseDetailsModal.classList.remove('is-open');
+    }
+    
+    // --- ФУНКЦИИ ДЛЯ МОДАЛЬНОГО ОКНА ОПЛАТЫ ---
     function updatePaymentModalPrice() {
         if (!paymentModal) return;
-        
         let quantity = 1;
         let finalTotal;
-
         if (isDonationMode) {
             const donationInput = document.getElementById('donation-amount');
             quantity = parseFloat(donationInput.value) || 1;
@@ -123,24 +159,17 @@ document.addEventListener('DOMContentLoaded', () => {
             const lessonSlider = document.getElementById('lesson-quantity');
             quantity = parseInt(lessonSlider.value, 10);
             document.getElementById('quantity-value').textContent = quantity;
-
             const discountBreakpoints = Object.keys(paymentConfig.discounts).map(Number).sort((a,b) => b-a);
             let applicableDiscount = 0;
-            for (const bp of discountBreakpoints) {
-                if (quantity >= bp) { applicableDiscount = paymentConfig.discounts[bp]; break; }
-            }
+            for (const bp of discountBreakpoints) { if (quantity >= bp) { applicableDiscount = paymentConfig.discounts[bp]; break; } }
             finalTotal = (currentBasePrice * quantity) * (1 - applicableDiscount / 100);
             const pricePerLesson = quantity > 0 ? (finalTotal / quantity) : 0;
-            
             document.getElementById('modal-price-per-lesson').textContent = `${pricePerLesson.toFixed(2)} ${paymentConfig.currency}`;
             document.getElementById('modal-discount').textContent = `${applicableDiscount}%`;
         }
-        
         document.getElementById('modal-total-price').textContent = `${finalTotal.toFixed(2)} ${paymentConfig.currency}`;
-        
         updatePayButtonState();
     }
-    
     function updatePayButtonState() {
         if (!paymentModal) return;
         const finalPayButton = document.getElementById('final-pay-button');
@@ -148,15 +177,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const isReadyToPay = selectedPaymentSystem && termsCheckbox.checked;
         if (finalPayButton) finalPayButton.disabled = !isReadyToPay || selectedPaymentSystem === 'paypal';
     }
-
     function openPaymentModal(tariffDuration, donationMode = false) {
         if (!paymentModal) return;
         isDonationMode = donationMode;
-
         const lessonSelector = document.getElementById('lesson-quantity-selector');
         const donationSelector = document.getElementById('donation-amount-selector');
         const priceBreakdown = document.querySelector('.price-breakdown');
-
         if (isDonationMode) {
             currentBasePrice = 1;
             currentTariffName = 'Donation';
@@ -170,14 +196,11 @@ document.addEventListener('DOMContentLoaded', () => {
             donationSelector.style.display = 'none';
             priceBreakdown.style.display = 'block';
         }
-
         document.getElementById('modal-tariff-name').textContent = currentTariffName;
         document.getElementById('lesson-quantity').value = 1;
         document.getElementById('donation-amount').value = 10;
         document.getElementById('terms-checkbox').checked = false;
-        
         selectedPaymentSystem = null;
-        
         const systemsContainer = paymentModal.querySelector('.systems');
         systemsContainer.innerHTML = '';
         paymentConfig.availableSystems.forEach(system => {
@@ -187,14 +210,14 @@ document.addEventListener('DOMContentLoaded', () => {
             card.textContent = system.name;
             systemsContainer.appendChild(card);
         });
-        
-        document.getElementById('paypal-button-container').innerHTML = '';
-        document.getElementById('paypal-button-container').style.display = 'none';
+        const paypalContainer = document.getElementById('paypal-button-container');
+        if (paypalContainer) {
+            paypalContainer.innerHTML = '';
+            paypalContainer.style.display = 'none';
+        }
         document.getElementById('final-pay-button').style.display = 'block';
-        
         const currentLang = localStorage.getItem('language') || 'en';
         setLanguage(currentLang);
-        
         updatePaymentModalPrice();
         paymentModal.classList.add('is-open');
     }
@@ -214,43 +237,34 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (themeSwitcher) themeSwitcher.addEventListener('click', () => setTheme(html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'));
     if (feedbackForm) feedbackForm.addEventListener('submit', handleFormSubmit);
-    if (donateCard) { 
-        donateCard.addEventListener('click', () => { 
-            openPaymentModal(null, true);
-        });
-    }
+    if (donateCard) donateCard.addEventListener('click', () => openPaymentModal(null, true));
 
     document.querySelectorAll('.buy-button').forEach(button => {
-        if (button.id !== 'donate-card') { 
+        if (button.id !== 'donate-card' && button.id !== 'details-modal-buy-button') {
             button.addEventListener('click', () => openPaymentModal(button.dataset.duration, false));
         }
     });
 
-    if (courseModal) {
-        const modalTitle = courseModal.querySelector('#modal-title');
-        const modalBody = courseModal.querySelector('#modal-body');
-        const closeBtn = courseModal.querySelector('.close-button');
-        const openCourseModal = (courseKey) => {
-            const currentLang = localStorage.getItem('language') || 'en';
-            const langData = translations[currentLang];
-            const title = langData[`course_${courseKey}_title`] || courseKey.toUpperCase();
-            const modules = langData[`course_${courseKey}_modules`] || [];
-            if (modalTitle) modalTitle.textContent = title;
-            let modulesHtml = '<ul>';
-            if (Array.isArray(modules) && modules.length > 0) modulesHtml += modules.map(mod => `<li>${mod}</li>`).join('');
-            else modulesHtml += `<li>Module information is not yet available in this language.</li>`;
-            modulesHtml += '</ul>';
-            if (modalBody) modalBody.innerHTML = modulesHtml;
-            courseModal.classList.add('is-open');
-        };
-        const closeCourseModal = () => courseModal.classList.remove('is-open');
-        document.querySelector('.courses-grid').addEventListener('click', (e) => {
-            const button = e.target.closest('.details-button');
-            if (button) openCourseModal(button.closest('.course-card').dataset.courseKey);
-        });
-        if (closeBtn) closeBtn.addEventListener('click', closeCourseModal);
-        window.addEventListener('click', (event) => { if (event.target === courseModal) closeCourseModal(); });
-        window.addEventListener('keydown', (event) => { if (event.key === 'Escape' && courseModal.classList.contains('is-open')) closeCourseModal(); });
+    document.querySelector('.courses-grid').addEventListener('click', (e) => {
+        const card = e.target.closest('.course-card');
+        if (card) openCourseDetailsModal(card.dataset.courseKey);
+    });
+
+    if (courseDetailsModal) {
+        courseDetailsModal.querySelector('.close-button').addEventListener('click', closeCourseDetailsModal);
+        courseDetailsModal.addEventListener('click', (event) => { if (event.target === courseDetailsModal) closeCourseDetailsModal(); });
+        window.addEventListener('keydown', (event) => { if (event.key === 'Escape' && courseDetailsModal.classList.contains('is-open')) closeCourseDetailsModal(); });
+        
+        const programContainer = document.getElementById('details-modal-program');
+        if(programContainer) {
+            programContainer.addEventListener('click', (e) => {
+                const title = e.target.closest('.module-title');
+                if (title) {
+                    const item = title.parentElement;
+                    item.classList.toggle('active');
+                }
+            });
+        }
     }
 
     if (paymentModal) {
@@ -258,7 +272,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const paypalButtonsContainer = document.createElement('div');
         paypalButtonsContainer.id = 'paypal-button-container';
         finalPayButton.parentNode.insertBefore(paypalButtonsContainer, finalPayButton);
-        
         const termsCheckbox = document.getElementById('terms-checkbox');
         document.getElementById('lesson-quantity').addEventListener('input', updatePaymentModalPrice);
         document.getElementById('donation-amount').addEventListener('input', updatePaymentModalPrice);
@@ -270,13 +283,10 @@ document.addEventListener('DOMContentLoaded', () => {
             paymentModal.querySelectorAll('.payment-system-card').forEach(card => card.classList.remove('active'));
             target.classList.add('active');
             selectedPaymentSystem = target.dataset.system;
-            
             const isPaypal = selectedPaymentSystem === 'paypal';
             finalPayButton.style.display = isPaypal ? 'none' : 'block';
             paypalButtonsContainer.style.display = isPaypal ? 'block' : 'none';
-
             if (isPaypal && typeof paypal !== 'undefined') renderPayPalButtons();
-            
             updatePayButtonState();
         });
 
@@ -300,7 +310,6 @@ document.addEventListener('DOMContentLoaded', () => {
         function renderPayPalButtons() {
             if (typeof paypal === 'undefined') { console.error("PayPal SDK is not loaded."); return; }
             paypalButtonsContainer.innerHTML = '';
-            
             paypal.Buttons({
                 style: { layout: 'vertical', label: 'pay', height: 48 },
                 onInit: (data, actions) => {

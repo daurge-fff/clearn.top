@@ -1,4 +1,6 @@
-/* public/css/style.css (v1.9) */
+/* public/css/style.css (v1.14 - Polished Course Modal) */
+
+/* === ОСНОВНЫЕ ПЕРЕМЕННЫЕ И СТИЛИ === */
 :root {
     --bg-color: #0d0f1a;
     --text-color: #e0e0e0;
@@ -25,6 +27,17 @@
     --shadow-color: rgba(47, 53, 66, 0.1);
 }
 
+::selection {
+  background-color: var(--accent-color-1);
+  color: var(--bg-color);
+  text-shadow: none;
+}
+::-moz-selection {
+  background-color: var(--accent-color-1);
+  color: var(--bg-color);
+  text-shadow: none;
+}
+
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
@@ -36,12 +49,13 @@ body {
     transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-a, button, .course-card, .why-us-card, .tariff-card, .payment-system-card, .close-button, .lang-dropdown li {
+a, button, .course-card, .why-us-card, .tariff-card, .donation-card.clickable, .payment-system-card, .close-button, .lang-dropdown li {
     cursor: url(/cursors/pointer.cur), pointer;
 }
 
 .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
 
+/* === HEADER === */
 header { position: fixed; width: 100%; top: 0; z-index: 1000; padding: 15px 0; background-color: var(--header-bg); backdrop-filter: blur(10px); border-bottom: 1px solid var(--card-border); }
 header .container { display: flex; justify-content: space-between; align-items: center; }
 .logo { font-family: var(--font-headings); font-size: 1.5rem; color: var(--accent-color-1); text-decoration: none; font-weight: 800; }
@@ -62,6 +76,15 @@ header nav a:hover { color: var(--accent-color-1); }
 [data-theme="light"] .lang-dropdown li:hover { color: #fff; }
 .lang-dropdown li img { width: 20px; height: 20px; }
 
+/* === СЕКЦИИ И ОБЩИЕ СТИЛИ === */
+section { padding: 100px 0; }
+.section-title { font-family: var(--font-headings); font-size: 2.8rem; text-align: center; margin-bottom: 20px; font-weight: 800; color: var(--accent-color-1); }
+.section-subtitle { text-align: center; max-width: 600px; margin: 0 auto 60px; font-size: 1.1rem; opacity: 0.8; }
+.details-button, .buy-button { padding: 12px 20px; border: 2px solid var(--accent-color-1); color: var(--accent-color-1); background: transparent; border-radius: 50px; font-weight: 700; transition: background-color 0.3s, color 0.3s; margin-top: auto; }
+.details-button:hover, .buy-button:hover { background-color: var(--accent-color-1); color: #fff; }
+[data-theme="light"] .details-button:hover, [data-theme="light"] .buy-button:hover { color: var(--bg-color); }
+
+/* === HERO === */
 .hero { height: 100vh; display: flex; align-items: center; justify-content: center; text-align: center; position: relative; overflow: hidden; padding-top: 80px; }
 .hero-content { padding: 0 20px; }
 .hero-content h1 { font-family: var(--font-headings); font-size: clamp(2.8rem, 6vw, 4.5rem); line-height: 1.2; margin-bottom: 20px; font-weight: 800; background: linear-gradient(90deg, var(--accent-color-1), var(--accent-color-2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; text-fill-color: transparent; }
@@ -70,47 +93,46 @@ header nav a:hover { color: var(--accent-color-1); }
 [data-theme="light"] .cta-button { color: #fff; }
 .cta-button:hover { transform: translateY(-5px) scale(1.05); box-shadow: 0 10px 25px var(--shadow-color); background: linear-gradient(90deg, var(--accent-color-1), var(--accent-color-2)); color: #fff; }
 
-section { padding: 100px 0; }
-.section-title { font-family: var(--font-headings); font-size: 2.8rem; text-align: center; margin-bottom: 20px; font-weight: 800; color: var(--accent-color-1); }
-.section-subtitle { text-align: center; max-width: 600px; margin: 0 auto 60px; font-size: 1.1rem; opacity: 0.8; }
+/* === WHY US === */
+.why-us-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 30px; }
+.why-us-card { text-align: center; padding: 30px; background-color: var(--card-bg); border-radius: 12px; border: 1px solid var(--card-border); transition: transform 0.3s, box-shadow 0.3s; flex-basis: 300px; flex-grow: 1; max-width: 380px; }
+.why-us-card:hover { transform: translateY(-10px); box-shadow: 0 15px 30px var(--shadow-color); }
+.why-us-card h3 { font-family: var(--font-headings); font-size: 1.5rem; margin-bottom: 15px; color: var(--accent-color-2); }
+
+/* === COURSES === */
 .courses-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 30px; }
 .course-card { background-color: var(--card-bg); border: 1px solid var(--card-border); padding: 30px; border-radius: 12px; backdrop-filter: blur(5px); transition: transform 0.3s, box-shadow 0.3s; display: flex; flex-direction: column; width: 350px; text-align: center; }
 .course-card:hover { transform: translateY(-10px); box-shadow: 0 15px 30px var(--shadow-color); }
 .course-icon-wrapper { width: 60px; height: 60px; margin: 0 auto 20px auto; background-color: var(--accent-color-1); color: var(--bg-color); border-radius: 12px; display: flex; align-items: center; justify-content: center; }
 .course-icon-wrapper svg { width: 32px; height: 32px; }
 .course-age { align-self: center; display: inline-block; background-color: var(--accent-color-2); color: #fff; padding: 3px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: 700; margin-bottom: 15px; }
-.course-card h3, .tariff-card h3 { font-family: var(--font-headings); font-size: 1.5rem; margin-bottom: 10px; color: var(--accent-color-1); font-weight: 800; }
+.course-card h3 { font-family: var(--font-headings); font-size: 1.5rem; margin-bottom: 10px; color: var(--accent-color-1); font-weight: 800; }
 .course-card p { flex-grow: 1; margin-bottom: 20px; opacity: 0.9; }
-.details-button, .buy-button { padding: 12px 20px; border: 2px solid var(--accent-color-1); color: var(--accent-color-1); background: transparent; border-radius: 50px; font-weight: 700; transition: background-color 0.3s, color 0.3s; margin-top: auto; }
-.details-button:hover, .buy-button:hover { background-color: var(--accent-color-1); color: #fff; }
-[data-theme="light"] .details-button:hover, [data-theme="light"] .buy-button:hover { color: var(--bg-color); }
 
-.why-us-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 30px; }
-.why-us-card { text-align: center; padding: 30px; background-color: var(--card-bg); border-radius: 12px; border: 1px solid var(--card-border); transition: transform 0.3s, box-shadow 0.3s; flex-basis: 300px; flex-grow: 1; max-width: 380px; }
-.why-us-card:hover { transform: translateY(-10px); box-shadow: 0 15px 30px var(--shadow-color); }
-.why-us-card h3 { font-family: var(--font-headings); font-size: 1.5rem; margin-bottom: 15px; color: var(--accent-color-2); }
-.tariffs-grid {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 30px;
-}
-.tariff-card {
-    text-align: center;
-    background-color: var(--card-bg);
-    border: 1px solid var(--card-border);
-    padding: 30px;
-    border-radius: 12px;
-    transition: transform 0.3s, box-shadow 0.3s;
-    display: flex;
-    flex-direction: column;
-    flex-basis: 320px;
-    max-width: 400px;
-}
+/* === TARIFFS & DONATION === */
+.tariffs-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 30px; }
+.tariff-card { text-align: center; background-color: var(--card-bg); border: 1px solid var(--card-border); padding: 30px; border-radius: 12px; transition: transform 0.3s, box-shadow 0.3s; display: flex; flex-direction: column; flex-basis: 320px; max-width: 400px; }
 .tariff-card:hover { transform: translateY(-10px); box-shadow: 0 15px 30px var(--shadow-color); }
+.tariff-card h3 { font-family: var(--font-headings); font-size: 1.5rem; margin-bottom: 10px; color: var(--accent-color-1); font-weight: 800; }
 .tariff-price { font-size: 2.5rem; font-family: var(--font-headings); color: var(--accent-color-1); margin-bottom: 15px; font-weight: 800; }
 .tariff-description { flex-grow: 1; margin-bottom: 20px; opacity: 0.9; }
+.donation-card-wrapper { grid-column: 1 / -1; display: flex; justify-content: center; margin-top: 30px; }
+.donation-card { display: flex; align-items: center; gap: 25px; background-color: var(--card-bg); padding: 25px 30px; border-radius: 16px; width: 100%; max-width: 730px; position: relative; overflow: hidden; border: 1px solid transparent; transition: transform 0.3s ease, box-shadow 0.3s ease; }
+.donation-card.clickable:hover { transform: translateY(-5px); box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+.donation-card::before { content: ''; position: absolute; top: 0; right: 0; bottom: 0; left: 0; z-index: -1; margin: -1px; border-radius: inherit; background: linear-gradient(90deg, var(--accent-color-1), var(--accent-color-2), var(--accent-color-1)); background-size: 200% 200%; animation: gradient-flow 5s ease infinite; opacity: 0.7; transition: opacity 0.3s ease; }
+@keyframes gradient-flow { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+.donation-card.clickable:hover::before { opacity: 1; }
+.donation-card .donation-icon { flex-shrink: 0; color: var(--accent-color-2); animation: heartbeat 2s ease-in-out infinite; transition: transform 0.3s ease; }
+.donation-card.clickable:hover .donation-icon { transform: scale(1.1); }
+.donation-card .donation-icon svg { width: 48px; height: 48px; }
+.donation-card .donation-text { flex-grow: 1; text-align: left; }
+.donation-card .donation-text h3 { color: var(--text-color); font-size: 1.3rem; margin-bottom: 5px; }
+[data-theme="light"] .donation-card .donation-text h3 { color: var(--text-color); }
+.donation-card .donation-text p { opacity: 0.7; font-size: 0.9rem; margin: 0; }
+.donation-arrow { font-size: 2rem; font-weight: bold; color: var(--accent-color-1); transition: transform 0.3s ease; }
+.donation-card.clickable:hover .donation-arrow { transform: translateX(10px); }
 
+/* === ABOUT ME === */
 .about-me { overflow: hidden; }
 .about-content-wrapper { display: grid; grid-template-columns: 1fr 1.5fr; align-items: center; gap: 50px; }
 .about-image-column { position: relative; display: flex; align-items: center; justify-content: center; }
@@ -128,6 +150,7 @@ section { padding: 100px 0; }
 .contact-button:hover { background-color: var(--accent-color-2); color: #fff; }
 [data-theme="light"] .contact-button:hover { color: var(--bg-color); }
 
+/* === CONTACT FORM === */
 .contact-form-section { background-color: rgba(0,0,0,0.1); }
 [data-theme="light"] .contact-form-section { background-color: #fff; }
 #feedback-form { max-width: 600px; margin: 0 auto; text-align: center; }
@@ -144,36 +167,82 @@ section { padding: 100px 0; }
 .form-submit-button:disabled { background-color: var(--card-border); color: var(--text-color); cursor: not-allowed; transform: none; box-shadow: none; opacity: 0.7; }
 #form-status { text-align: center; margin-top: 20px; font-weight: 700; min-height: 1.2em; }
 
+/* === FOOTER === */
 footer { background-color: #0a0c14; padding: 30px 0; border-top: 1px solid var(--card-border); }
 [data-theme="light"] footer { background-color: #e6e8ed; }
 .footer-content { display: flex; flex-direction: column; align-items: center; gap: 25px; }
 .footer-main { text-align: center; font-size: 0.9rem; opacity: 0.7; }
 .footer-main p { margin-bottom: 5px; }
-.footer-main a { color: var(--accent-color-1); text-decoration: none; }
+.footer-main a { color: var(--accent-color-1); text-decoration: none; transition: color 0.3s; }
+.footer-main a:hover { color: var(--accent-color-2); }
+.footer-legal-links { margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--card-border); width: 100%; max-width: 600px; text-align: center; }
+.footer-legal-links a { color: var(--accent-color-1); font-size: 0.9rem; text-decoration: none; transition: color 0.3s ease; margin: 0 10px; }
+.footer-legal-links a:hover { color: var(--accent-color-2); text-decoration: underline; }
+.footer-legal-links span { opacity: 0.4; position: relative; top: -1px; }
 
-.donation-section { text-align: center; }
-.donation-section p { margin-bottom: 15px; opacity: 0.8; font-size: 0.9rem; }
-.donate-button { position: relative; border: none; background: transparent; padding: 0; -webkit-tap-highlight-color: transparent; }
-.donate-button .text { display: block; padding: 12px 24px; border-radius: 50px; font-size: 1.1rem; font-weight: bold; color: #fff; background: var(--accent-color-2); transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(196, 58, 214, 0.2); }
-[data-theme="light"] .donate-button .text { color: #fff; }
-.donate-button:hover .text { background: linear-gradient(45deg, var(--accent-color-1), var(--accent-color-2)); transform: translateY(-3px); box-shadow: 0 8px 25px var(--shadow-color); }
-.donate-button:active .text { transform: translateY(-1px); }
-
+/* === MODALS (Общее) === */
 .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; overflow: hidden; background-color: rgba(13, 15, 26, 0.7); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0.3s ease; }
 .modal.is-open { opacity: 1; visibility: visible; }
-.modal-content { background-color: var(--popup-bg); padding: 40px; border: 1px solid var(--card-border); width: 90%; max-width: 550px; border-radius: 16px; position: relative; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5); transform: scale(0.95); transition: transform 0.3s ease; }
-.modal.is-open .modal-content { transform: scale(1); }
-#course-modal .modal-content { max-width: 700px; }
-.close-button { color: var(--text-color); position: absolute; top: 15px; right: 20px; font-size: 32px; font-weight: bold; line-height: 1; transition: color 0.3s ease, transform 0.3s ease; }
-.close-button:hover { color: var(--accent-color-2); transform: rotate(90deg); }
-#modal-title { font-family: var(--font-headings); color: var(--accent-color-1); margin-bottom: 25px; padding-right: 40px; font-weight: 800; }
-#modal-body ul { list-style: none; padding-left: 0; max-height: 60vh; overflow-y: auto; }
-#modal-body li { padding: 12px 5px; border-bottom: 1px solid var(--card-border); font-size: 1rem; line-height: 1.5; }
-#modal-body li:last-child { border-bottom: none; }
-#modal-body ul::-webkit-scrollbar { width: 8px; }
-#modal-body ul::-webkit-scrollbar-track { background: transparent; }
-#modal-body ul::-webkit-scrollbar-thumb { background-color: var(--accent-color-1); border-radius: 20px; border: 3px solid var(--bg-color); }
+.modal .close-button { z-index: 10; color: var(--text-color); position: absolute; top: 30px; right: 30px; font-size: 32px; font-weight: bold; line-height: 1; transition: color 0.3s ease, transform 0.3s ease; }
+.modal .close-button:hover { color: var(--accent-color-2); transform: rotate(90deg); }
+.modal-body::-webkit-scrollbar, #modal-body ul::-webkit-scrollbar, .details-right::-webkit-scrollbar { width: 8px; }
+.modal-body::-webkit-scrollbar-track, #modal-body ul::-webkit-scrollbar-track, .details-right::-webkit-scrollbar-track { background: transparent; margin: 5px 0; }
+.modal-body::-webkit-scrollbar-thumb, #modal-body ul::-webkit-scrollbar-thumb, .details-right::-webkit-scrollbar-thumb { background-color: var(--accent-color-1); border-radius: 20px; border: 3px solid transparent; }
+[data-theme="dark"] .modal-body::-webkit-scrollbar-thumb, [data-theme="dark"] .details-right::-webkit-scrollbar-thumb { border-color: var(--popup-bg); }
+[data-theme="light"] .modal-body::-webkit-scrollbar-thumb, [data-theme="light"] .details-right::-webkit-scrollbar-thumb { border-color: var(--popup-bg); }
 
+/* --- Course Details Modal (ИСПРАВЛЕНО) --- */
+#course-details-modal .modal-content-details {
+    background-color: var(--popup-bg); border: 1px solid var(--card-border);
+    width: 95%; max-width: 1100px; height: 90vh; border-radius: 16px;
+    position: relative; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+    transform: scale(0.95); transition: transform 0.3s ease;
+    display: flex; overflow: hidden; padding: 0;
+}
+#course-details-modal.is-open .modal-content-details { transform: scale(1); }
+#course-details-modal .close-button { right: 40px; }
+.details-grid { display: grid; grid-template-columns: 380px 1fr; gap: 40px; width: 100%; height: 100%; overflow: hidden; }
+.details-left { display: flex; flex-direction: column; padding: 40px; background-color: rgba(0,0,0,0.1); height: 100%; }
+[data-theme="light"] .details-left { background-color: rgba(0,0,0,0.05); }
+.details-left h2 { font-size: 2.2rem; color: var(--accent-color-1); margin-bottom: 15px; }
+.details-left p { opacity: 0.8; margin-bottom: 25px; }
+.details-image { width: 100%; aspect-ratio: 16 / 9; border-radius: 12px; overflow: hidden; margin-bottom: 25px; }
+.details-image img { width: 100%; height: 100%; object-fit: cover; }
+.details-stats { display: flex; flex-direction: column; gap: 15px; }
+.stat-item { display: flex; align-items: center; gap: 12px; }
+.stat-item svg { width: 24px; height: 24px; color: var(--accent-color-2); flex-shrink: 0; fill: currentColor; } /* ИЗМЕНЕНИЕ: Добавлен fill: currentColor */
+.details-left .buy-button { width: 100%; padding: 15px; margin-top: auto; flex-shrink: 0; }
+.details-right { overflow-y: auto; padding: 40px 40px 40px 0; }
+.details-section { margin-bottom: 40px; }
+.details-section h3 { font-size: 1.5rem; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid var(--card-border); }
+#details-modal-learning { list-style: none; padding-left: 0; } /* ИЗМЕНЕНИЕ: Убрали маркеры */
+#details-modal-learning li { position: relative; padding-left: 30px; margin-bottom: 12px; line-height: 1.5; }
+#details-modal-learning li::before {
+    content: '✓';
+    color: var(--accent-color-1);
+    position: absolute; left: 0; top: 2px;
+    font-weight: bold;
+    font-size: 1.2em;
+}
+.tools-list { display: flex; flex-wrap: wrap; gap: 10px; list-style: none; padding-left: 0; } /* ИЗМЕНЕНИЕ: Убрали маркеры */
+.tools-list li { background-color: var(--card-bg); padding: 5px 12px; border-radius: 20px; border: 1px solid var(--card-border); font-size: 0.9rem; transition: all 0.2s ease; }
+.tools-list li:hover { background-color: var(--accent-color-1); color: var(--bg-color); border-color: var(--accent-color-1); }
+[data-theme="light"] .tools-list li:hover { color: #fff; }
+.program-accordion { list-style: none; padding-left: 0; }
+.program-accordion .module-item { border-bottom: 1px solid var(--card-border); }
+.program-accordion .module-title { padding: 20px 0; display: flex; justify-content: space-between; align-items: center; font-weight: 700; }
+.program-accordion .module-title::after { content: '+'; font-size: 1.8rem; transition: transform 0.3s ease; }
+.program-accordion .module-item.active .module-title::after { transform: rotate(45deg); }
+.program-accordion .module-content { max-height: 0; overflow: hidden; transition: max-height 0.4s ease, padding 0.4s ease; padding: 0 10px; }
+.program-accordion .module-item.active .module-content { max-height: 300px; padding: 0 10px 20px; }
+
+/* --- Payment Modal --- */
+#payment-modal .modal-content { max-width: 550px; display: flex; flex-direction: column; max-height: 90vh; padding: 0; background-color: var(--popup-bg); border-radius: 16px; }
+#payment-modal .modal-header { padding: 30px 40px 20px; position: relative; flex-shrink: 0; }
+#payment-modal .modal-header h2 { margin: 0; font-size: 1.8rem; font-family: var(--font-headings); }
+#payment-modal .modal-body { padding: 0 40px; overflow-y: auto; flex-grow: 1; }
+#payment-modal .modal-footer { padding: 25px 40px 30px; flex-shrink: 0; border-top: 1px solid var(--card-border); margin-top: auto; }
+.payment-details p:first-of-type { font-size: 1.1rem; margin-bottom: 10px; }
 .payment-details strong { color: var(--accent-color-1); }
 .quantity-selector { margin: 30px 0; }
 .quantity-selector label { display: block; margin-bottom: 15px; font-weight: 700; }
@@ -183,30 +252,25 @@ input[type="range"]:hover { opacity: 1; }
 input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 24px; height: 24px; background: var(--accent-color-1); border-radius: 50%; }
 input[type="range"]::-moz-range-thumb { width: 24px; height: 24px; background: var(--accent-color-1); border-radius: 50%; }
 #quantity-value { font-size: 1.5rem; font-weight: 800; color: var(--accent-color-1); min-width: 40px; text-align: center; }
-
 .donation-input-container { display: flex; align-items: center; gap: 10px; border: 2px solid var(--card-border); padding: 5px 15px; border-radius: 50px; transition: border-color 0.3s ease; }
 .donation-input-container:focus-within { border-color: var(--accent-color-1); }
 #donation-amount { width: 100%; border: none; background: transparent; color: var(--text-color); font-size: 1.5rem; font-weight: 800; text-align: center; outline: none; }
 #donation-amount::-webkit-inner-spin-button, #donation-amount::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
 #donation-amount { -moz-appearance: textfield; }
 .donation-input-container span { font-weight: 700; opacity: 0.7; }
-
 .price-breakdown { background-color: var(--bg-color); padding: 20px; border-radius: 8px; margin: 20px 0; border: 1px solid var(--card-border); }
 .price-breakdown p { display: flex; justify-content: space-between; font-size: 0.9rem; opacity: 0.8; }
 .total-price { display: flex; justify-content: space-between; font-size: 1.5rem; margin-top: 15px; padding-top: 15px; border-top: 1px solid var(--card-border); }
 #modal-total-price { font-weight: 800; color: var(--accent-color-1); }
-
 .payment-system-chooser h4 { margin-top: 30px; margin-bottom: 15px; }
 .payment-system-chooser .systems { display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; }
 .payment-system-card { border: 2px solid var(--card-border); padding: 15px; border-radius: 8px; text-align: center; transition: all 0.2s ease-in-out; flex-grow: 1; flex-basis: 150px; }
 .payment-system-card:hover { border-color: var(--accent-color-2); transform: translateY(-3px); }
 .payment-system-card.active { border-color: var(--accent-color-1); background-color: var(--accent-color-1); color: var(--bg-color); box-shadow: 0 0 15px var(--shadow-color); font-weight: 700; }
 [data-theme="light"] .payment-system-card.active { color: #fff; }
-
-#paypal-button-container { margin-top: 30px; }
-#final-pay-button { margin-top: 30px; width: 100%; }
-
-.terms-agreement { margin-top: 25px; text-align: left; display: flex; align-items: flex-start; gap: 10px; }
+#final-pay-button, #paypal-button-container { margin-top: 20px; }
+#final-pay-button { width: 100%; }
+.terms-agreement { margin-bottom: 20px; text-align: left; display: flex; align-items: flex-start; gap: 10px; }
 .terms-agreement input[type="checkbox"] { -webkit-appearance: none; appearance: none; background-color: transparent; margin: 0; font: inherit; color: var(--text-color); width: 1.15em; height: 1.15em; border: 0.15em solid var(--card-border); border-radius: 0.15em; transform: translateY(0.1em); display: grid; place-content: center; flex-shrink: 0; }
 .terms-agreement input[type="checkbox"]::before { content: ""; width: 0.65em; height: 0.65em; transform: scale(0); transition: 120ms transform ease-in-out; box-shadow: inset 1em 1em var(--accent-color-1); background-color: var(--accent-color-1); transform-origin: bottom left; clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%); }
 .terms-agreement input[type="checkbox"]:checked::before { transform: scale(1); }
@@ -214,278 +278,35 @@ input[type="range"]::-moz-range-thumb { width: 24px; height: 24px; background: v
 .terms-agreement label { font-size: 0.9rem; opacity: 0.8; line-height: 1.4; }
 .terms-agreement label a { color: var(--accent-color-1); text-decoration: underline; }
 
+/* === LEGAL PAGES === */
+.legal-page-container { max-width: 800px; margin: 0 auto; padding: 120px 20px 100px; color: var(--text-color); }
+.legal-page-container h1 { font-family: var(--font-headings); font-size: 2.8rem; color: var(--accent-color-1); margin-bottom: 10px; border-bottom: 2px solid var(--card-border); padding-bottom: 15px; }
+.legal-page-container .last-updated { font-style: italic; opacity: 0.7; margin-bottom: 40px; }
+.legal-page-container h2 { font-family: var(--font-headings); font-size: 1.8rem; color: var(--accent-color-2); margin-top: 40px; margin-bottom: 20px; }
+.legal-page-container p, .legal-page-container li { line-height: 1.8; margin-bottom: 15px; font-size: 1rem; }
+.legal-page-container ol, .legal-page-container ul { padding-left: 25px; }
+.legal-page-container strong { font-weight: 700; color: var(--text-color); }
+
+/* === ANIMATION & RESPONSIVE === */
 .animate-on-scroll { opacity: 0; transform: translateY(30px); transition: opacity 0.6s ease-out, transform 0.6s ease-out; }
 .animate-on-scroll.visible { opacity: 1; transform: translateY(0); }
-
 @media (max-width: 992px) {
     .about-content-wrapper { grid-template-columns: 1fr; gap: 40px; text-align: center; }
     .about-image-column { order: -1; }
     .key-principles { align-items: center; }
     .key-principles li { justify-content: center; }
     .contact-button { margin: 0 auto; }
+    .details-grid { grid-template-columns: 1fr; overflow: visible; height: auto; }
+    #course-details-modal .modal-content-details { height: auto; max-height: 90vh; overflow-y: auto; padding: 0; }
+    .details-left { padding: 30px; padding-bottom: 0; }
+    .details-right { overflow-y: visible; padding: 30px; }
+    .details-left .buy-button { margin-top: 30px; }
 }
-@media (max-width: 768px) { .hero-content p { font-size: 1rem; } header nav { display: none; } .about-me .container { flex-direction: column; text-align: center; } }
-
-/* Контейнер-обертка для позиционирования */
-.donation-card-wrapper {
-    /* Заставляем элемент занять все колонки грида */
-    grid-column: 1 / -1; 
-    display: flex;
-    justify-content: center;
-    margin-top: 30px; /* Отступ от верхних карточек */
-}
-
-/* Сама карточка */
-.donation-card {
-    display: flex;
-    align-items: center;
-    gap: 25px;
-    background-color: var(--card-bg);
-    padding: 25px 30px;
-    border-radius: 16px;
-    width: 100%;
-    max-width: 730px; /* Ограничиваем максимальную ширину */
-    position: relative;
-    overflow: hidden; /* Важно для псевдо-элемента рамки */
-    border: 1px solid transparent; /* Прозрачная рамка для подготовки */
-}
-
-/* Градиентная "дышащая" рамка */
-.donation-card::before {
-    content: '';
-    position: absolute;
-    top: 0; right: 0; bottom: 0; left: 0;
-    z-index: -1;
-    margin: -1px; /* Чтобы рамка была снаружи */
-    border-radius: inherit; /* Наследуем скругление */
-    background: linear-gradient(90deg, var(--accent-color-1), var(--accent-color-2), var(--accent-color-1));
-    background-size: 200% 200%;
-    animation: gradient-flow 5s ease infinite;
-    opacity: 0.7;
-}
-
-@keyframes gradient-flow {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
-}
-
-.donation-card-wrapper {
-    grid-column: 1 / -1; 
-    display: flex;
-    justify-content: center;
-    margin-top: 30px;
-}
-
-/* Сама карточка */
-.donation-card {
-    display: flex;
-    align-items: center;
-    gap: 25px;
-    background-color: var(--card-bg);
-    padding: 25px 30px;
-    border-radius: 16px;
-    width: 100%;
-    max-width: 730px;
-    position: relative;
-    overflow: hidden;
-    border: 1px solid transparent;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-/* Делаем ее кликабельной */
-.donation-card.clickable {
-    cursor: url(/cursors/pointer.cur), pointer;
-}
-
-/* Эффект при наведении на всю карточку */
-.donation-card.clickable:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-}
-
-/* Градиентная "дышащая" рамка */
-.donation-card::before {
-    content: '';
-    position: absolute;
-    top: 0; right: 0; bottom: 0; left: 0;
-    z-index: -1;
-    margin: -1px;
-    border-radius: inherit;
-    background: linear-gradient(90deg, var(--accent-color-1), var(--accent-color-2), var(--accent-color-1));
-    background-size: 200% 200%;
-    animation: gradient-flow 5s ease infinite;
-    opacity: 0.7;
-    transition: opacity 0.3s ease;
-}
-
-.donation-card.clickable:hover::before {
-    opacity: 1;
-}
-
-/* Иконка */
-.donation-card .donation-icon {
-    flex-shrink: 0;
-    color: var(--accent-color-2);
-    animation: heartbeat 2s ease-in-out infinite;
-    transition: transform 0.3s ease;
-}
-
-.donation-card.clickable:hover .donation-icon {
-    transform: scale(1.1);
-}
-
-.donation-card .donation-icon svg {
-    width: 48px;
-    height: 48px;
-}
-
-/* Текстовый блок */
-.donation-card .donation-text {
-    flex-grow: 1;
-    text-align: left;
-}
-.donation-card .donation-text h3 {
-    color: var(--text-color);
-    font-size: 1.3rem;
-    margin-bottom: 5px;
-}
-[data-theme="light"] .donation-card .donation-text h3 { color: var(--text-color); }
-.donation-card .donation-text p {
-    opacity: 0.7;
-    font-size: 0.9rem;
-    margin: 0;
-}
-
-/* Новая стрелочка */
-.donation-arrow {
-    font-size: 2rem;
-    font-weight: bold;
-    color: var(--accent-color-1);
-    transition: transform 0.3s ease;
-}
-
-.donation-card.clickable:hover .donation-arrow {
-    transform: translateX(10px);
-}
-
-
-/* Адаптивность для карточки */
-@media (max-width: 768px) {
-    .donation-card {
-        flex-direction: column;
-        text-align: center;
-        gap: 15px;
-        padding: 30px 20px;
-    }
-    .donation-card .donation-text {
-        text-align: center;
-    }
-    .donation-arrow {
-        display: none; /* На мобильных стрелка будет лишней */
-    }
-}
-
-/* Основной контейнер делаем flex-колонкой */
-#payment-modal .modal-content {
-    display: flex;
-    flex-direction: column;
-    max-height: 90vh; 
-    padding: 0;
-}
-
-/* Стили для хедера */
-#payment-modal .modal-header {
-    padding: 30px 40px 20px;
-    position: relative;
-    flex-shrink: 0;
-}
-
-#payment-modal .close-button {
-    top: 30px;
-}
-#payment-modal .modal-header h2 {
-    margin: 0;
-}
-
-
-/* Стили для прокручиваемого тела */
-#payment-modal .modal-body {
-    padding: 0 40px;
-    overflow-y: auto;
-    flex-grow: 1;
-}
-
-#payment-modal .modal-footer {
-    padding: 25px 40px 30px;
-    flex-shrink: 0; /* Футер не должен сжиматься */
-    border-top: 1px solid var(--card-border);
-    margin-top: 20px;
-}
-
-#payment-modal #final-pay-button {
-    margin-top: 20px;
-}
-#payment-modal #paypal-button-container {
-    margin-top: 20px;
-}
-
-
-/* Стилизация скроллбара для модального окна оплаты */
-#payment-modal .modal-body::-webkit-scrollbar {
-  width: 8px;
-}
-#payment-modal .modal-body::-webkit-scrollbar-track {
-  background: transparent;
-  margin: 5px 0;
-}
-#payment-modal .modal-body::-webkit-scrollbar-thumb {
-  background-color: var(--accent-color-1);
-  border-radius: 20px;
-  border: 3px solid transparent;
-}
-.legal-page-container {
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 120px 20px 100px; /* Отступы сверху и снизу для компенсации хедера/футера */
-    color: var(--text-color);
-}
-
-.legal-page-container h1 {
-    font-family: var(--font-headings);
-    font-size: 2.8rem;
-    color: var(--accent-color-1);
-    margin-bottom: 10px;
-    border-bottom: 2px solid var(--card-border);
-    padding-bottom: 15px;
-}
-
-.legal-page-container .last-updated {
-    font-style: italic;
-    opacity: 0.7;
-    margin-bottom: 40px;
-}
-
-.legal-page-container h2 {
-    font-family: var(--font-headings);
-    font-size: 1.8rem;
-    color: var(--accent-color-2);
-    margin-top: 40px;
-    margin-bottom: 20px;
-}
-
-.legal-page-container p, 
-.legal-page-container li {
-    line-height: 1.8;
-    margin-bottom: 15px;
-    font-size: 1rem;
-}
-
-.legal-page-container ol {
-    padding-left: 25px;
-}
-
-.legal-page-container strong {
-    font-weight: 700;
-    color: var(--text-color);
+@media (max-width: 768px) { 
+    .hero-content p { font-size: 1rem; } 
+    header nav { display: none; } 
+    .about-me .container { flex-direction: column; text-align: center; } 
+    .donation-card { flex-direction: column; text-align: center; gap: 15px; padding: 30px 20px; }
+    .donation-card .donation-text { text-align: center; }
+    .donation-arrow { display: none; }
 }
