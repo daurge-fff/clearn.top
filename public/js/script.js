@@ -1,5 +1,4 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // --- ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ И КОНФИГУРАЦИЯ ---
     const html = document.documentElement;
     const body = document.body;
     const themeSwitcher = document.getElementById('theme-switcher');
@@ -27,7 +26,6 @@ document.addEventListener('DOMContentLoaded', () => {
     let selectedPaymentSystem = null;
     let isDonationMode = false;
 
-    // --- ОСНОВНЫЕ ФУНКЦИИ УПРАВЛЕНИЯ СТРАНИЦЕЙ ---
     function setLanguage(lang) {
         if (lang === 'ua') lang = 'uk';
         if (typeof translations === 'undefined' || !translations[lang]) lang = 'en';
@@ -223,7 +221,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- ОБРАБОТЧИКИ СОБЫТИЙ ---
-
     if (languageSwitcher) {
         const langButton = languageSwitcher.querySelector('.current-lang');
         const langDropdown = languageSwitcher.querySelector('.lang-dropdown');

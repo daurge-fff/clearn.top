@@ -1,4 +1,3 @@
-// /public/js/translations.js
 const translations = {
     en: {
         nav_courses: "Courses", nav_tariffs: "Pricing", nav_about: "About me", nav_why_us: "Why Us",
