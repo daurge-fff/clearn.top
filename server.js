@@ -54,8 +54,6 @@ async function getPayPalAccessToken() {
 }
 
 
-// === ОСНОВНЫЕ МАРШРУТЫ ===
-
 app.get('/', (req, res) => {
     res.render('index', { 
         courses: coursesData,
@@ -64,6 +62,16 @@ app.get('/', (req, res) => {
 });
 app.get('/successful-payment', (req, res) => res.render('successful-payment'));
 app.get('/failed-payment', (req, res) => res.render('failed-payment'));
+
+app.get('/offer', (req, res) => {
+    res.render('offer'); // Будет искать файл views/offer.ejs
+});
+app.get('/terms', (req, res) => {
+    res.render('offer'); // Ссылка из чекбокса тоже будет работать
+});
+app.get('/privacy', (req, res) => {
+    res.render('privacy'); // Будет искать файл views/privacy.ejs
+});
 
 // === МАРШРУТЫ ДЛЯ ОБРАБОТКИ ДАННЫХ ===
 
