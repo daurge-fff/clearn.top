@@ -105,34 +105,51 @@ section { padding: 100px 0; }
 
 .hero-content p { font-size: 1.2rem; max-width: 600px; margin: 0 auto 30px; opacity: 0.8; }
 
-/* [2] Уменьшаем отступ над логотипом */
 .cta-button {
     display: inline-block;
-    transition: transform 0.3s ease;
+    margin-top: 20px;
     background: none;
     padding: 0;
     box-shadow: none;
+    /* Убираем лишние эффекты с контейнера */
 }
 
-.cta-button img {
+/* Стили для самого SVG внутри ссылки */
+.cta-button svg {
     display: block;
-    width: 200px;
+    width: 240px; /* Задаем размер иконки. Можете изменить по вкусу. */
     height: auto;
-    /* [1] Добавляем transform в transition, чтобы анимация увеличения была плавной */
-    transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), filter 0.3s ease;
+    /* Плавная анимация для увеличения и свечения */
+    transition: transform 0.3s ease, filter 0.3s ease; 
 }
 
-.cta-button:hover {
-    background: none;
-    box-shadow: none;
-    /* Убираем увеличение с родителя, чтобы оно не мешало */
-    transform: none; 
+/* Эффекты при наведении курсора на ссылку */
+.cta-button:hover svg {
+    transform: scale(1.1); /* Увеличиваем SVG */
+    filter: drop-shadow(0 0 15px var(--shadow-color)); /* Добавляем красивое свечение */
 }
 
-.cta-button:hover img {
-    /* [1] Применяем увеличение и свечение непосредственно к изображению */
-    transform: scale(1.1);
-    filter: drop-shadow(0 0 15px var(--shadow-color));
+/* 
+  ГЛАВНАЯ ЧАСТЬ: Переключение градиента для светлой темы.
+  Мы обращаемся к классу, который я посоветовал добавить к тегу <g>.
+*/
+.cta-button .stop1,
+.cta-button .stop2 {
+    /* Плавный переход цвета при смене темы */
+    transition: stop-color 0.3s ease;
+}
+
+/* Цвета градиента для ТЕМНОЙ темы (по умолчанию) */
+.cta-button .stop1 { stop-color: var(--accent-color-1); } /* Бирюзовый */
+.cta-button .stop2 { stop-color: var(--accent-color-2); } /* Пурпурный */
+
+
+/* Переопределяем цвета градиента для СВЕТЛОЙ темы */
+[data-theme="light"] .cta-button .stop1 {
+    stop-color: #3742fa; /* Синий */
+}
+[data-theme="light"] .cta-button .stop2 {
+    stop-color: #ff4757; /* Розово-красный */
 }
 
 /* === WHY US === */
@@ -145,8 +162,12 @@ section { padding: 100px 0; }
 .courses-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 30px; }
 .course-card { background-color: var(--card-bg); border: 1px solid var(--card-border); padding: 30px; border-radius: 12px; backdrop-filter: blur(5px); transition: transform 0.3s, box-shadow 0.3s; display: flex; flex-direction: column; width: 350px; text-align: center; }
 .course-card:hover { transform: translateY(-10px); box-shadow: 0 15px 30px var(--shadow-color); }
-.course-icon-wrapper { width: 60px; height: 60px; margin: 0 auto 20px auto; background-color: var(--accent-color-1); color: var(--bg-color); border-radius: 12px; display: flex; align-items: center; justify-content: center; }
-.course-icon-wrapper svg { width: 32px; height: 32px; }
+.course-icon-wrapper { width: 300px; height: 240px; margin: 0 auto 0px auto; border-radius: 5px; display: flex; align-items: center; justify-content: center; }
+.course-icon-wrapper svg {
+    width: 300px;  /* Можно сделать чуть побольше для выразительности */
+    height: 240px;
+    object-fit: contain; /* Это предотвратит искажение иконки, если она не квадратная */
+}
 .course-age { align-self: center; display: inline-block; background-color: var(--accent-color-2); color: #fff; padding: 3px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: 700; margin-bottom: 15px; }
 .course-card h3 { font-family: var(--font-headings); font-size: 1.5rem; margin-bottom: 10px; color: var(--accent-color-1); font-weight: 800; }
 .course-card p { flex-grow: 1; margin-bottom: 20px; opacity: 0.9; }
