@@ -14,7 +14,7 @@ app.set('trust proxy', true);
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname, 'public'), { maxAge: '1d' }));
+app.use(express.static(path.join(__dirname, 'public')));
 
 
 const coursesData = { roblox: {}, scratch: {}, junior: {}, minecraft: {}, python: {} };

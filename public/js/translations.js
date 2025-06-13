@@ -1,7 +1,7 @@
 const translations = {
     en: {
         nav_courses: "Courses", nav_tariffs: "Pricing", nav_about: "About me", nav_why_us: "Why Us",
-        hero_h1: "Unlock the world of code. <br> Create your future", hero_p:  "Individual programming lessons for children from 5 years old. <br> From Scratch to Python and game development in Roblox.", hero_cta: "Start Learning",
+        hero_h1: "Unlock the world of code. Create your future", hero_p:  "Individual programming lessons for children from 5 years old. From Scratch to Python and game development in Roblox.", hero_cta: "Start Learning",
         about_title: "German Vitiaz, your guide to the IT world", about_p: "Hi! I'm a programming teacher and enthusiast. My goal is to show children that code isn't boring symbols, but a powerful tool for creativity and self-expression. I help develop logical thinking, creativity, and prepare for the professions of the future in an engaging, game-like format.", about_contact: "Contact on Telegram",
         about_principle_1: "Individual approach to each student", about_principle_2: "Learning through creating games and projects", about_principle_3: "Developing skills for the future",
         why_us_title: "Why Code & Learn?", why_us_1_h: "Individual Approach", why_us_1_p: "Each lesson is tailored to the student's pace, interests, and level. We don't follow a strict script.", why_us_2_h: "Game-Based Learning", why_us_2_p: "We learn through creating games, animations, and real projects. This makes the process exciting and motivating.", why_us_3_h: "Future-Ready Skills", why_us_3_p: "We teach not just coding, but also problem-solving, algorithmic thinking, and project management.",
@@ -18,7 +18,7 @@ const translations = {
         course_python_title: "Python Pro",
         course_python_desc: "From basic syntax to creating neural networks and web applications. A complete path to becoming a junior developer.",
         course_python_age: "12+ years",
-        course_python_image: "/images/course_python.jpg",
+        course_python_image: "/images/python.png",
         course_python_duration: "6-12 Months",
         course_python_format: "Online, 1-on-1",
         course_python_what_you_learn: [
@@ -40,7 +40,7 @@ const translations = {
         course_roblox_title: "Roblox Game Developer",
         course_roblox_desc: "Learn to create your own games on the Roblox platform using Lua scripting language.",
         course_roblox_age: "9-12 years",
-        course_roblox_image: "/images/course_roblox.jpg",
+        course_roblox_image: "/images/roblox.png",
         course_roblox_duration: "3-6 Months",
         course_roblox_format: "Online, 1-on-1",
         course_roblox_what_you_learn: [
@@ -62,7 +62,7 @@ const translations = {
         course_scratch_title: "Scratch Visual Programming",
         course_scratch_desc: "Master the basics of programming logic by creating animations and games in a visual block-based editor.",
         course_scratch_age: "7-11 years",
-        course_scratch_image: "/images/course_scratch.jpg",
+        course_scratch_image: "/images/scratch.png",
         course_scratch_duration: "2-4 Months",
         course_scratch_format: "Online, 1-on-1",
         course_scratch_what_you_learn: [
@@ -84,7 +84,7 @@ const translations = {
         course_junior_title: "Junior Start",
         course_junior_desc: "An adapted course for the youngest students using simple visual tools like Scratch Jr and Tinkercad.",
         course_junior_age: "5-7 years",
-        course_junior_image: "/images/course_junior.jpg",
+        course_junior_image: "/images/junior.png",
         course_junior_duration: "2-3 Months",
         course_junior_format: "Online, 1-on-1",
         course_junior_what_you_learn: [
@@ -106,7 +106,7 @@ const translations = {
         course_minecraft_title: "Minecraft Modding",
         course_minecraft_desc: "Learn programming by creating unique mods and automating tasks within the Minecraft universe.",
         course_minecraft_age: "8-12 years",
-        course_minecraft_image: "/images/course_minecraft.jpg",
+        course_minecraft_image: "/images/minecraft.png",
         course_minecraft_duration: "4-8 Months",
         course_minecraft_format: "Online, 1-on-1",
         course_minecraft_what_you_learn: [
@@ -128,7 +128,7 @@ const translations = {
     },
     ru: {
         nav_courses: "Курсы", nav_tariffs: "Цены", nav_about: "Обо мне", nav_why_us: "Почему мы",
-        hero_h1: "Открой мир кода. <br> Создай свое будущее", hero_p:  "Индивидуальные уроки программирования для детей от 5 лет. <br> От Scratch до Python и разработки игр в Roblox.", hero_cta: "Начать учиться",
+        hero_h1: "Открой мир кода. Создай свое будущее", hero_p:  "Индивидуальные уроки программирования для детей от 5 лет. От Scratch до Python и разработки игр в Roblox.", hero_cta: "Начать учиться",
         about_title: "Герман Витязь, ваш проводник в мир IT", about_p: "Привет! Я преподаватель и энтузиаст программирования. Моя цель — показать детям, что код — это не скучные символы, а мощный инструмент для творчества и самовыражения. Я помогаю развивать логическое мышление, креативность и готовить к профессиям будущего в увлекательном, игровом формате.", about_contact: "Связаться в Telegram",
         about_principle_1: "Индивидуальный подход к каждому ученику", about_principle_2: "Обучение через создание игр и проектов", about_principle_3: "Развитие навыков будущего",
         why_us_title: "Почему Code & Learn?", why_us_1_h: "Индивидуальный подход", why_us_1_p: "Каждое занятие адаптировано под темп, интересы и уровень ученика. Мы не следуем строгому сценарию.", why_us_2_h: "Обучение через игру", why_us_2_p: "Мы учимся, создавая игры, анимации и реальные проекты. Это делает процесс увлекательным и мотивирующим.", why_us_3_h: "Навыки будущего", why_us_3_p: "Мы учим не просто кодированию, но и решению проблем, алгоритмическому мышлению и управлению проектами.",
@@ -145,7 +145,7 @@ const translations = {
         course_python_title: "Python Pro",
         course_python_desc: "От базового синтаксиса до создания нейронных сетей и веб-приложений. Полный путь к становлению junior-разработчиком.",
         course_python_age: "12+ лет",
-        course_python_image: "/images/course_python.jpg",
+        course_python_image: "/images/python.png",
         course_python_duration: "6-12 Месяцев",
         course_python_format: "Онлайн, 1-на-1",
         course_python_what_you_learn: [
@@ -168,7 +168,7 @@ const translations = {
         course_roblox_title: "Разработчик игр Roblox",
         course_roblox_desc: "Научитесь создавать свои собственные игры на платформе Roblox, используя скриптовый язык Lua.",
         course_roblox_age: "9-12 лет",
-        course_roblox_image: "/images/course_roblox.jpg",
+        course_roblox_image: "/images/roblox.png",
         course_roblox_duration: "3-6 Месяцев",
         course_roblox_format: "Онлайн, 1-на-1",
         course_roblox_what_you_learn: [
@@ -191,7 +191,7 @@ const translations = {
         course_scratch_title: "Scratch Визуальное программирование",
         course_scratch_desc: "Освойте основы логики программирования, создавая анимации и игры в визуальном блочном редакторе.",
         course_scratch_age: "7-11 лет",
-        course_scratch_image: "/images/course_scratch.jpg",
+        course_scratch_image: "/images/scratch.png",
         course_scratch_duration: "2-4 Месяца",
         course_scratch_format: "Онлайн, 1-на-1",
         course_scratch_what_you_learn: [
@@ -214,7 +214,7 @@ const translations = {
         course_junior_title: "Junior Старт",
         course_junior_desc: "Адаптированный курс для самых маленьких учеников с использованием простых визуальных инструментов, таких как Scratch Jr и Tinkercad.",
         course_junior_age: "5-7 лет",
-        course_junior_image: "/images/course_junior.jpg",
+        course_junior_image: "/images/junior.png",
         course_junior_duration: "2-3 Месяца",
         course_junior_format: "Онлайн, 1-на-1",
         course_junior_what_you_learn: [
@@ -237,7 +237,7 @@ const translations = {
         course_minecraft_title: "Моддинг Minecraft",
         course_minecraft_desc: "Изучите программирование, создавая уникальные моды и автоматизируя задачи во вселенной Minecraft.",
         course_minecraft_age: "8-12 лет",
-        course_minecraft_image: "/images/course_minecraft.jpg",
+        course_minecraft_image: "/images/minecraft.png",
         course_minecraft_duration: "4-8 Месяцев",
         course_minecraft_format: "Онлайн, 1-на-1",
         course_minecraft_what_you_learn: [
@@ -259,7 +259,7 @@ const translations = {
     },
     de: {
         nav_courses: "Kurse", nav_tariffs: "Preise", nav_about: "Über mich", nav_why_us: "Warum wir",
-        hero_h1: "Entdecke die Welt des Codes. <br> Gestalte deine Zukunft", hero_p:  "Individueller Programmierunterricht für Kinder ab 5 Jahren. <br> Von Scratch bis Python und Spieleentwicklung in Roblox.", hero_cta: "Jetzt lernen",
+        hero_h1: "Entdecke die Welt des Codes. Gestalte deine Zukunft", hero_p:  "Individueller Programmierunterricht für Kinder ab 5 Jahren. Von Scratch bis Python und Spieleentwicklung in Roblox.", hero_cta: "Jetzt lernen",
         about_title: "German Vitiaz, dein Wegweiser in die IT-Welt", about_p: "Hallo! Ich bin Programmierlehrer und -enthusiast. Mein Ziel ist es, Kindern zu zeigen, dass Code keine langweiligen Symbole, sondern ein mächtiges Werkzeug für Kreativität und Selbstentfaltung ist. Ich helfe dabei, logisches Denken und Kreativität zu entwickeln und auf die Berufe der Zukunft in einem fesselnden, spielerischen Format vorzubereiten.", about_contact: "Kontakt auf Telegram",
         about_principle_1: "Individueller Ansatz für jeden Schüler", about_principle_2: "Lernen durch die Erstellung von Spielen und Projekten", about_principle_3: "Entwicklung von Fähigkeiten für die Zukunft",
         why_us_title: "Warum Code & Learn?", why_us_1_h: "Individueller Ansatz", why_us_1_p: "Jede Lektion wird an das Tempo, die Interessen und das Niveau des Schülers angepasst. Wir folgen keinem starren Skript.", why_us_2_h: "Spielbasiertes Lernen", why_us_2_p: "Wir lernen durch die Erstellung von Spielen, Animationen und realen Projekten. Dies macht den Prozess spannend und motivierend.", why_us_3_h: "Zukunftsfähige Fähigkeiten", why_us_3_p: "Wir lehren nicht nur Programmieren, sondern auch Problemlösung, algorithmisches Denken und Projektmanagement.",
@@ -276,7 +276,7 @@ const translations = {
         course_python_title: "Python Pro",
         course_python_desc: "Von der grundlegenden Syntax bis zur Erstellung von neuronalen Netzen und Webanwendungen. Ein kompletter Weg zum Junior-Entwickler.",
         course_python_age: "Ab 12 Jahren",
-        course_python_image: "/images/course_python.jpg",
+        course_python_image: "/images/python.png",
         course_python_duration: "6-12 Monate",
         course_python_format: "Online, 1-zu-1",
         course_python_what_you_learn: [
@@ -299,7 +299,7 @@ const translations = {
         course_roblox_title: "Roblox Spieleentwickler",
         course_roblox_desc: "Lerne, deine eigenen Spiele auf der Roblox-Plattform mit der Skriptsprache Lua zu erstellen.",
         course_roblox_age: "9-12 Jahre",
-        course_roblox_image: "/images/course_roblox.jpg",
+        course_roblox_image: "/images/roblox.png",
         course_roblox_duration: "3-6 Monate",
         course_roblox_format: "Online, 1-zu-1",
         course_roblox_what_you_learn: [
@@ -322,7 +322,7 @@ const translations = {
         course_scratch_title: "Scratch Visuelle Programmierung",
         course_scratch_desc: "Meistere die Grundlagen der Programmierlogik, indem du Animationen und Spiele in einem visuellen blockbasierten Editor erstellst.",
         course_scratch_age: "7-11 Jahre",
-        course_scratch_image: "/images/course_scratch.jpg",
+        course_scratch_image: "/images/scratch.png",
         course_scratch_duration: "2-4 Monate",
         course_scratch_format: "Online, 1-zu-1",
         course_scratch_what_you_learn: [
@@ -345,7 +345,7 @@ const translations = {
         course_junior_title: "Junior Start",
         course_junior_desc: "Ein angepasster Kurs für die jüngsten Schüler mit einfachen visuellen Tools wie Scratch Jr und Tinkercad.",
         course_junior_age: "5-7 Jahre",
-        course_junior_image: "/images/course_junior.jpg",
+        course_junior_image: "/images/junior.png",
         course_junior_duration: "2-3 Monate",
         course_junior_format: "Online, 1-zu-1",
         course_junior_what_you_learn: [
@@ -368,7 +368,7 @@ const translations = {
         course_minecraft_title: "Minecraft Modding",
         course_minecraft_desc: "Lerne Programmieren, indem du einzigartige Mods erstellst und Aufgaben im Minecraft-Universum automatisierst.",
         course_minecraft_age: "8-12 Jahre",
-        course_minecraft_image: "/images/course_minecraft.jpg",
+        course_minecraft_image: "/images/minecraft.png",
         course_minecraft_duration: "4-8 Monate",
         course_minecraft_format: "Online, 1-zu-1",
         course_minecraft_what_you_learn: [
@@ -390,7 +390,7 @@ const translations = {
     },
     ua: {
         nav_courses: "Курси", nav_tariffs: "Ціни", nav_about: "Про мене", nav_why_us: "Чому ми",
-        hero_h1: "Відкрий світ коду. <br> Створи своє майбутнє", hero_p:  "Індивідуальні уроки програмування для дітей від 5 років. <br> Від Scratch до Python та розробки ігор у Roblox.", hero_cta: "Почати навчання",
+        hero_h1: "Відкрий світ коду. Створи своє майбутнє", hero_p:  "Індивідуальні уроки програмування для дітей від 5 років. Від Scratch до Python та розробки ігор у Roblox.", hero_cta: "Почати навчання",
         about_title: "Герман Вітязь, ваш провідник у світ IT", about_p: "Привіт! Я викладач та ентузіаст програмування. Моя мета — показати дітям, що код — це не нудні символи, а потужний інструмент для творчості та самовираження. Я допомагаю розвивати логічне мислення, креативність та готувати до професій майбутнього у захоплюючому, ігровому форматі.", about_contact: "Зв'язатися в Telegram",
         about_principle_1: "Індивідуальний підхід до кожного учня", about_principle_2: "Навчання через створення ігор та проектів", about_principle_3: "Розвиток навичок майбутнього",
         why_us_title: "Чому Code & Learn?", why_us_1_h: "Індивідуальний підхід", why_us_1_p: "Кожне заняття адаптується до темпу, інтересів та рівня учня. Ми не дотримуємося суворого сценарію.", why_us_2_h: "Навчання через гру", why_us_2_p: "Ми вчимося, створюючи ігри, анімації та реальні проекти. Це робить процес захоплюючим та мотивуючим.", why_us_3_h: "Навички майбутнього", why_us_3_p: "Ми вчимо не просто кодуванню, а й вирішенню проблем, алгоритмічному мисленню та управлінню проектами.",
@@ -407,7 +407,7 @@ const translations = {
         course_python_title: "Python Pro",
         course_python_desc: "Від базового синтаксису до створення нейронних мереж та веб-додатків. Повний шлях до становлення junior-розробником.",
         course_python_age: "12+ років",
-        course_python_image: "/images/course_python.jpg",
+        course_python_image: "/images/python.png",
         course_python_duration: "6-12 Місяців",
         course_python_format: "Онлайн, 1-на-1",
         course_python_what_you_learn: [
@@ -430,7 +430,7 @@ const translations = {
         course_roblox_title: "Розробник ігор Roblox",
         course_roblox_desc: "Навчіться створювати власні ігри на платформі Roblox, використовуючи скриптову мову Lua.",
         course_roblox_age: "9-12 років",
-        course_roblox_image: "/images/course_roblox.jpg",
+        course_roblox_image: "/images/roblox.png",
         course_roblox_duration: "3-6 Місяців",
         course_roblox_format: "Онлайн, 1-на-1",
         course_roblox_what_you_learn: [
@@ -453,7 +453,7 @@ const translations = {
         course_scratch_title: "Scratch Візуальне програмування",
         course_scratch_desc: "Освойте основи логіки програмування, створюючи анімації та ігри у візуальному блочному редакторі.",
         course_scratch_age: "7-11 років",
-        course_scratch_image: "/images/course_scratch.jpg",
+        course_scratch_image: "/images/scratch.png",
         course_scratch_duration: "2-4 Місяці",
         course_scratch_format: "Онлайн, 1-на-1",
         course_scratch_what_you_learn: [
@@ -476,7 +476,7 @@ const translations = {
         course_junior_title: "Junior Старт",
         course_junior_desc: "Адаптований курс для наймолодших учнів з використанням простих візуальних інструментів, таких як Scratch Jr та Tinkercad.",
         course_junior_age: "5-7 років",
-        course_junior_image: "/images/course_junior.jpg",
+        course_junior_image: "/images/junior.png",
         course_junior_duration: "2-3 Місяці",
         course_junior_format: "Онлайн, 1-на-1",
         course_junior_what_you_learn: [
@@ -499,7 +499,7 @@ const translations = {
         course_minecraft_title: "Моддинг Minecraft",
         course_minecraft_desc: "Вивчіть програмування, створюючи унікальні моди та автоматизуючи завдання у всесвіті Minecraft.",
         course_minecraft_age: "8-12 років",
-        course_minecraft_image: "/images/course_minecraft.jpg",
+        course_minecraft_image: "/images/minecraft.png",
         course_minecraft_duration: "4-8 Місяців",
         course_minecraft_format: "Онлайн, 1-на-1",
         course_minecraft_what_you_learn: [
@@ -521,7 +521,7 @@ const translations = {
     },
     es: {
         nav_courses: "Cursos", nav_tariffs: "Precios", nav_about: "Sobre mí", nav_why_us: "Por qué nosotros",
-        hero_h1: "Desbloquea el mundo del código. <br> Crea tu futuro", hero_p:  "Lecciones individuales de programación para niños a partir de 5 años. <br> Desde Scratch hasta Python y desarrollo de juegos en Roblox.", hero_cta: "Empezar a aprender",
+        hero_h1: "Desbloquea el mundo del código. Crea tu futuro", hero_p:  "Lecciones individuales de programación para niños a partir de 5 años. Desde Scratch hasta Python y desarrollo de juegos en Roblox.", hero_cta: "Empezar a aprender",
         about_title: "German Vitiaz, tu guía en el mundo de la TI", about_p: "¡Hola! Soy profesor y entusiasta de la programación. Mi objetivo es mostrar a los niños que el código no son símbolos aburridos, sino una herramienta poderosa para la creatividad y la autoexpresión. Ayudo a desarrollar el pensamiento lógico, la creatividad y a preparar para las profesiones del futuro en un formato atractivo y lúdico.", about_contact: "Contactar en Telegram",
         about_principle_1: "Enfoque individualizado para cada estudiante", about_principle_2: "Aprendizaje a través de la creación de juegos y proyectos", about_principle_3: "Desarrollo de habilidades para el futuro",
         why_us_title: "¿Por qué Code & Learn?", why_us_1_h: "Enfoque Individual", why_us_1_p: "Cada lección se adapta al ritmo, intereses y nivel del estudiante. No seguimos un guion estricto.", why_us_2_h: "Aprendizaje Basado en Juegos", why_us_2_p: "Aprendemos creando juegos, animaciones y proyectos reales. Esto hace que el proceso sea emocionante y motivador.", why_us_3_h: "Habilidades para el Futuro", why_us_3_p: "No solo enseñamos a codificar, sino también a resolver problemas, pensamiento algorítmico y gestión de proyectos.",
@@ -538,7 +538,7 @@ const translations = {
         course_python_title: "Python Pro",
         course_python_desc: "Desde la sintaxis básica hasta la creación de redes neuronales y aplicaciones web. Un camino completo para convertirse en desarrollador junior.",
         course_python_age: "12+ años",
-        course_python_image: "/images/course_python.jpg",
+        course_python_image: "/images/python.png",
         course_python_duration: "6-12 Meses",
         course_python_format: "Online, 1 a 1",
         course_python_what_you_learn: [
@@ -561,7 +561,7 @@ const translations = {
         course_roblox_title: "Desarrollador de Juegos Roblox",
         course_roblox_desc: "Aprende a crear tus propios juegos en la plataforma Roblox usando el lenguaje de scripting Lua.",
         course_roblox_age: "9-12 años",
-        course_roblox_image: "/images/course_roblox.jpg",
+        course_roblox_image: "/images/roblox.png",
         course_roblox_duration: "3-6 Meses",
         course_roblox_format: "Online, 1 a 1",
         course_roblox_what_you_learn: [
@@ -584,7 +584,7 @@ const translations = {
         course_scratch_title: "Scratch Programación Visual",
         course_scratch_desc: "Domina los conceptos básicos de la lógica de programación creando animaciones y juegos en un editor visual basado en bloques.",
         course_scratch_age: "7-11 años",
-        course_scratch_image: "/images/course_scratch.jpg",
+        course_scratch_image: "/images/scratch.png",
         course_scratch_duration: "2-4 Meses",
         course_scratch_format: "Online, 1 a 1",
         course_scratch_what_you_learn: [
@@ -607,7 +607,7 @@ const translations = {
         course_junior_title: "Inicio Junior",
         course_junior_desc: "Un curso adaptado para los estudiantes más jóvenes que utilizan herramientas visuales simples como Scratch Jr y Tinkercad.",
         course_junior_age: "5-7 años",
-        course_junior_image: "/images/course_junior.jpg",
+        course_junior_image: "/images/junior.png",
         course_junior_duration: "2-3 Meses",
         course_junior_format: "Online, 1 a 1",
         course_junior_what_you_learn: [
@@ -630,7 +630,7 @@ const translations = {
         course_minecraft_title: "Modding de Minecraft",
         course_minecraft_desc: "Aprende a programar creando mods únicos y automatizando tareas dentro del universo de Minecraft.",
         course_minecraft_age: "8-12 años",
-        course_minecraft_image: "/images/course_minecraft.jpg",
+        course_minecraft_image: "/images/minecraft.png",
         course_minecraft_duration: "4-8 Meses",
         course_minecraft_format: "Online, 1 a 1",
         course_minecraft_what_you_learn: [
@@ -652,7 +652,7 @@ const translations = {
     },
     it: {
         nav_courses: "Corsi", nav_tariffs: "Prezzi", nav_about: "Chi sono", nav_why_us: "Perché noi",
-        hero_h1: "Sblocca il mondo del codice. <br> Crea il tuo futuro", hero_p:  "Lezioni individuali di programmazione per bambini dai 5 anni. <br> Da Scratch a Python e sviluppo di giochi in Roblox.", hero_cta: "Inizia a imparare",
+        hero_h1: "Sblocca il mondo del codice. Crea il tuo futuro", hero_p:  "Lezioni individuali di programmazione per bambini dai 5 anni. Da Scratch a Python e sviluppo di giochi in Roblox.", hero_cta: "Inizia a imparare",
         about_title: "German Vitiaz, la tua guida nel mondo IT", about_p: "Ciao! Sono un insegnante e appassionato di programmazione. Il mio obiettivo è mostrare ai bambini che il codice non è solo simboli noiosi, ma uno strumento potente per la creatività e l'autoespressione. Aiuto a sviluppare il pensiero logico, la creatività e a preparare per le professioni del futuro in un formato coinvolgente e giocoso.", about_contact: "Contatta su Telegram",
         about_principle_1: "Approccio individuale per ogni studente", about_principle_2: "Imparare creando giochi e progetti", about_principle_3: "Sviluppare competenze per il futuro",
         why_us_title: "Perché Code & Learn?", why_us_1_h: "Approccio Individuale", why_us_1_p: "Ogni lezione è adattata al ritmo, agli interessi e al livello dello studente. Non seguiamo uno script rigido.", why_us_2_h: "Apprendimento Basato sul Gioco", why_us_2_p: "Impariamo creando giochi, animazioni e progetti reali. Questo rende il processo emozionante e motivante.", why_us_3_h: "Competenze per il Futuro", why_us_3_p: "Insegniamo non solo la codifica, ma anche la risoluzione dei problemi, il pensiero algoritmico e la gestione dei progetti.",
@@ -669,7 +669,7 @@ const translations = {
         course_python_title: "Python Pro",
         course_python_desc: "Dalla sintassi di base alla creazione di reti neurali e applicazioni web. Un percorso completo per diventare sviluppatore junior.",
         course_python_age: "12+ anni",
-        course_python_image: "/images/course_python.jpg",
+        course_python_image: "/images/python.png",
         course_python_duration: "6-12 Mesi",
         course_python_format: "Online, 1 a 1",
         course_python_what_you_learn: [
@@ -692,7 +692,7 @@ const translations = {
         course_roblox_title: "Sviluppatore di Giochi Roblox",
         course_roblox_desc: "Impara a creare i tuoi giochi sulla piattaforma Roblox usando il linguaggio di scripting Lua.",
         course_roblox_age: "9-12 anni",
-        course_roblox_image: "/images/course_roblox.jpg",
+        course_roblox_image: "/images/roblox.png",
         course_roblox_duration: "3-6 Mesi",
         course_roblox_format: "Online, 1 a 1",
         course_roblox_what_you_learn: [
@@ -715,7 +715,7 @@ const translations = {
         course_scratch_title: "Scratch Programmazione Visiva",
         course_scratch_desc: "Padroneggia le basi della logica di programmazione creando animazioni e giochi in un editor visuale a blocchi.",
         course_scratch_age: "7-11 anni",
-        course_scratch_image: "/images/course_scratch.jpg",
+        course_scratch_image: "/images/scratch.png",
         course_scratch_duration: "2-4 Mesi",
         course_scratch_format: "Online, 1 a 1",
         course_scratch_what_you_learn: [
@@ -738,7 +738,7 @@ const translations = {
         course_junior_title: "Junior Start",
         course_junior_desc: "Un corso adattato per gli studenti più giovani che utilizzano strumenti visivi semplici come Scratch Jr e Tinkercad.",
         course_junior_age: "5-7 anni",
-        course_junior_image: "/images/course_junior.jpg",
+        course_junior_image: "/images/junior.png",
         course_junior_duration: "2-3 Mesi",
         course_junior_format: "Online, 1 a 1",
         course_junior_what_you_learn: [
@@ -761,7 +761,7 @@ const translations = {
         course_minecraft_title: "Modding di Minecraft",
         course_minecraft_desc: "Impara a programmare creando mod uniche e automatizzando compiti all'interno dell'universo di Minecraft.",
         course_minecraft_age: "8-12 anni",
-        course_minecraft_image: "/images/course_minecraft.jpg",
+        course_minecraft_image: "/images/minecraft.png",
         course_minecraft_duration: "4-8 Mesi",
         course_minecraft_format: "Online, 1 a 1",
         course_minecraft_what_you_learn: [
@@ -783,7 +783,7 @@ const translations = {
     },
     he: {
         nav_courses: "קורסים", nav_tariffs: "מחירים", nav_about: "אודותיי", nav_why_us: "למה אנחנו",
-        hero_h1: "פתח את עולם הקוד. <br> צור את עתידך", hero_p:  "שיעורי תכנות פרטניים לילדים מגיל 5. <br> מ-Scratch ועד Python ופיתוח משחקים ב-Roblox.", hero_cta: "התחל ללמוד",
+        hero_h1: "פתח את עולם הקוד. צור את עתידך", hero_p:  "שיעורי תכנות פרטניים לילדים מגיל 5. מ-Scratch ועד Python ופיתוח משחקים ב-Roblox.", hero_cta: "התחל ללמוד",
         about_title: "גרמן ויטיאז, המדריך שלך לעולם ה-IT", about_p: "היי! אני מורה ומתלהב מתכנות. המטרה שלי היא להראות לילדים שקוד אינו סמלים משעממים, אלא כלי רב עוצמה ליצירתיות וביטוי עצמי. אני עוזר לפתח חשיבה לוגית, יצירתיות ולהכין למקצועות העתיד בפורמט מרתק ומשחקי.", about_contact: "צור קשר בטלגרם",
         about_principle_1: "גישה אישית לכל תלמיד", about_principle_2: "למידה באמצעות יצירת משחקים ופרויקטים", about_principle_3: "פיתוח מיומנויות לעתיד",
         why_us_title: "למה Code & Learn?", why_us_1_h: "גישה אישית", why_us_1_p: "כל שיעור מותאם לקצב, לתחומי העניין ולרמת התלמיד. אנחנו לא עוקבים אחר תסריט קבוע.", why_us_2_h: "למידה מבוססת משחקים", why_us_2_p: "אנחנו לומדים באמצעות יצירת משחקים, אנימציות ופרויקטים אמיתיים. זה הופך את התהליך למלהיב ומניע.", why_us_3_h: "מיומנויות לעתיד", why_us_3_p: "אנחנו מלמדים לא רק קידוד, אלא גם פתרון בעיות, חשיבה אלגוריתמית וניהול פרויקטים.",
@@ -798,7 +798,7 @@ const translations = {
         course_python_title: "פייתון פרו",
         course_python_desc: "מסינטקס בסיסי ועד יצירת רשתות עצביות ויישומי אינטרנט. מסלול מלא להפיכה למפתח ג'וניור.",
         course_python_age: "12+ שנים",
-        course_python_image: "/images/course_python.jpg",
+        course_python_image: "/images/python.png",
         course_python_duration: "6-12 חודשים",
         course_python_format: "אונליין, 1 על 1",
         course_python_what_you_learn: [
@@ -821,7 +821,7 @@ const translations = {
         course_roblox_title: "מפתח משחקי רובלוקס",
         course_roblox_desc: "למד ליצור משחקים משלך בפלטפורמת רובלוקס באמצעות שפת הסקריפט Lua.",
         course_roblox_age: "9-12 שנים",
-        course_roblox_image: "/images/course_roblox.jpg",
+        course_roblox_image: "/images/roblox.png",
         course_roblox_duration: "3-6 חודשים",
         course_roblox_format: "אונליין, 1 על 1",
         course_roblox_what_you_learn: [
@@ -844,7 +844,7 @@ const translations = {
         course_scratch_title: "Scratch תכנות ויזואלי",
         course_scratch_desc: "למד את יסודות לוגיקת התכנות על ידי יצירת אנימציות ומשחקים בעורך ויזואלי מבוסס בלוקים.",
         course_scratch_age: "7-11 שנים",
-        course_scratch_image: "/images/course_scratch.jpg",
+        course_scratch_image: "/images/scratch.png",
         course_scratch_duration: "2-4 חודשים",
         course_scratch_format: "אונליין, 1 על 1",
         course_scratch_what_you_learn: [
@@ -867,7 +867,7 @@ const translations = {
         course_junior_title: "ג'וניור סטארט",
         course_junior_desc: "קורס מותאם לילדים הצעירים ביותר באמצעות כלים ויזואליים פשוטים כמו Scratch Jr ו-Tinkercad.",
         course_junior_age: "5-7 שנים",
-        course_junior_image: "/images/course_junior.jpg",
+        course_junior_image: "/images/junior.png",
         course_junior_duration: "2-3 חודשים",
         course_junior_format: "אונליין, 1 על 1",
         course_junior_what_you_learn: [
@@ -890,7 +890,7 @@ const translations = {
         course_minecraft_title: "מודדינג מיינקראפט",
         course_minecraft_desc: "למד תכנות על ידי יצירת מודים ייחודיים ואוטומציה של משימות ביקום מיינקראפט.",
         course_minecraft_age: "8-12 שנים",
-        course_minecraft_image: "/images/course_minecraft.jpg",
+        course_minecraft_image: "/images/minecraft.png",
         course_minecraft_duration: "4-8 חודשים",
         course_minecraft_format: "אונליין, 1 על 1",
         course_minecraft_what_you_learn: [
@@ -912,7 +912,7 @@ const translations = {
     },
     pl: {
         nav_courses: "Kursy", nav_tariffs: "Cennik", nav_about: "O mnie", nav_why_us: "Dlaczego my",
-        hero_h1: "Otwórz świat kodu. <br> Stwórz swoją przyszłość", hero_p:  "Indywidualne lekcje programowania dla dzieci od 5 roku życia. <br> Od Scratch do Pythona i tworzenia gier w Roblox.", hero_cta: "Zacznij naukę",
+        hero_h1: "Otwórz świat kodu. Stwórz swoją przyszłość", hero_p:  "Indywidualne lekcje programowania dla dzieci od 5 roku życia. Od Scratch do Pythona i tworzenia gier w Roblox.", hero_cta: "Zacznij naukę",
         about_title: "German Vitiaz, Twój przewodnik po świecie IT", about_p: "Cześć! Jestem nauczycielem i entuzjastą programowania. Moim celem jest pokazanie dzieciom, że kod to nie nudne symbole, ale potężne narzędzie do kreatywności i wyrażania siebie. Pomagam rozwijać logiczne myślenie, kreatywność i przygotować do zawodów przyszłości w angażującym, podobnym do gry formacie.", about_contact: "Kontakt na Telegramie",
         about_principle_1: "Indywidualne podejście do każdego ucznia", about_principle_2: "Nauka poprzez tworzenie gier i projektów", about_principle_3: "Rozwój umiejętności na przyszłość",
         why_us_title: "Dlaczego Code & Learn?", why_us_1_h: "Indywidualne podejście", why_us_1_p: "Każda lekcja jest dostosowana do tempa, zainteresowań i poziomu ucznia. Nie podążamy za ścisłym scenariuszem.", why_us_2_h: "Nauka przez zabawę", why_us_2_p: "Uczymy się, tworząc gry, animacje i prawdziwe projekty. To sprawia, że proces jest ekscytujący i motywujący.", why_us_3_h: "Umiejętności na przyszłość", why_us_3_p: "Uczymy nie tylko kodowania, ale także rozwiązywania problemów, myślenia algorytmicznego i zarządzania projektami.",
@@ -927,7 +927,7 @@ const translations = {
         course_python_title: "Python Pro",
         course_python_desc: "Od podstawowej składni do tworzenia sieci neuronowych i aplikacji internetowych. Kompletna ścieżka do zostania programistą junior.",
         course_python_age: "12+ lat",
-        course_python_image: "/images/course_python.jpg",
+        course_python_image: "/images/python.png",
         course_python_duration: "6-12 Miesięcy",
         course_python_format: "Online, 1 na 1",
         course_python_what_you_learn: [
@@ -950,7 +950,7 @@ const translations = {
         course_roblox_title: "Deweloper Gier Roblox",
         course_roblox_desc: "Naucz się tworzyć własne gry na platformie Roblox, używając języka skryptowego Lua.",
         course_roblox_age: "9-12 lat",
-        course_roblox_image: "/images/course_roblox.jpg",
+        course_roblox_image: "/images/roblox.png",
         course_roblox_duration: "3-6 Miesięcy",
         course_roblox_format: "Online, 1 na 1",
         course_roblox_what_you_learn: [
@@ -973,7 +973,7 @@ const translations = {
         course_scratch_title: "Scratch Programowanie Wizualne",
         course_scratch_desc: "Opanuj podstawy logiki programowania, tworząc animacje i gry w wizualnym edytorze blokowym.",
         course_scratch_age: "7-11 lat",
-        course_scratch_image: "/images/course_scratch.jpg",
+        course_scratch_image: "/images/scratch.png",
         course_scratch_duration: "2-4 Miesiące",
         course_scratch_format: "Online, 1 na 1",
         course_scratch_what_you_learn: [
@@ -996,7 +996,7 @@ const translations = {
         course_junior_title: "Junior Start",
         course_junior_desc: "Dostosowany kurs dla najmłodszych uczniów, wykorzystujący proste narzędzia wizualne, takie jak Scratch Jr i Tinkercad.",
         course_junior_age: "5-7 lat",
-        course_junior_image: "/images/course_junior.jpg",
+        course_junior_image: "/images/junior.png",
         course_junior_duration: "2-3 Miesięcy",
         course_junior_format: "Online, 1 na 1",
         course_junior_what_you_learn: [
@@ -1019,7 +1019,7 @@ const translations = {
         course_minecraft_title: "Minecraft Modding",
         course_minecraft_desc: "Naucz się programować, tworząc unikalne mody i automatyzując zadania w uniwersum Minecrafta.",
         course_minecraft_age: "8-12 lat",
-        course_minecraft_image: "/images/course_minecraft.jpg",
+        course_minecraft_image: "/images/minecraft.png",
         course_minecraft_duration: "4-8 Miesięcy",
         course_minecraft_format: "Online, 1 na 1",
         course_minecraft_what_you_learn: [
@@ -1041,7 +1041,7 @@ const translations = {
     },
     nl: {
         nav_courses: "Cursussen", nav_tariffs: "Prijzen", nav_about: "Over mij", nav_why_us: "Waarom wij",
-        hero_h1: "Ontgrendel de wereld van code. <br> Creëer je toekomst", hero_p:  "Individuele programmeerlessen voor kinderen vanaf 5 jaar. <br> Van Scratch tot Python en game-ontwikkeling in Roblox.", hero_cta: "Begin met leren",
+        hero_h1: "Ontgrendel de wereld van code. Creëer je toekomst", hero_p:  "Individuele programmeerlessen voor kinderen vanaf 5 jaar. Van Scratch tot Python en game-ontwikkeling in Roblox.", hero_cta: "Begin met leren",
         about_title: "German Vitiaz, jouw gids in de IT-wereld", about_p: "Hoi! Ik ben een programmeerdocent en -liefhebber. Mijn doel is om kinderen te laten zien dat code geen saaie symbolen zijn, maar een krachtig hulpmiddel voor creativiteit en zelfexpressie. Ik help logisch denken, creativiteit te ontwikkelen en voor te bereiden op de beroepen van de toekomst in een boeiend, spelachtig formaat.", about_contact: "Contact op Telegram",
         about_principle_1: "Individuele benadering van elke student", about_principle_2: "Leren door spellen en projecten te creëren", about_principle_3: "Vaardigheden voor de toekomst ontwikkelen",
         why_us_title: "Waarom Code & Learn?", why_us_1_h: "Individuele aanpak", why_us_1_p: "Elke les is afgestemd op het tempo, de interesses en het niveau van de student. We volgen geen strikt script.", why_us_2_h: "Spelenderwijs leren", why_us_2_p: "We leren door spellen, animaties en echte projecten te creëren. Dit maakt het proces spannend en motiverend.", why_us_3_h: "Toekomstbestendige vaardigheden", why_us_3_p: "We leren niet alleen coderen, maar ook probleemoplossing, algoritmisch denken en projectmanagement.",
@@ -1056,7 +1056,7 @@ const translations = {
         course_python_title: "Python Pro",
         course_python_desc: "Van basis syntax tot het creëren van neurale netwerken en webapplicaties. Een compleet pad om een junior ontwikkelaar te worden.",
         course_python_age: "12+ jaar",
-        course_python_image: "/images/course_python.jpg",
+        course_python_image: "/images/python.png",
         course_python_duration: "6-12 Maanden",
         course_python_format: "Online, 1-op-1",
         course_python_what_you_learn: [
@@ -1079,7 +1079,7 @@ const translations = {
         course_roblox_title: "Roblox Game Ontwikkelaar",
         course_roblox_desc: "Leer je eigen spellen maken op het Roblox-platform met behulp van de Lua-scripttaal.",
         course_roblox_age: "9-12 jaar",
-        course_roblox_image: "/images/course_roblox.jpg",
+        course_roblox_image: "/images/roblox.png",
         course_roblox_duration: "3-6 Maanden",
         course_roblox_format: "Online, 1-op-1",
         course_roblox_what_you_learn: [
@@ -1102,7 +1102,7 @@ const translations = {
         course_scratch_title: "Scratch Visueel Programmeren",
         course_scratch_desc: "Beheers de basisprincipes van programmeerlogica door animaties en spellen te creëren in een visuele blokgebaseerde editor.",
         course_scratch_age: "7-11 jaar",
-        course_scratch_image: "/images/course_scratch.jpg",
+        course_scratch_image: "/images/scratch.png",
         course_scratch_duration: "2-4 Maanden",
         course_scratch_format: "Online, 1-op-1",
         course_scratch_what_you_learn: [
@@ -1125,7 +1125,7 @@ const translations = {
         course_junior_title: "Junior Start",
         course_junior_desc: "Een aangepaste cursus voor de jongste studenten die gebruikmaken van eenvoudige visuele tools zoals Scratch Jr en Tinkercad.",
         course_junior_age: "5-7 jaar",
-        course_junior_image: "/images/course_junior.jpg",
+        course_junior_image: "/images/junior.png",
         course_junior_duration: "2-3 Maanden",
         course_junior_format: "Online, 1-op-1",
         course_junior_what_you_learn: [
@@ -1148,7 +1148,7 @@ const translations = {
         course_minecraft_title: "Minecraft Modding",
         course_minecraft_desc: "Leer programmeren door unieke mods te creëren en taken te automatiseren binnen het Minecraft-universum.",
         course_minecraft_age: "8-12 jaar",
-        course_minecraft_image: "/images/course_minecraft.jpg",
+        course_minecraft_image: "/images/minecraft.png",
         course_minecraft_duration: "4-8 Maanden",
         course_minecraft_format: "Online, 1-op-1",
         course_minecraft_what_you_learn: [
