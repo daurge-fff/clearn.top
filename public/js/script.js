@@ -101,12 +101,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- ФУНКЦИИ ДЛЯ МОДАЛЬНОГО ОКНА ДЕТАЛЕЙ КУРСА ---
-    function openCourseDetailsModal(courseKey) {
+    async function openCourseDetailsModal(courseKey) {
         if (!courseDetailsModal) return;
 
         const lang = localStorage.getItem('language') || 'en';
         const t = translations[lang];
         if (!t) return;
+        const detailsImageContainer = document.getElementById('details-modal-image');
+        detailsImageContainer.innerHTML = '';
         
         courseDetailsModal.querySelector('[data-translate="modal_what_you_learn"]').textContent = t.modal_what_you_learn || "What the student will learn";
         courseDetailsModal.querySelector('[data-translate="modal_tools"]').textContent = t.modal_tools || "Tools";
@@ -114,7 +116,18 @@ document.addEventListener('DOMContentLoaded', () => {
         
         document.getElementById('details-modal-title').textContent = t[`course_${courseKey}_title`] || "Course Details";
         document.getElementById('details-modal-short-desc').textContent = t[`course_${courseKey}_desc`] || "";
-        document.getElementById('details-modal-image').innerHTML = `<img src="${t[`course_${courseKey}_image`]}" alt="${t[`course_${courseKey}_title`] || ''}">`;
+        try {
+            const response = await fetch(`/images/${courseKey}.svg`);
+            if (response.ok) {
+                const svgContent = await response.text();
+                detailsImageContainer.innerHTML = svgContent;
+            } else {
+                detailsImageContainer.innerHTML = 'Icon not found';
+            }
+        } catch (error) {
+            console.error('Error fetching course icon SVG:', error);
+            detailsImageContainer.innerHTML = 'Error loading icon';
+        }
         document.getElementById('details-modal-age').textContent = t[`course_${courseKey}_age`] || "";
         document.getElementById('details-modal-duration').textContent = t[`course_${courseKey}_duration`] || "";
         document.getElementById('details-modal-format').textContent = t[`course_${courseKey}_format`] || "";
