@@ -373,7 +373,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }, { threshold: 0.1 });
     document.querySelectorAll('.animate-on-scroll').forEach(el => observer.observe(el));
     
-    const savedTheme = localStorage.getItem('theme') || 'dark';
+    const savedTheme = localStorage.getItem('theme') || 'light';
     let savedLang = localStorage.getItem('language') || 'en';
     if (savedLang === 'ua') { savedLang = 'uk'; localStorage.setItem('language', 'uk'); }
     setTheme(savedTheme);
