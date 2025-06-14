@@ -7,8 +7,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const paymentModal = document.getElementById('payment-modal');
     const donateCard = document.getElementById('donate-card');
     const courseDetailsModal = document.getElementById('course-details-modal');
-    const coursesGrid = document.querySelector('.courses-grid'); // Добавим для проверки
-
     const sunIcon = 'https://emojicdn.elk.sh/☀️';
     const moonIcon = 'https://emojicdn.elk.sh/🌙';
 
@@ -29,11 +27,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let isDonationMode = false;
 
     function setLanguage(lang) {
-        // Проверяем, существует ли объект translations
-        if (typeof translations === 'undefined') return;
-
         if (lang === 'ua') lang = 'uk';
-        if (!translations[lang]) lang = 'en';
+        if (typeof translations === 'undefined' || !translations[lang]) lang = 'en';
         
         const langData = translations[lang];
         html.setAttribute('lang', lang);
@@ -75,21 +70,20 @@ document.addEventListener('DOMContentLoaded', () => {
     async function handleFormSubmit(e) {
         e.preventDefault();
         const formStatus = document.getElementById('form-status');
-        const submitButton = e.target.querySelector('button[type="submit"]');
+        const submitButton = feedbackForm.querySelector('button[type="submit"]');
         if (!formStatus || !submitButton) return;
-        const formData = new FormData(e.target);
+        const formData = new FormData(feedbackForm);
         const data = Object.fromEntries(formData.entries());
         const currentLang = localStorage.getItem('language') || 'en';
-        const trans = (typeof translations !== 'undefined' && translations[currentLang]) ? translations[currentLang] : {};
         submitButton.disabled = true;
-        submitButton.textContent = trans?.form_sending || 'Sending...';
+        submitButton.textContent = translations[currentLang]?.form_sending || 'Sending...';
         try {
             const response = await fetch('/submit-form', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
             const result = await response.json();
             if (response.ok) {
-                formStatus.textContent = trans?.form_success || "Your request has been sent!";
+                formStatus.textContent = translations[currentLang]?.form_success || "Your request has been sent!";
                 formStatus.style.color = 'var(--accent-color-1)';
-                e.target.reset();
+                feedbackForm.reset();
             } else {
                 formStatus.textContent = result.message || 'An error occurred.';
                 formStatus.style.color = 'var(--accent-color-2)';
@@ -99,7 +93,7 @@ document.addEventListener('DOMContentLoaded', () => {
             formStatus.style.color = 'var(--accent-color-2)';
         } finally {
             setTimeout(() => {
-                submitButton.textContent = trans?.form_button || "Send Request";
+                submitButton.textContent = translations[currentLang]?.form_button || "Send Request";
                 submitButton.disabled = false;
                 formStatus.textContent = '';
             }, 5000);
@@ -108,7 +102,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- ФУНКЦИИ ДЛЯ МОДАЛЬНОГО ОКНА ДЕТАЛЕЙ КУРСА ---
     async function openCourseDetailsModal(courseKey) {
-        if (!courseDetailsModal || typeof translations === 'undefined') return;
+        if (!courseDetailsModal) return;
 
         const lang = localStorage.getItem('language') || 'en';
         const t = translations[lang];
@@ -239,7 +233,7 @@ document.addEventListener('DOMContentLoaded', () => {
         paymentModal.classList.add('is-open');
     }
 
-    // --- ОБРАБОТЧИКИ СОБЫТИЙ С ПРОВЕРКАМИ ---
+    // --- ОБРАБОТЧИКИ СОБЫТИЙ ---
     if (languageSwitcher) {
         const langButton = languageSwitcher.querySelector('.current-lang');
         const langDropdown = languageSwitcher.querySelector('.lang-dropdown');
@@ -251,33 +245,20 @@ document.addEventListener('DOMContentLoaded', () => {
         window.addEventListener('click', () => { if (languageSwitcher.classList.contains('is-active')) languageSwitcher.classList.remove('is-active'); });
     }
 
-    if (themeSwitcher) {
-        themeSwitcher.addEventListener('click', () => setTheme(html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'));
-    }
+    if (themeSwitcher) themeSwitcher.addEventListener('click', () => setTheme(html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'));
+    if (feedbackForm) feedbackForm.addEventListener('submit', handleFormSubmit);
+    if (donateCard) donateCard.addEventListener('click', () => openPaymentModal(null, true));
 
-    // ИСПРАВЛЕНИЕ: Проверяем, существует ли форма, ПЕРЕД добавлением обработчика
-    // Это обработчик для формы обратной связи на ГЛАВНОЙ странице
-    if (feedbackForm && feedbackForm.closest('#contact-form')) {
-        feedbackForm.addEventListener('submit', handleFormSubmit);
-    }
-    
-    if (donateCard) {
-        donateCard.addEventListener('click', () => openPaymentModal(null, true));
-    }
-    
-    // Этот обработчик теперь только для кнопок "Select" на главной
     document.querySelectorAll('.buy-button').forEach(button => {
-        if (button.closest('.tariff-card')) {
+        if (button.id !== 'donate-card' && button.id !== 'details-modal-buy-button') {
             button.addEventListener('click', () => openPaymentModal(button.dataset.duration, false));
         }
     });
 
-    if (coursesGrid) {
-        coursesGrid.addEventListener('click', (e) => {
-            const card = e.target.closest('.course-card');
-            if (card) openCourseDetailsModal(card.dataset.courseKey);
-        });
-    }
+    document.querySelector('.courses-grid').addEventListener('click', (e) => {
+        const card = e.target.closest('.course-card');
+        if (card) openCourseDetailsModal(card.dataset.courseKey);
+    });
 
     if (courseDetailsModal) {
         courseDetailsModal.querySelector('.close-button').addEventListener('click', closeCourseDetailsModal);

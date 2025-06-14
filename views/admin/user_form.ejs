@@ -5,19 +5,19 @@
 <div class="form-wrapper">
     <form action="<%= editingUser ? '/admin/users/edit/' + editingUser._id : '/admin/users/add' %>" method="POST">
         <div class="form-grid">
-            <div class="form-group">
+            <div class="admin-form-group">
                 <label for="name">Name</label>
                 <input type="text" id="name" name="name" value="<%= editingUser ? editingUser.name : '' %>" required>
             </div>
-            <div class="form-group">
+            <div class="admin-form-group">
                 <label for="email">Email</label>
                 <input type="email" id="email" name="email" value="<%= editingUser ? editingUser.email : '' %>" required>
             </div>
-             <div class="form-group">
+             <div class="admin-form-group">
                 <label for="contact">Contact (Telegram/Phone)</label>
                 <input type="text" id="contact" name="contact" value="<%= editingUser ? (editingUser.contact || '') : '' %>">
             </div>
-            <div class="form-group">
+            <div class="admin-form-group">
                 <label for="role">Role</label>
                 <select id="role" name="role" required>
                     <option value="student" <%= (editingUser && editingUser.role === 'student') ? 'selected' : '' %>>Student</option>
@@ -25,7 +25,7 @@
                     <option value="admin"   <%= (editingUser && editingUser.role === 'admin') ? 'selected' : '' %>>Admin</option>
                 </select>
             </div>
-             <div class="form-group full-width">
+             <div class="admin-form-group full-width">
                 <label for="password">New Password</label>
                 <input type="password" id="password" name="password" placeholder="<%= editingUser ? 'Leave blank to keep current password' : 'Required for new user' %>" <%= !editingUser ? 'required' : '' %>>
             </div>
@@ -34,23 +34,23 @@
                 <div class="student-fields">
                     <h4>Student Settings</h4>
                     <div class="form-grid">
-                        <div class="form-group">
+                        <div class="admin-form-group">
                             <label>Current lessons (25 min)</label>
                             <input type="text" value="<%= studentProfile.paidLessons['25'] %>" disabled>
                         </div>
-                        <div class="form-group">
+                        <div class="admin-form-group">
                             <label for="add_lessons_25">Add lessons (25 min)</label>
                             <input type="number" id="add_lessons_25" name="add_lessons_25" value="0" min="0">
                         </div>
-                        <div class="form-group">
+                        <div class="admin-form-group">
                             <label>Current lessons (50 min)</label>
                             <input type="text" value="<%= studentProfile.paidLessons['50'] %>" disabled>
                         </div>
-                        <div class="form-group">
+                        <div class="admin-form-group">
                             <label for="add_lessons_50">Add lessons (50 min)</label>
                             <input type="number" id="add_lessons_50" name="add_lessons_50" value="0" min="0">
                         </div>
-                        <div class="form-group full-width">
+                        <div class="admin-form-group full-width">
                             <label for="assignedTeacher">Assign Teacher</label>
                             <select id="assignedTeacher" name="assignedTeacher">
                                 <option value="">-- No Teacher --</option>
@@ -65,7 +65,7 @@
                 </div>
             <% } %>
 
-            <div class="form-group full-width">
+            <div class="admin-form-group full-width">
                 <button type="submit" class="form-submit-button" style="width: 100%; margin-top: 1rem;">Save User</button>
             </div>
         </div>
