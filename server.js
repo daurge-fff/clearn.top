@@ -5,6 +5,7 @@ const axios = require('axios');
 const path = require('path');
 const crypto = require('crypto');
 const mongoose = require('mongoose');
+const expressLayouts = require('express-ejs-layouts');
 
 async function connectDB() {
     try {
@@ -22,6 +23,10 @@ connectDB();
 
 const app = express();
 const port = process.env.PORT || 3000;
+
+app.use(expressLayouts);
+app.set('layout', 'layouts/main');
+app.set('view engine', 'ejs');
 
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
@@ -169,40 +174,71 @@ async function getPayPalAccessToken() {
 
 app.get('/', (req, res) => {
     res.render('index', { 
+        layout: 'layouts/public',
+        includePayPal: true,
+        useTranslations: true,
+        paypalClientId: process.env.PAYPAL_CLIENT_ID,
         courses: coursesData,
-        paypalClientId: process.env.PAYPAL_CLIENT_ID 
+        title: 'Code & Learn - Kids Programming Lessons'
     });
 });
-
 app.get('/successful-payment', (req, res) => {
     const requestedLang = req.query.lang || 'en'; 
     const currentLang = serverTranslations[requestedLang] ? requestedLang : 'en'; 
     const lang = serverTranslations[currentLang]; 
-    res.render('successful-payment', { currentLang: currentLang, lang: lang });
+    res.render('successful-payment', { 
+        layout: false,
+        currentLang: currentLang, 
+        lang: lang 
+    });
 });
 
 app.get('/failed-payment', (req, res) => {
     const requestedLang = req.query.lang || 'en'; 
     const currentLang = serverTranslations[requestedLang] ? requestedLang : 'en'; 
     const lang = serverTranslations[currentLang]; 
-    res.render('failed-payment', { currentLang: currentLang, lang: lang });
+    res.render('failed-payment', { 
+        layout: false,
+        currentLang: currentLang, 
+        lang: lang 
+    });
 });
 
 app.get('/offer', (req, res) => {
-    res.render('offer'); 
+    res.render('offer', {
+        layout: 'layouts/public',
+        title: 'Terms of Service - Code & Learn'
+    }); 
 });
+
 app.get('/terms', (req, res) => {
-    res.render('offer'); 
+    res.render('offer', {
+        layout: 'layouts/public',
+        title: 'Terms of Service - Code & Learn'
+    }); 
 });
 app.get('/privacy', (req, res) => {
-    res.render('privacy'); 
+    res.render('privacy', {
+        layout: 'layouts/public',
+        title: 'Privacy Policy - Code & Learn'
+    }); 
 });
 
 
 app.get('/dashboard', ensureAuthenticated, (req, res) => {
-    res.render('dashboard', {
-        user: req.user 
-    });
+    switch (req.user.role) {
+        case 'admin':
+            res.redirect('/admin/dashboard');
+            break;
+        case 'teacher':
+            res.redirect('/teacher/dashboard');
+            break;
+        case 'student':
+            res.redirect('/student/dashboard');
+            break;
+        default:
+            res.send('You do not have a role assigned.');
+    }
 });
 
 app.post('/callback', (req, res) => {
@@ -383,6 +419,7 @@ app.post('/create-payment', async (req, res) => {
     }
 });
 
+app.use('/admin', require('./routes/admin'));
 app.use('/users', require('./routes/users'));
 
 app.listen(port, () => console.log(`Server is running at http://localhost:${port}`));

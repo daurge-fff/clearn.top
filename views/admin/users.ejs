@@ -1,0 +1,33 @@
+<div class="page-header">
+    <h1 class="page-title">Manage Users</h1>
+    <a href="/admin/users/add" class="buy-button" style="text-decoration: none;">Add User</a>
+</div>
+
+<%- include('_nav.ejs', { active: 'users' }) %>
+
+<div class="table-wrapper">
+    <table>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Registered</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% usersList.forEach(u => { %>
+                <tr>
+                    <td><%= u.name %></td>
+                    <td><%= u.email %></td>
+                    <td><span class="role-badge role-<%= u.role %>"><%= u.role %></span></td>
+                    <td><%= new Date(u.date).toLocaleDateString() %></td>
+                    <td>
+                        <a href="/admin/users/edit/<%= u._id %>" class="buy-button" style="padding: 5px 10px; font-size: 0.9rem;">Edit</a>
+                    </td>
+                </tr>
+            <% }); %>
+        </tbody>
+    </table>
+</div>
