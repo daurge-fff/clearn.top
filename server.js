@@ -4,6 +4,24 @@ const bodyParser = require('body-parser');
 const axios = require('axios');
 const path = require('path');
 const crypto = require('crypto');
+const mongoose = require('mongoose'); // <-- ДОБАВЛЕНО
+
+// --- ПОДКЛЮЧЕНИЕ К БАЗЕ ДАННЫХ ---
+// Эта функция будет выполняться при старте сервера
+async function connectDB() {
+    try {
+        await mongoose.connect(process.env.MONGO_URI, {
+            useNewUrlParser: true,
+            useUnifiedTopology: true,
+        });
+        console.log('MongoDB Connected Successfully');
+    } catch (err) {
+        console.error('Failed to connect to MongoDB', err);
+        process.exit(1); // Выход из приложения, если не удалось подключиться к БД
+    }
+}
+connectDB();
+// ------------------------------------
 
 const app = express();
 const port = process.env.PORT || 3000;
