@@ -4,10 +4,8 @@ const bodyParser = require('body-parser');
 const axios = require('axios');
 const path = require('path');
 const crypto = require('crypto');
-const mongoose = require('mongoose'); // <-- ДОБАВЛЕНО
+const mongoose = require('mongoose');
 
-// --- ПОДКЛЮЧЕНИЕ К БАЗЕ ДАННЫХ ---
-// Эта функция будет выполняться при старте сервера
 async function connectDB() {
     try {
         await mongoose.connect(process.env.MONGO_URI, {
@@ -17,11 +15,10 @@ async function connectDB() {
         console.log('MongoDB Connected Successfully');
     } catch (err) {
         console.error('Failed to connect to MongoDB', err);
-        process.exit(1); // Выход из приложения, если не удалось подключиться к БД
+        process.exit(1);
     }
 }
 connectDB();
-// ------------------------------------
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -33,6 +30,22 @@ app.set('trust proxy', true);
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
+
+const { ensureAuthenticated } = require('./middleware/auth');
+
+const session = require('express-session');
+const passport = require('passport');
+
+require('./config/passport')(passport);
+
+app.use(session({
+    secret: process.env.SESSION_SECRET || 'a_very_secret_random_key_123',
+    resave: false,
+    saveUninitialized: false,
+}));
+
+app.use(passport.initialize());
+app.use(passport.session());
 
 
 const coursesData = { roblox: {}, scratch: {}, junior: {}, minecraft: {}, python: {} };
@@ -122,7 +135,6 @@ const serverTranslations = {
     },
 };
 
-
 async function sendTelegramNotification(text) {
     const botToken = process.env.TELEGRAM_BOT_TOKEN;
     const chatId = process.env.TELEGRAM_CHAT_ID;
@@ -142,7 +154,6 @@ async function sendTelegramNotification(text) {
     }
 }
 
-
 async function getPayPalAccessToken() {
     const auth = Buffer.from(`${process.env.PAYPAL_CLIENT_ID}:${process.env.PAYPAL_CLIENT_SECRET}`).toString('base64');
     try {
@@ -155,7 +166,6 @@ async function getPayPalAccessToken() {
         throw new Error('PayPal Auth Failed');
     }
 }
-
 
 app.get('/', (req, res) => {
     res.render('index', { 
@@ -189,7 +199,11 @@ app.get('/privacy', (req, res) => {
 });
 
 
-
+app.get('/dashboard', ensureAuthenticated, (req, res) => {
+    res.render('dashboard', {
+        user: req.user 
+    });
+});
 
 app.post('/callback', (req, res) => {
     console.log('Received callback:', req.body);
@@ -368,5 +382,7 @@ app.post('/create-payment', async (req, res) => {
             break;
     }
 });
+
+app.use('/users', require('./routes/users'));
 
 app.listen(port, () => console.log(`Server is running at http://localhost:${port}`));

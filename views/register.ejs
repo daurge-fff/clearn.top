@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - Code & Learn</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;800&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        .auth-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .auth-form-wrapper {
+            width: 100%;
+            max-width: 450px;
+            padding: 40px;
+            background-color: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            box-shadow: 0 10px 30px var(--shadow-color);
+        }
+        .auth-form-wrapper h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-family: var(--font-headings);
+            color: var(--accent-color-1);
+        }
+        .auth-form-wrapper .form-group {
+            margin-bottom: 25px;
+        }
+        .auth-form-wrapper .form-submit-button {
+            width: 100%;
+        }
+        .auth-form-wrapper .switch-auth {
+            text-align: center;
+            margin-top: 20px;
+            opacity: 0.8;
+        }
+        .auth-form-wrapper .switch-auth a {
+            color: var(--accent-color-2);
+            font-weight: bold;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body dir="ltr">
+    <div class="auth-container">
+        <div class="auth-form-wrapper">
+            <h1>Register</h1>
+             <!-- TODO: Display error messages here -->
+            <form action="/users/register" method="POST" id="feedback-form">
+                <div class="form-group">
+                    <input type="text" id="name" name="name" required placeholder=" " value="<%= typeof name != 'undefined' ? name : '' %>">
+                    <label for="name">Name</label>
+                </div>
+                <div class="form-group">
+                    <input type="email" id="email" name="email" required placeholder=" " value="<%= typeof email != 'undefined' ? email : '' %>">
+                    <label for="email">Email</label>
+                </div>
+                 <div class="form-group">
+                    <input type="text" id="contact" name="contact" placeholder=" " value="<%= typeof contact != 'undefined' ? contact : '' %>">
+                    <label for="contact">Phone or Telegram, WA(optional)</label>
+                </div>
+                <div class="form-group">
+                    <input type="password" id="password" name="password" required placeholder=" ">
+                    <label for="password">Password</label>
+                </div>
+                <div class="form-group">
+                    <input type="password" id="password2" name="password2" required placeholder=" ">
+                    <label for="password2">Confirm Password</label>
+                </div>
+                <button type="submit" class="form-submit-button">Register</button>
+            </form>
+            <p class="switch-auth">
+                Have an Account? <a href="/users/login">Login</a>
+            </p>
+        </div>
+    </div>
+    <script src="/js/script.js"></script>
+</body>
+</html>
