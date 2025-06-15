@@ -1,0 +1,41 @@
+<div class="container">
+<div class="page-header">
+    <h1>My Schedule</h1>
+    <!-- Учителя не могут создавать уроки, это делает админ -->
+</div>
+
+<div class="card">
+    <div id='calendar'></div>
+</div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+var calendarEl = document.getElementById('calendar');
+var calendar = new FullCalendar.Calendar(calendarEl, {
+initialView: 'timeGridWeek',
+headerToolbar: {
+left: 'prev,next today',
+center: 'title',
+right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek'
+},
+events: '/api/lessons',
+allDaySlot: false, // <-- ДОБАВЛЕНО
+editable: false,
+selectable: false,
+dayMaxEvents: true,
+eventTimeFormat: {
+hour: 'numeric',
+minute: '2-digit',
+hour12: false
+},
+eventClick: function(info) {
+if (info.event.url) {
+window.location = info.event.url;
+info.jsEvent.preventDefault();
+}
+}
+});
+calendar.render();
+});
+</script>

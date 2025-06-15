@@ -1,0 +1,46 @@
+<div class="container">
+<div class="page-header">
+    <div>
+        <h1>Lesson Details</h1>
+        <p class="section-subtitle">
+            <%= new Date(lesson.lessonDate).toLocaleDateString('en-GB', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) %>
+        </p>
+    </div>
+    <a href="/dashboard/my-lessons" class="btn btn-secondary">Back to My Lessons</a>
+</div>
+
+<div class="card lesson-view-card">
+    <div class="lesson-view-grid">
+        <div class="detail-item">
+            <span class="detail-label">Course</span>
+            <span class="detail-value"><%= lesson.course.name %></span>
+        </div>
+        <div class="detail-item">
+            <span class="detail-label">Teacher</span>
+            <span class="detail-value"><%= lesson.teacher.name %></span>
+        </div>
+        <div class="detail-item">
+            <span class="detail-label">Status</span>
+            <span class="detail-value"><span class="badge status-<%= lesson.status %>"><%= lesson.status.replace(/_/g, ' ') %></span></span>
+        </div>
+        <div class="detail-item full-width">
+            <span class="detail-label">Topic Covered</span>
+            <p class="detail-text"><%= lesson.topic || 'No topic specified.' %></p>
+        </div>
+        <div class="detail-item full-width">
+            <span class="detail-label">Homework</span>
+            <p class="detail-text"><%= lesson.homework || 'No homework for this lesson.' %></p>
+        </div>
+        <div class="detail-item full-width">
+            <span class="detail-label">Lesson Recording</span>
+            <% if (lesson.recordingUrl) { %>
+                <a href="<%= lesson.recordingUrl %>" target="_blank" class="btn btn-primary recording-link">
+                    <i class="icon-video"></i> Watch Recording
+                </a>
+            <% } else { %>
+                <p class="detail-text">Recording is not available yet.</p>
+            <% } %>
+        </div>
+    </div>
+</div>
+</div>

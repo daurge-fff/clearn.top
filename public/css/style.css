@@ -520,3 +520,22 @@ input[type="range"]::-moz-range-thumb { width: 24px; height: 24px; background: v
     .donation-card .donation-text { text-align: center; }
     .donation-arrow { display: none; }
 }
+
+.auth-form-wrapper .form-actions {
+    text-align: center;
+}
+/* =================================== */
+/* === CRM/AUTH SPECIFIC OVERRIDES === */
+/* =================================== */
+
+/* Center auth form button on Login/Register pages */
+.auth-form-wrapper .form-group + .form-actions {
+    margin-top: 30px;
+    text-align: center;
+}
+
+.auth-form-wrapper .form-actions .form-submit-button {
+    width: 100%; /* Заставляем кнопку занять всю ширину контейнера */
+    max-width: 250px; /* Но ограничиваем ее максимальную ширину */
+    margin: 0 auto; /* Центрируем саму кнопку */
+}

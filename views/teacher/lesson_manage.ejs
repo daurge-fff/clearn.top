@@ -1,0 +1,54 @@
+<div class="page-header">
+    <div>
+        <h1>Manage Lesson</h1>
+        <p class="section-subtitle">With <strong><%= lesson.student.name %></strong> on course <strong>"<%= lesson.course.name %>"</strong></p>
+    </div>
+</div>
+
+<div class="card form-card">
+    <form action="/dashboard/lessons/manage/<%= lesson._id %>" method="POST">
+        
+        <div class="form-group">
+            <label for="topic">Lesson Topic</label>
+            <input type="text" id="topic" name="topic" value="<%= lesson.topic || '' %>" placeholder="What was covered in the lesson?">
+        </div>
+        
+        <div class="form-group">
+            <label for="status">Lesson Status</label>
+            <select id="status" name="status">
+                <option value="scheduled" <%= lesson.status === 'scheduled' ? 'selected' : '' %>>Scheduled</option>
+                <option value="completed" <%= lesson.status === 'completed' ? 'selected' : '' %>>Completed</option>
+                <option value="cancelled_by_teacher" <%= lesson.status === 'cancelled_by_teacher' ? 'selected' : '' %>>Cancelled (by teacher)</option>
+                <option value="cancelled_by_student" <%= lesson.status === 'cancelled_by_student' ? 'selected' : '' %>>Cancelled (by student)</option>
+                <option value="no_show" <%= lesson.status === 'no_show' ? 'selected' : '' %>>Student No Show</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="homework">Homework</label>
+            <textarea id="homework" name="homework" rows="3" placeholder="Describe the homework assignment..."><%= lesson.homework || '' %></textarea>
+        </div>
+        
+        <div class="form-group">
+            <label for="recordingUrl">Lesson Recording URL</label>
+            <input type="url" id="recordingUrl" name="recordingUrl" value="<%= lesson.recordingUrl || '' %>" placeholder="https://zoom.us/rec/...">
+        </div>
+        
+        <div class="form-group">
+            <label for="notes">My Private Notes</label>
+            <textarea id="notes" name="notes" rows="2" placeholder="Notes only visible to you..."><%= lesson.notes || '' %></textarea>
+        </div>
+        <div class="form-group">
+            <label for="score">Grade (1-10)</label>
+            <input type="number" id="score" name="score" min="1" max="10" step="1" placeholder="Leave blank if not applicable">
+        </div>
+        <div class="form-group">
+            <label for="comment">Comment on Grade (optional)</label>
+            <input type="text" id="comment" name="comment" placeholder="e.g., 'Excellent work with loops!'">
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Save Changes</button>
+            <a href="<%= user.role === 'admin' ? '/dashboard/lessons' : '/dashboard/schedule' %>" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>

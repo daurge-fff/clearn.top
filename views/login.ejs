@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Code & Learn</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/dashboard.css"> <!-- Используем новый файл стилей -->
+    <link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;800&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body dir="ltr">
+    <div class="auth-container">
+        <div class="auth-form-wrapper">
+            <h1>Login</h1>
+            <!-- TODO: Display error messages here -->
+            <form action="/users/login" method="POST">
+                <div class="form-group">
+                    <input type="email" id="email" name="email" required placeholder=" ">
+                    <label for="email">Email</label>
+                </div>
+                <div class="form-group">
+                    <input type="password" id="password" name="password" required placeholder=" ">
+                    <label for="password">Password</label>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="form-submit-button">Login</button>
+                </div>
+            </form>
+            <div class="auth-divider">
+                <span>or</span>
+            </div>
+            <a href="/users/auth/google" class="google-signin-button">
+                <img src="https://developers.google.com/identity/images/g-logo.png" alt="Google logo">
+                <span>Sign in with Google</span>
+            </a>
+            <p class="switch-auth">
+                No Account? <a href="/users/register">Register</a>
+            </p>
+        </div>
+    </div>
+    <script src="/js/global.js"></script> <!-- A small script for theme handling -->
+</body>
+</html>

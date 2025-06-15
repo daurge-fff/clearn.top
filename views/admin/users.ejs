@@ -1,0 +1,40 @@
+<div class="container">
+<div class="page-header">
+    <h1>User Management</h1>
+    <a href="/dashboard/users/add" class="btn btn-primary">
+        <i class="icon-add"></i> Add User
+    </a>
+</div>
+
+<div class="card">
+    <div class="table-responsive">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Status</th>
+                    <th>Lessons Paid</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% users.forEach(u => { %>
+                    <tr>
+                        <td><%= u.name %></td>
+                        <td><%= u.email %></td>
+                        <td><span class="badge role-<%= u.role %>"><%= u.role %></span></td>
+                        <td><span class="badge status-<%= u.status %>"><%= u.status %></span></td>
+                        <td><%= u.role === 'student' ? u.lessonsPaid : 'N/A' %></td>
+                        <td class="actions-cell">
+                            <a href="/dashboard/users/edit/<%= u._id %>" class="btn-icon" data-tooltip="Edit"><i class="icon-edit"></i></a>
+                            <a href="/dashboard/users/delete/<%= u._id %>" class="btn-icon btn-danger" data-tooltip="Delete" onclick="return confirm('Are you sure?')"><i class="icon-delete"></i></a>
+                        </td>
+                    </tr>
+                <% }); %>
+            </tbody>
+        </table>
+    </div>
+</div>
+</div>

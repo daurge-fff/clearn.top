@@ -1,0 +1,61 @@
+<h1>Schedule a New Lesson</h1>
+<div class="container">
+<div class="card form-card">
+    <form action="/dashboard/lessons/add" method="POST">
+        
+        <div class="form-group">
+            <label for="student">Student</label>
+            <select id="student" name="student" required>
+                <option value="" disabled selected>Select a student</option>
+                <% students.forEach(s => { %>
+                    <option value="<%= s._id %>"><%= s.name %> (Lessons: <%= s.lessonsPaid %>)</option>
+                <% }); %>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="teacher">Teacher</label>
+            <select id="teacher" name="teacher" required>
+                 <option value="" disabled selected>Select a teacher</option>
+                <% teachers.forEach(t => { %>
+                    <option value="<%= t._id %>"><%= t.name %></option>
+                <% }); %>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="course">Course</label>
+            <select id="course" name="course" required>
+                 <option value="" disabled selected>Select a course</option>
+                <% courses.forEach(c => { %>
+                    <option value="<%= c._id %>"><%= c.name %></option>
+                <% }); %>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="topic">Specific Topic (optional)</label>
+            <input type="text" id="topic" name="topic" placeholder="e.g., 'Variables and Loops'">
+        </div>
+
+        <div class="form-group">
+            <label for="lessonDate">Date and Time</label>
+            <input type="datetime-local" id="lessonDate" name="lessonDate" required>
+        </div>
+
+        <div class="form-group">
+            <label for="duration">Duration (minutes)</label>
+            <select id="duration" name="duration">
+                <option value="25">25 minutes</option>
+                <option value="50" selected>50 minutes</option>
+                <option value="80">80 minutes</option>
+            </select>
+        </div>
+        
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Schedule & Deduct Lesson</button>
+            <a href="/dashboard/lessons" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+</div>

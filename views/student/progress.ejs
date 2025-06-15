@@ -1,0 +1,53 @@
+<div class="container">
+    <div class="page-header">
+        <h1>My Progress</h1>
+    </div>
+
+    <div class="card">
+        <h2>Performance Over Time</h2>
+        <canvas id="progressChart"></canvas>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', async function() {
+    try {
+        const response = await fetch(`/api/progress/<%= user._id %>`);
+        if (!response.ok) throw new Error('Failed to fetch progress data');
+        
+        const data = await response.json();
+        
+        const ctx = document.getElementById('progressChart').getContext('2d');
+        const progressChart = new Chart(ctx, {
+            type: 'line', // Линейный график
+            data: {
+                labels: data.labels, // Даты уроков
+                datasets: [{
+                    label: 'Grade per Lesson',
+                    data: data.scores, // Оценки
+                    fill: true,
+                    backgroundColor: 'rgba(0, 242, 254, 0.2)',
+                    borderColor: 'rgba(0, 242, 254, 1)',
+                    tension: 0.3 // Сглаживание линии
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 10
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        });
+    } catch (error) {
+        console.error(error);
+        document.getElementById('progressChart').outerHTML = '<p>Could not load progress chart.</p>';
+    }
+});
+</script>

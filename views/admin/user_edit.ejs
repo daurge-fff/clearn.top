@@ -1,0 +1,76 @@
+<h1>Edit User: <%= userToEdit.name %></h1>
+<div class="container">
+<div class="card form-card">
+    <form action="/dashboard/users/edit/<%= userToEdit._id %>" method="POST">
+        <div class="form-group">
+            <label for="name">Full Name</label>
+            <input type="text" id="name" name="name" value="<%= userToEdit.name %>" required>
+        </div>
+        <div class="form-group">
+            <label for="email">Email Address</label>
+            <input type="email" id="email" name="email" value="<%= userToEdit.email %>" required>
+        </div>
+        <div class="form-group">
+            <label for="password">New Password</label>
+            <input type="password" id="password" name="password" placeholder="Leave blank to keep current password">
+        </div>
+        <div class="form-group">
+            <label for="contact">Contact (Telegram, etc.)</label>
+            <input type="text" id="contact" name="contact" value="<%= userToEdit.contact || '' %>">
+        </div>
+        <div class="form-group">
+            <label for="role">Role</label>
+            <select id="role" name="role" onchange="toggleStudentFields()">
+                <option value="student" <%= userToEdit.role === 'student' ? 'selected' : '' %>>Student</option>
+                <option value="teacher" <%= userToEdit.role === 'teacher' ? 'selected' : '' %>>Teacher</option>
+                <option value="admin" <%= userToEdit.role === 'admin' ? 'selected' : '' %>>Admin</option>
+            </select>
+        </div>
+        <div class="form-group">
+             <label for="status">Status</label>
+            <select id="status" name="status">
+                <option value="active" <%= userToEdit.status === 'active' ? 'selected' : '' %>>Active</option>
+                <option value="inactive" <%= userToEdit.status === 'inactive' ? 'selected' : '' %>>Inactive</option>
+                 <option value="paused" <%= userToEdit.status === 'paused' ? 'selected' : '' %>>Paused</option>
+            </select>
+        </div>
+        
+        <div id="student-fields">
+            <div class="form-group">
+                <label for="lessonsPaid">Number of Paid Lessons</label>
+                <input type="number" id="lessonsPaid" name="lessonsPaid" value="<%= userToEdit.lessonsPaid || 0 %>" min="0">
+            </div>
+            <div class="form-group">
+                <label for="teacher">Assign Teacher</label>
+                <select id="teacher" name="teacher">
+                    <option value="">No teacher assigned</option>
+                    <% teachers.forEach(t => { %>
+                        <option value="<%= t._id %>" <%= String(userToEdit.teacher) === String(t._id) ? 'selected' : '' %>>
+                            <%= t.name %>
+                        </option>
+                    <% }); %>
+                </select>
+            </div>
+        </div>
+        
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Save Changes</button>
+            <a href="/dashboard/users" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+</div>
+
+<script>
+    function toggleStudentFields() {
+        const role = document.getElementById('role').value;
+        const studentFields = document.getElementById('student-fields');
+        if (role === 'student') {
+            studentFields.style.display = 'block';
+        } else {
+            studentFields.style.display = 'none';
+        }
+    }
+    // Run on page load
+    toggleStudentFields();
+</script>

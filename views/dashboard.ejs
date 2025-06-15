@@ -1,0 +1,98 @@
+<div class="container">
+    <div class="page-header">
+        <h1>Welcome, <%= user.name.split(' ')[0] %>!</h1>
+    </div>
+
+    <div class="stats-grid">
+        <% if (user.role === 'student') { %>
+            <div class="stat-card">
+                <div class="stat-icon" style="--icon-bg: rgba(0, 242, 254, 0.2); --icon-color: var(--accent-color-1);"><i class="icon-list"></i></div>
+                <div class="stat-info">
+                    <span class="stat-number"><%= stats.lessonsPaid %></span>
+                    <span class="stat-label">Lessons Paid</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon" style="--icon-bg: rgba(196, 58, 214, 0.2); --icon-color: var(--accent-color-2);"><i class="icon-calendar"></i></div>
+                <div class="stat-info">
+                    <% if (stats.upcomingLesson) { %>
+                        <span class="stat-number small"><%= new Date(stats.upcomingLesson.lessonDate).toLocaleDateString('en-GB', { month: 'short', day: 'numeric' }) %></span>
+                        <span class="stat-label">Next Lesson</span>
+                    <% } else { %>
+                        <span class="stat-number small">--</span>
+                        <span class="stat-label">No lessons scheduled</span>
+                    <% } %>
+                </div>
+            </div>
+        <% } %>
+
+        <% if (user.role === 'teacher') { %>
+            <div class="stat-card">
+                <div class="stat-icon" style="--icon-bg: rgba(46, 204, 113, 0.2); --icon-color: #2ecc71;"><i class="icon-calendar"></i></div>
+                <div class="stat-info">
+                    <span class="stat-number"><%= stats.lessonsThisWeek %></span>
+                    <span class="stat-label">Lessons This Week</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon" style="--icon-bg: rgba(52, 152, 219, 0.2); --icon-color: #3498db;"><i class="icon-users"></i></div>
+                <div class="stat-info">
+                    <span class="stat-number"><%= stats.studentCount %></span>
+                    <span class="stat-label">Active Students</span>
+                </div>
+            </div>
+        <% } %>
+
+        <% if (user.role === 'admin') { %>
+             <div class="stat-card">
+                <div class="stat-icon" style="--icon-bg: rgba(52, 152, 219, 0.2); --icon-color: #3498db;"><i class="icon-users"></i></div>
+                <div class="stat-info">
+                    <span class="stat-number"><%= stats.studentCount %></span>
+                    <span class="stat-label">Total Students</span>
+                </div>
+            </div>
+             <div class="stat-card">
+                <div class="stat-icon" style="--icon-bg: rgba(155, 89, 182, 0.2); --icon-color: #9b59b6;"><i class="icon-users"></i></div>
+                <div class="stat-info">
+                    <span class="stat-number"><%= stats.teacherCount %></span>
+                    <span class="stat-label">Total Teachers</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon" style="--icon-bg: rgba(46, 204, 113, 0.2); --icon-color: #2ecc71;"><i class="icon-list"></i></div>
+                <div class="stat-info">
+                    <span class="stat-number"><%= stats.lessonsScheduled %></span>
+                    <span class="stat-label">Upcoming Lessons</span>
+                </div>
+            </div>
+        <% } %>
+    </div>
+    
+    <div class="card">
+        <h2>Schedule Overview</h2>
+        <div id="calendar" style="min-height: 500px;"></div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var calendarEl = document.getElementById('calendar');
+    var calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,timeGridWeek,listWeek' },
+        events: '/api/lessons',
+        allDaySlot: false,
+        editable: false,
+        selectable: false,
+        dayMaxEvents: true, 
+        eventTimeFormat: { hour: 'numeric', minute: '2-digit', hour12: false },
+        eventClick: function(info) {
+            if (info.event.url) {
+                window.location = info.event.url;
+                info.jsEvent.preventDefault();
+            }
+        }
+    });
+    calendar.render();
+});
+</script>

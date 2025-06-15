@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Code & Learn</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/dashboard.css">
+    <link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;800&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    
+    <!-- ИНТЕГРАЦИЯ: FullCalendar CSS -->
+    <link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css' rel='stylesheet' />
+</head>
+<body>
+    <div class="dashboard-layout">
+        <aside class="dashboard-sidebar">
+            <div>
+                <div class="sidebar-header">
+                    <a href="/" class="logo">C&L</a>
+                    <div class="header-actions">
+                        <button id="theme-switcher" class="header-btn" data-tooltip="Switch Theme">
+                            <i class="icon-sun"></i>
+                            <i class="icon-moon"></i>
+                        </button>
+                        <a href="/users/logout" 
+                           class="header-btn logout-btn" 
+                           data-tooltip="Logout" 
+                           onclick="return confirm('Are you sure you want to logout?');">
+                            <i class="icon-logout"></i>
+                        </a>
+                    </div>
+                </div>
+                <nav class="sidebar-nav">
+                    <a href="/dashboard" class="nav-link <%= (typeof page_name !== 'undefined' && page_name === 'dashboard') ? 'active' : '' %>"><i class="icon-dashboard"></i><span>Dashboard</span></a>
+                    
+                    <% if(user.role === 'student') { %>
+                        <a href="/dashboard/my-lessons" class="nav-link <%= (typeof page_name !== 'undefined' && page_name === 'my-lessons') ? 'active' : '' %>"><i class="icon-calendar"></i><span>My Lessons</span></a>
+                        <a href="/dashboard/progress" class="nav-link <%= (typeof page_name !== 'undefined' && page_name === 'progress') ? 'active' : '' %>"><i class="icon-chart"></i><span>Progress</span></a>
+                    <% } %>
+
+                    <% if(user.role === 'admin') { %>
+                        <a href="/dashboard/users" class="nav-link <%= (typeof page_name !== 'undefined' && page_name === 'users') ? 'active' : '' %>"><i class="icon-users"></i><span>Users</span></a>
+                        <a href="/dashboard/lessons" class="nav-link <%= (typeof page_name !== 'undefined' && page_name === 'lessons') ? 'active' : '' %>"><i class="icon-list"></i><span>All Lessons</span></a>
+                        <a href="/dashboard/settings" class="nav-link"><i class="icon-settings"></i><span>Settings</span></a>
+                    <% } %>
+
+                     <% if(user.role === 'teacher') { %>
+                        <a href="/dashboard/schedule" class="nav-link <%= (typeof page_name !== 'undefined' && page_name === 'schedule') ? 'active' : '' %>"><i class="icon-calendar"></i><span>Schedule</span></a>
+                        <a href="/dashboard/my-students" class="nav-link <%= (typeof page_name !== 'undefined' && page_name === 'students') ? 'active' : '' %>"><i class="icon-users"></i><span>My Students</span></a>
+                    <% } %>
+                </nav>
+            </div>
+            <div class="sidebar-footer">
+                <div class="user-profile">
+                    <div class="user-avatar"><%= user.name.charAt(0) %></div>
+                    <div class="user-info">
+                        <span class="user-name"><%= user.name %></span>
+                        <span class="user-role"><%= user.role %></span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+        <main class="dashboard-main">
+            <div class="dashboard-content">
+                <%- body %>
+            </div>
+        </main>
+    </div>
+
+    <!-- ИНТЕГРАЦИЯ: FullCalendar JS -->
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js'></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="/js/global.js"></script>
+</body>
+</html>
