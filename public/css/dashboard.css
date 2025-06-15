@@ -47,6 +47,7 @@
 .icon-calendar { --icon-url: url(/images/icon-calendar.svg); }
 .icon-chart { --icon-url: url(/images/icon-chart.svg); }
 .icon-users { --icon-url: url(/images/icon-users.svg); }
+.icon-briefcase { --icon-url: url(/images/icon-briefcase.svg); }
 .icon-list { --icon-url: url(/images/icon-list.svg); }
 .icon-settings { --icon-url: url(/images/icon-settings.svg); }
 .icon-logout { --icon-url: url(/images/icon-logout.svg); }
@@ -60,15 +61,27 @@
 .icon-eye-off { --icon-url: url(/images/icon-eye-off.svg); }
 .icon-email { --icon-url: url(/images/icon-email.svg); }
 .icon-contact { --icon-url: url(/images/icon-contact.svg); }
+.icon-prev { --icon-url: url(/images/icon-prev.svg); }
+.icon-next { --icon-url: url(/images/icon-next.svg); }
 
 /* --- Корректируем размеры для специфичных случаев --- */
 .nav-link i, .header-btn i, .password-toggle i {
     width: 20px;
     height: 20px;
 }
-.btn i {
-    width: 16px;
-    height: 16px;
+.btn {
+    padding: 10px 20px;
+    border-radius: 50px;
+    font-weight: 700;
+    font-size: 0.9rem; /* ИЗМЕНЕНИЕ: Уменьшили размер шрифта */
+    text-decoration: none;
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all .2s ease;
+    cursor: pointer;
+    white-space: nowrap; /* Запрещаем перенос текста */
 }
 .btn-icon i {
     width: 18px;
@@ -92,7 +105,33 @@
 
 /* === TABLE STYLES === */
 .table-responsive { overflow-x: auto; }
-.data-table { width: 100%; border-collapse: collapse; text-align: left; white-space: nowrap; }
+/* Найдите и замените эти селекторы */
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+    white-space: nowrap;
+}
+.data-table th {
+    padding: 12px 15px;
+    font-family: var(--font-headings);
+    font-weight: 800;
+    border-bottom: 2px solid var(--accent-color-1);
+    opacity: .9;
+}
+.data-table td {
+    padding: 15px;
+    vertical-align: middle;
+}
+.data-table tbody tr {
+    border-bottom: 1px solid var(--card-border);
+}
+.data-table tbody tr:last-child {
+    border-bottom: none; 
+}
+.data-table tbody tr:hover {
+    background-color: var(--bg-color);
+}
 .data-table th { padding: 12px 15px; font-family: var(--font-headings); font-weight: 800; border-bottom: 2px solid var(--accent-color-1); opacity: .9; }
 .data-table td { padding: 15px; border-bottom: 1px solid var(--card-border); vertical-align: middle; }
 .data-table tbody tr:last-child td { border-bottom: none; }
@@ -144,7 +183,7 @@
     border-color: var(--accent-color-1);
     color: var(--accent-color-1);
 }
-.header-btn.logout-btn:hover { /* Specific hover for logout */
+.header-btn.logout-btn:hover {
     border-color: var(--accent-color-2);
     color: var(--accent-color-2);
 }
@@ -319,8 +358,8 @@
 
 /* === DASHBOARD STATS (NEW) === */
 .stats-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    display: grid; 
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); 
     gap: 25px;
     margin-bottom: 30px;
 }
@@ -359,25 +398,25 @@
     flex-direction: column;
 }
 .stat-number {
-    font-size: 2rem;
+    font-size: 1.8rem; 
     font-weight: 800;
     font-family: var(--font-headings);
     color: var(--text-color);
     line-height: 1.1;
 }
 .stat-label {
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     opacity: 0.7;
 }
 .stat-number.small {
-    font-size: 1.8rem;
+    font-size: 1.6rem;
 }
 /* === Password Toggle Button === */
 .password-wrapper {
     position: relative;
 }
 .password-wrapper input {
-    padding-right: 50px; /* Освобождаем место для кнопки */
+    padding-right: 50px;
 }
 .password-toggle {
     position: absolute;
@@ -544,3 +583,74 @@
 }
 
 .icon-export { --icon-url: url(/images/icon-export.svg); }
+
+/* =================================== */
+/* === RESPONSIVE & MOBILE STYLES === */
+/* =================================== */
+
+.dashboard-body { overflow-x: hidden; }
+.dashboard-main-wrapper { width: 100%; }
+.mobile-sidebar-toggle { display: none; }
+
+.sidebar-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 1000; }
+
+.icon-menu { --icon-url: url(/images/icon-menu.svg); }
+
+@media (max-width: 991.98px) {
+    .mobile-sidebar-toggle { display: flex; align-items: center; justify-content: center; position: fixed; top: 15px; left: 15px; z-index: 1002; width: 45px; height: 45px; background-color: var(--card-bg); border: 1px solid var(--card-border); border-radius: 50%; box-shadow: 0 4px 15px rgba(0,0,0,0.1); transition: opacity 0.3s ease; }
+    .dashboard-body.sidebar-open .mobile-sidebar-toggle { opacity: 0; pointer-events: none; }
+    .dashboard-sidebar { position: fixed; left: 0; top: 0; height: 100%; z-index: 1001; transform: translateX(-100%); transition: transform 0.3s ease-in-out; box-shadow: 5px 0 25px rgba(0,0,0,0.1); }
+    .dashboard-body.sidebar-open .dashboard-sidebar { transform: translateX(0); }
+    .dashboard-body.sidebar-open .sidebar-overlay { display: block; }
+    .dashboard-main-wrapper { width: 100%; flex-grow: 1; }
+    .dashboard-content { padding: 70px 20px 20px 20px; }
+    .page-header { flex-direction: column; align-items: flex-start; gap: 15px; }
+    .page-actions { display: grid; grid-template-columns: 1fr 1fr; width: 100%; }
+}
+
+@media (max-width: 767.98px) {
+    .stat-card { text-align: center; }
+    .stat-icon { margin: 0 auto 15px auto; }
+    
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: 15px;
+    }
+    .stats-grid > .stat-card:last-child:nth-child(odd) {
+        grid-column: 1 / -1;
+    }
+}
+
+/* === CALENDAR STYLES === */
+#calendar-container { position: relative; }
+#calendar-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding: 0 10px; }
+#calendar-title { font-size: 1.5em; font-family: var(--font-headings); font-weight: 800; }
+#calendar-nav button { background: none; border: none; cursor: pointer; padding: 5px; color: var(--text-color); opacity: 0.8; }
+#calendar-nav button:hover { opacity: 1; color: var(--accent-color-1); }
+.fc { border: none !important; }
+.fc .fc-toolbar { display: none !important; }
+.fc .fc-view-harness { height: auto !important; }
+.fc-day-today { background: rgba(0, 242, 254, 0.05) !important; }
+.fc-daygrid-day-frame { position: relative; }
+.fc-day-has-event-dots { position: absolute; bottom: 6px; left: 50%; transform: translateX(-50%); display: flex; gap: 4px; }
+.fc-day-has-event-dot { width: 6px; height: 6px; border-radius: 50%; }
+.fc-daygrid-day.day-selected { box-shadow: inset 0 0 0 2px var(--accent-color-1); border-radius: 8px; }
+
+/* === Список уроков под календарем === */
+#events-list { margin-top: 20px; }
+.event-item { display: flex; align-items: center; gap: 15px; padding: 12px; border-bottom: 1px solid var(--card-border); }
+.event-item:last-child { border-bottom: none; }
+.event-time { font-weight: 700; font-size: 0.9rem; }
+.event-title { flex-grow: 1; }
+
+
+.event-status-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+
+.calendar-card h2 {
+    text-align: center;
+    margin-bottom: 30px;
+}
+.card {
+    border-color: var(--card-border); 
+}

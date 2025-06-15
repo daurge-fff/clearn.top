@@ -1,77 +1,120 @@
 <div class="container">
-<div class="page-header">
-    <h1>Lesson Management</h1>
-    <div class="page-actions">
-        <a href="/api/lessons/export" class="btn btn-secondary"><i class="icon-export"></i> Export to CSV</a>
-        <a href="/dashboard/lessons/add" class="btn btn-primary"><i class="icon-add"></i> Schedule Lesson</a>
+    <div class="page-header">
+        <h1>Lesson Management</h1>
+        <div class="page-actions">
+            <a href="/api/lessons/export" class="btn btn-secondary"><i class="icon-export"></i> Export to CSV</a>
+            <a href="/dashboard/lessons/add" class="btn btn-primary"><i class="icon-add"></i> Schedule Lesson</a>
+        </div>
+    </div>
+    <div class="card filter-card">
+        <form action="/dashboard/lessons" method="GET" class="filter-form">
+            <div class="filter-group">
+                <label for="teacher">Teacher</label>
+                <select name="teacher" id="teacher">
+                    <option value="">All Teachers</option>
+                    <% teachers.forEach(t => { %>
+                        <option value="<%= t._id %>" <%= (query.teacher == t._id) ? 'selected' : '' %>><%= t.name %></option>
+                    <% }); %>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="student">Student</label>
+                <select name="student" id="student">
+                    <option value="">All Students</option>
+                    <% students.forEach(s => { %>
+                        <option value="<%= s._id %>" <%= (query.student == s._id) ? 'selected' : '' %>><%= s.name %></option>
+                    <% }); %>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="status">Status</label>
+                <select name="status" id="status">
+                    <option value="">All Statuses</option>
+                    <option value="scheduled" <%= (query.status == 'scheduled') ? 'selected' : '' %>>Scheduled</option>
+                    <option value="completed" <%= (query.status == 'completed') ? 'selected' : '' %>>Completed</option>
+                    <option value="cancelled_by_student" <%= (query.status == 'cancelled_by_student') ? 'selected' : '' %>>Cancelled by Student</option>
+                    <option value="cancelled_by_teacher" <%= (query.status == 'cancelled_by_teacher') ? 'selected' : '' %>>Cancelled by Teacher</option>
+                    <option value="no_show" <%= (query.status == 'no_show') ? 'selected' : '' %>>No Show</option>
+                </select>
+            </div>
+            <div class="filter-actions">
+                <button type="submit" class="btn btn-primary">Apply</button>
+                <a href="/dashboard/lessons" class="btn btn-secondary">Clear</a>
+            </div>
+        </form>
+    </div>
+
+    <div class="card">
+        <div id='calendar'></div>
+    </div>
+
+    <div class="card">
+        <h2>All Lessons List</h2>
+        <% if (lessons && lessons.length > 0) { %>
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Student</th>
+                            <th>Teacher</th>
+                            <th>Course</th>
+                            <th>Date & Time</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% lessons.forEach(lesson => { %>
+                            <tr>
+                                <td><%= lesson.student.name %></td>
+                                <td><%= lesson.teacher.name %></td>
+                                <td><%= lesson.course.name %></td>
+                                <td><%= new Date(lesson.lessonDate).toLocaleString('en-GB') %></td>
+                                <td><span class="badge status-<%= lesson.status %>"><%= lesson.status.replace(/_/g, ' ') %></span></td>
+                                <td class="actions-cell">
+                                    <a href="/dashboard/lessons/manage/<%= lesson._id %>" class="btn-icon" data-tooltip="Manage"><i class="icon-edit"></i></a>
+                                </td>
+                            </tr>
+                        <% }); %>
+                    </tbody>
+                </table>
+            </div>
+        <% } else { %>
+            <div class="empty-state">
+                <div class="empty-state-icon"><i class="icon-inbox"></i></div>
+                <h3>No Lessons Scheduled</h3>
+                <p>The schedule is empty. Plan the first lesson to get started.</p>
+                <a href="/dashboard/lessons/add" class="btn btn-primary"><i class="icon-add"></i> Schedule Lesson</a>
+            </div>
+        <% } %>
     </div>
 </div>
 
-<div class="card">
-    <div id='calendar'></div>
-</div>
 
-<div class="card">
-    <h2>All Lessons List</h2>
-    <% if (lessons && lessons.length > 0) { %>
-        <div class="table-responsive">
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>Student</th>
-                        <th>Teacher</th>
-                        <th>Course</th>
-                        <th>Date & Time</th>
-                        <th>Status</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <% lessons.forEach(lesson => { %>
-                        <tr>
-                            <td><%= lesson.student.name %></td>
-                            <td><%= lesson.teacher.name %></td>
-                            <td><%= lesson.course.name %></td>
-                            <td><%= new Date(lesson.lessonDate).toLocaleString('en-GB') %></td>
-                            <td><span class="badge status-<%= lesson.status %>"><%= lesson.status.replace(/_/g, ' ') %></span></td>
-                            <td class="actions-cell">
-                                <a href="/dashboard/lessons/manage/<%= lesson._id %>" class="btn-icon" data-tooltip="Manage"><i class="icon-edit"></i></a>
-                            </td>
-                        </tr>
-                    <% }); %>
-                </tbody>
-            </table>
-        </div>
-    <% } else { %>
-        <div class="empty-state">
-            <div class="empty-state-icon"><i class="icon-inbox"></i></div>
-            <h3>No Lessons Scheduled</h3>
-            <p>The schedule is empty. Plan the first lesson to get started.</p>
-            <a href="/dashboard/lessons/add" class="btn btn-primary"><i class="icon-add"></i> Schedule Lesson</a>
-        </div>
-    <% } %>
-</div>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     var calendarEl = document.getElementById('calendar');
     var calendar = new FullCalendar.Calendar(calendarEl, {
-        initialView: 'dayGridMonth',
+        initialView: window.innerWidth < 768 ? 'listWeek' : 'dayGridMonth',
+        windowResize: function(arg) {
+            if (arg.view.type === 'dayGridMonth' && window.innerWidth < 768) {
+                calendar.changeView('listWeek');
+            } else if (arg.view.type === 'listWeek' && window.innerWidth >= 768) {
+                calendar.changeView('dayGridMonth');
+            }
+        },
         headerToolbar: {
             left: 'prev,next today',
             center: 'title',
-            right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek'
+            right: 'dayGridMonth,timeGridWeek,listWeek'
         },
         events: '/api/lessons',
         allDaySlot: false,
         editable: false,
         selectable: false,
         dayMaxEvents: true, 
-         eventTimeFormat: {
-            hour: 'numeric',
-            minute: '2-digit',
-            hour12: false
-        },
+        eventTimeFormat: { hour: 'numeric', minute: '2-digit', hour12: false },
         eventClick: function(info) {
             if (info.event.url) {
                 window.location = info.event.url;

@@ -92,7 +92,42 @@ router.post('/users/add', ensureAuth, ensureRole('admin'), async (req, res) => {
 router.get('/users/edit/:id', ensureAuth, ensureRole('admin'), async (req, res) => { try { const userToEdit = await User.findById(req.params.id).lean(); if (!userToEdit) return res.status(404).send('User not found'); const teachers = await User.find({ role: 'teacher' }).lean(); res.render('admin/user_edit', { layout: 'layouts/dashboard', user: req.user, userToEdit: userToEdit, teachers: teachers, page_name: 'users' }); } catch (err) { console.error(err); res.status(500).send('Server Error'); } });
 router.post('/users/edit/:id', ensureAuth, ensureRole('admin'), async (req, res) => { try { const userId = req.params.id; const { name, email, role, contact, lessonsPaid, status, teacher: newTeacherId } = req.body; const userToUpdate = await User.findById(userId); if (!userToUpdate) return res.status(404).send('User not found'); const oldTeacherId = userToUpdate.teacher ? String(userToUpdate.teacher) : null; const newTeacherIdStr = newTeacherId || null; if (oldTeacherId !== newTeacherIdStr) { if (oldTeacherId) { await User.updateOne({ _id: oldTeacherId }, { $pull: { students: userId } }); } if (newTeacherIdStr && role === 'student') { await User.updateOne({ _id: newTeacherIdStr }, { $addToSet: { students: userId } }); } } userToUpdate.name = name; userToUpdate.email = email.toLowerCase(); userToUpdate.contact = contact; userToUpdate.status = status; if (userToUpdate.role !== 'student' && role === 'student') { userToUpdate.teacher = newTeacherIdStr; } else if (userToUpdate.role === 'student' && role !== 'student') { if(oldTeacherId) { await User.updateOne({ _id: oldTeacherId }, { $pull: { students: userId } }); } userToUpdate.teacher = null; } userToUpdate.role = role; if (role === 'student') { userToUpdate.lessonsPaid = Number(lessonsPaid); userToUpdate.teacher = newTeacherIdStr; } else { userToUpdate.lessonsPaid = 0; userToUpdate.teacher = null; } if (req.body.password) { const salt = await bcrypt.genSalt(10); userToUpdate.password = await bcrypt.hash(req.body.password, salt); } await userToUpdate.save(); res.redirect('/dashboard/users'); } catch (err) { console.error(err); res.status(500).send('Server Error'); } });
 router.get('/users/delete/:id', ensureAuth, ensureRole('admin'), async (req, res) => { try { await User.findByIdAndDelete(req.params.id); res.redirect('/dashboard/users'); } catch (err) { console.error(err); res.status(500).send('Server Error'); } });
-router.get('/lessons', ensureAuth, ensureRole('admin'), async (req, res) => { try { const lessons = await Lesson.find().populate('student', 'name').populate('teacher', 'name').populate('course', 'name').sort({ lessonDate: -1 }).lean(); res.render('admin/lessons', { layout: 'layouts/dashboard', user: req.user, lessons: lessons, page_name: 'lessons' }); } catch (err) { console.error(err); res.status(500).send('Server Error'); } });
+
+// @desc    Страница просмотра всех уроков (с фильтрацией)
+// @route   GET /dashboard/lessons
+router.get('/lessons', ensureAuth, ensureRole('admin'), async (req, res) => {
+    try {
+        const { teacher, student, status } = req.query;
+        const filter = {};
+
+        if (teacher) filter.teacher = teacher;
+        if (student) filter.student = student;
+        if (status) filter.status = status;
+
+        const lessons = await Lesson.find(filter)
+            .populate('student', 'name')
+            .populate('teacher', 'name')
+            .populate('course', 'name')
+            .sort({ lessonDate: -1 })
+            .lean();
+        
+        const allTeachers = await User.find({ role: 'teacher' }).sort({ name: 1 }).lean();
+        const allStudents = await User.find({ role: 'student' }).sort({ name: 1 }).lean();
+
+        res.render('admin/lessons', {
+            layout: 'layouts/dashboard',
+            user: req.user,
+            lessons: lessons,
+            teachers: allTeachers,
+            students: allStudents,
+            query: req.query,
+            page_name: 'lessons'
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Server Error');
+    }
+});
 router.get('/lessons/add', ensureAuth, ensureRole('admin'), async (req, res) => { try { const students = await User.find({ role: 'student', status: 'active' }).lean(); const teachers = await User.find({ role: 'teacher', status: 'active' }).lean(); const courses = await Course.find().lean(); res.render('admin/lesson_add', { layout: 'layouts/dashboard', user: req.user, students, teachers, courses, page_name: 'lessons' }); } catch (err) { console.error(err); res.status(500).send('Server Error'); } });
 router.post('/lessons/add', ensureAuth, ensureRole('admin'), async (req, res) => { const { student, teacher, course, lessonDate, duration, topic } = req.body; if (!student || !teacher || !course || !lessonDate) return res.status(400).send('Please fill all required fields.'); try { await Lesson.create({ student, teacher, course, lessonDate, duration: Number(duration), topic: topic || 'Scheduled Lesson' }); await User.findByIdAndUpdate(student, { $inc: { lessonsPaid: -1 } }); res.redirect('/dashboard/lessons'); } catch (err) { console.error(err); res.status(500).send('Server Error'); } });
 router.get('/schedule', ensureAuth, ensureRole('teacher'), async (req, res) => { try { const lessons = await Lesson.find({ teacher: req.user.id }).populate('student', 'name').populate('course', 'name').sort({ lessonDate: -1 }).lean(); res.render('teacher/schedule', { layout: 'layouts/dashboard', user: req.user, lessons: lessons, page_name: 'schedule' }); } catch (err) { console.error(err); res.status(500).send('Server Error'); } });
