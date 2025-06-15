@@ -1,5 +1,40 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terms of Service - Code & Learn</title>
+    <link rel="apple-touch-icon" sizes="180x180" href="/images/favicon/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon/favicon-16x16.png">
+    <link rel="manifest" href="/images/favicon/site.webmanifest">
+    <link rel="icon" href="/images/favicon/favicon.ico" type="image/x-icon">
+    <link rel="shortcut icon" href="/images/favicon/favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="/css/style.css?v=1.10"> 
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;800&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body dir="ltr">
+
+    
+    <header>
+        <div class="container">
+            <a href="/" class="logo">Code & Learn</a>
+            <nav>
+                
+                <a href="/#courses">Courses</a>
+                <a href="/#tariffs">Pricing</a>
+                <a href="/#why-us">Why Us</a>
+                <a href="/#about">About me</a>
+            </nav>
+            <div class="header-controls">
+                
+                <button id="theme-switcher" title="Switch theme"><img src="https://emojicdn.elk.sh/☀️" alt="Sun"></button>
+            </div>
+        </div>
+    </header>
+
     <main>
         <div class="legal-page-container">
             <h1>TERMS OF SERVICE</h1>
@@ -65,4 +100,45 @@
             </ol>
         </div>
     </main>
+
+    <footer>
+        <div class="container footer-content">
+            <div class="footer-main">
+                <p>© 2025 German Vitiaz | Code & Learn (<a href="https://clearn.top" target="_blank">clearn.top</a>)</p>
+                <p><a href="https://t.me/daurge" target="_blank">Telegram @daurge</a></p>
+            </div>
+            <div class="footer-legal-links">
+                <a href="/terms">Terms of Service</a>
+                <span>•</span>
+                <a href="/privacy">Privacy Policy</a>
+            </div>
+        </div>
+    </footer>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const html = document.documentElement;
+            const themeSwitcher = document.getElementById('theme-switcher');
+            const sunIcon = 'https://emojicdn.elk.sh/☀️';
+            const moonIcon = 'https://emojicdn.elk.sh/🌙';
+
+            function setTheme(theme) {
+                html.setAttribute('data-theme', theme);
+                if (themeSwitcher) themeSwitcher.innerHTML = `<img src="${theme === 'dark' ? sunIcon : moonIcon}" alt="theme icon">`;
+                localStorage.setItem('theme', theme);
+            }
+
+            if (themeSwitcher) {
+                themeSwitcher.addEventListener('click', () => {
+                    const currentTheme = html.getAttribute('data-theme');
+                    setTheme(currentTheme === 'dark' ? 'light' : 'dark');
+                });
+            }
+
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            setTheme(savedTheme);
+        });
+    </script>
+
+</body>
 </html>
