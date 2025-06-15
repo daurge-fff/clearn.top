@@ -3,41 +3,98 @@
     <h1>My Schedule</h1>
 </div>
 
-<div class="card">
-    <div id='calendar'></div>
+<div class="card calendar-card">
+    <div id='calendar' style="min-height: 500px;"></div>
 </div>
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    var calendarEl = document.getElementById('calendar');
-    var calendar = new FullCalendar.Calendar(calendarEl, {
-        initialView: window.innerWidth < 768 ? 'listWeek' : 'dayGridMonth',
-        windowResize: function(arg) {
-            if (arg.view.type === 'dayGridMonth' && window.innerWidth < 768) {
-                calendar.changeView('listWeek');
-            } else if (arg.view.type === 'listWeek' && window.innerWidth >= 768) {
-                calendar.changeView('dayGridMonth');
+document.addEventListener('DOMContentLoaded', async function() {
+    const calendarEl = document.getElementById('calendar');
+    const eventsListEl = document.getElementById('events-list');
+    let allEvents = [];
+    let selectedDateEl = null;
+
+    try {
+        const response = await fetch('/api/lessons');
+        if (!response.ok) throw new Error('Failed to fetch lessons');
+        allEvents = await response.json();
+    } catch (error) {
+        console.error(error);
+        calendarEl.innerHTML = '<p>Could not load schedule.</p>';
+        return;
+    }
+
+    function getLocalDateString(date) {
+        const d = new Date(date);
+        const year = d.getFullYear();
+        const month = ('0' + (d.getMonth() + 1)).slice(-2);
+        const day = ('0' + d.getDate()).slice(-2);
+        return `${year}-${month}-${day}`;
+    }
+
+    function renderEventsForDate(dateStr) {
+        const eventsForDay = allEvents.filter(event => getLocalDateString(event.start) === dateStr);
+        if (eventsForDay.length === 0) {
+            eventsListEl.innerHTML = '<p style="text-align: center; opacity: 0.7; padding: 20px 0;">No lessons on this day.</p>';
+            return;
+        }
+        eventsListEl.innerHTML = eventsForDay.map(event => `
+            <div class="event-item">
+                <div class="event-status-dot" style="background-color: ${event.backgroundColor};"></div>
+                <div class="event-time">${new Date(event.start).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}</div>
+                <div class="event-title">${event.title}</div>
+                ${event.url ? `<a href="${event.url}" class="btn-icon"><i class="icon-edit"></i></a>` : ''}
+            </div>
+        `).join('');
+    }
+
+    const calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        headerToolbar: false,
+        dayCellDidMount: function(arg) {
+            const dateStr = getLocalDateString(arg.date);
+            const eventsOnDay = allEvents.filter(event => getLocalDateString(event.start) === dateStr);
+            if (eventsOnDay.length > 0) {
+                let dotsContainer = document.createElement('div');
+                dotsContainer.className = 'fc-day-has-event-dots';
+                const uniqueColors = [...new Set(eventsOnDay.map(e => e.backgroundColor))];
+                uniqueColors.slice(0, 3).forEach(color => {
+                    let dot = document.createElement('div');
+                    dot.className = 'fc-day-has-event-dot';
+                    dot.style.backgroundColor = color;
+                    dotsContainer.appendChild(dot);
+                });
+                arg.el.querySelector('.fc-daygrid-day-frame').appendChild(dotsContainer);
             }
         },
-        headerToolbar: {
-            left: 'prev,next today',
-            center: 'title',
-            right: 'dayGridMonth,timeGridWeek,listWeek'
-        },
-        events: '/api/lessons',
-        allDaySlot: false,
-        editable: false,
-        selectable: false,
-        dayMaxEvents: true, 
-        eventTimeFormat: { hour: 'numeric', minute: '2-digit', hour12: false },
-        eventClick: function(info) {
-            if (info.event.url) {
-                window.location = info.event.url;
-                info.jsEvent.preventDefault();
-            }
+        dateClick: function(info) {
+            if (selectedDateEl) selectedDateEl.classList.remove('day-selected');
+            info.dayEl.classList.add('day-selected');
+            selectedDateEl = info.dayEl;
+            renderEventsForDate(info.dateStr);
         }
     });
+
+    const navContainer = document.createElement('div');
+    navContainer.id = 'calendar-nav';
+    navContainer.innerHTML = `
+        <button id="cal-prev"><i class="icon-prev"></i></button>
+        <h2 id="calendar-title"></h2>
+        <button id="cal-next"><i class="icon-next"></i></button>
+    `;
+    calendarEl.parentNode.insertBefore(navContainer, calendarEl);
+    
+    const titleEl = document.getElementById('calendar-title');
+    
+    function updateTitle() {
+        titleEl.innerText = calendar.view.title;
+    }
+
+    document.getElementById('cal-prev').addEventListener('click', () => { calendar.prev(); updateTitle(); });
+    document.getElementById('cal-next').addEventListener('click', () => { calendar.next(); updateTitle(); });
+    
     calendar.render();
+    updateTitle();
 });
 </script>
