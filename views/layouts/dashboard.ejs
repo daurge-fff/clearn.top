@@ -11,6 +11,20 @@
     <link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css' rel='stylesheet' />
 </head>
 <body>
+    <% if ((locals.success_msg && locals.success_msg.length > 0) || (locals.error_msg && locals.error_msg.length > 0) || (locals.error && locals.error.length > 0)) { %>
+        <div class="flash-messages">
+            <% if (locals.success_msg && locals.success_msg.length > 0) { %>
+                <div class="flash-message flash-success"><%= success_msg %></div>
+            <% } %>
+            <% if (locals.error_msg && locals.error_msg.length > 0) { %>
+                <div class="flash-message flash-error"><%= error_msg %></div>
+            <% } %>
+            <% if (locals.error && locals.error.length > 0) { %>
+                <div class="flash-message flash-error"><%= error %></div>
+            <% } %>
+        </div>
+    <% } %>
+
     <div class="dashboard-layout">
         <aside class="dashboard-sidebar">
             <div>

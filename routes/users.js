@@ -5,58 +5,43 @@ const bcrypt = require('bcryptjs');
 const User = require('../models/User');
 const { ensureGuest } = require('../middleware/auth');
 
-// @desc    Страница входа
-// @route   GET /users/login
+// Login Page
 router.get('/login', ensureGuest, (req, res) => {
-    res.render('login', {
-        layout: false
-    });
+    res.render('login', { layout: false });
 });
 
-// @desc    Обработка входа
-// @route   POST /users/login
+// Login Handle
 router.post('/login', (req, res, next) => {
     passport.authenticate('local', {
         successRedirect: '/dashboard',
         failureRedirect: '/users/login',
-        // failureFlash: true // Для этого нужно подключить connect-flash
+        failureFlash: true // Включаем flash-сообщения от Passport (напр. "Password incorrect")
     })(req, res, next);
 });
 
-// @desc    Страница регистрации
-// @route   GET /users/register
+// Register Page
 router.get('/register', ensureGuest, (req, res) => {
-    res.render('register', {
-        layout: false,
-        name: '',
-        email: '',
-        contact: ''
-    });
+    res.render('register', { layout: false, name: '', email: '', contact: '' });
 });
 
-// @desc    Обработка регистрации
-// @route   POST /users/register
+// Register Handle
 router.post('/register', (req, res) => {
     const { name, email, password, password2, contact } = req.body;
     let errors = [];
 
-    if (!name || !email || !password || !password2) {
-        errors.push({ msg: 'Please enter all required fields' });
-    }
-    if (password != password2) {
-        errors.push({ msg: 'Passwords do not match' });
-    }
-    if (password.length < 6) {
-        errors.push({ msg: 'Password must be at least 6 characters' });
-    }
+    if (!name || !email || !password || !password2) errors.push({ msg: 'Please enter all required fields' });
+    if (password != password2) errors.push({ msg: 'Passwords do not match' });
+    if (password.length < 6) errors.push({ msg: 'Password must be at least 6 characters' });
 
     if (errors.length > 0) {
-        res.render('register', { layout: false, errors, name, email, contact });
+        // Отправляем ошибки как flash-сообщения
+        errors.forEach(err => req.flash('error_msg', err.msg));
+        res.redirect('/users/register');
     } else {
         User.findOne({ email: email.toLowerCase() }).then(user => {
             if (user) {
-                errors.push({ msg: 'Email already exists' });
-                res.render('register', { layout: false, errors, name, email, contact });
+                req.flash('error_msg', 'Email already exists');
+                res.redirect('/users/register');
             } else {
                 const newUser = new User({ name, email: email.toLowerCase(), password, contact });
                 bcrypt.genSalt(10, (err, salt) => {
@@ -65,6 +50,7 @@ router.post('/register', (req, res) => {
                         newUser.password = hash;
                         newUser.save()
                             .then(user => {
+                                req.flash('success_msg', 'You are now registered and can log in');
                                 res.redirect('/users/login');
                             })
                             .catch(err => console.log(err));
@@ -75,27 +61,19 @@ router.post('/register', (req, res) => {
     }
 });
 
-// @desc    Аутентификация через Google
-// @route   GET /users/auth/google
+// Google Auth
 router.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
+router.get('/auth/google/callback', passport.authenticate('google', { failureRedirect: '/users/login' }), (req, res) => {
+    res.redirect('/dashboard');
+});
 
-
-// @desc    Callback от Google
-// @route   GET /users/auth/google/callback
-router.get('/auth/google/callback', passport.authenticate('google', { failureRedirect: '/users/login' }),
-    (req, res) => {
-        res.redirect('/dashboard');
-    }
-);
-
-// @desc    Выход из системы
-// @route   GET /users/logout
+// Logout Handle
 router.get('/logout', (req, res, next) => {
     req.logout(function(err) {
         if (err) { return next(err); }
+        req.flash('success_msg', 'You are logged out');
         res.redirect('/users/login');
-      });
+    });
 });
-
 
 module.exports = router;

@@ -1,39 +1,52 @@
 <div class="container">
-<div class="page-header">
-    <h1>My Students</h1>
-</div>
+    <div class="page-header">
+        <h1>My Students</h1>
+    </div>
 
-<div class="users-grid">
     <% if (students && students.length > 0) { %>
-        <% students.forEach(student => { %>
-            <div class="user-card">
-                <div class="user-card-header">
-                    <div class="user-avatar"><%= student.name.charAt(0) %></div>
-                    <div class="user-info">
-                        <span class="user-name"><%= student.name %></span>
-                        <span class="user-role status-<%= student.status %>"><%= student.status %></span>
-                    </div>
-                </div>
-                <div class="user-card-body">
-                    <div class="info-item">
-                        <i class="icon-email"></i>
-                        <span><%= student.email %></span>
-                    </div>
-                    <% if (student.contact) { %>
-                        <div class="info-item">
-                            <i class="icon-contact"></i>
-                            <span><%= student.contact %></span>
+        <div class="users-grid">
+            <div class="users-grid">
+                <% if (students && students.length > 0) { %>
+                    <% students.forEach(student => { %>
+                        <div class="user-card">
+                            <div class="user-card-header">
+                                <div class="user-avatar"><%= student.name.charAt(0) %></div>
+                                <div class="user-info">
+                                    <span class="user-name"><%= student.name %></span>
+                                    <span class="user-role status-<%= student.status %>"><%= student.status %></span>
+                                </div>
+                            </div>
+                            <div class="user-card-body">
+                                <div class="info-item">
+                                    <i class="icon-email"></i>
+                                    <span><%= student.email %></span>
+                                </div>
+                                <% if (student.contact) { %>
+                                    <div class="info-item">
+                                        <i class="icon-contact"></i>
+                                        <span><%= student.contact %></span>
+                                    </div>
+                                <% } %>
+                            </div>
+                            <div class="user-card-footer">
+                                <span>Lessons Balance:</span>
+                                <span class="lessons-balance"><%= student.lessonsPaid %></span>
+                            </div>
                         </div>
-                    <% } %>
-                </div>
-                <div class="user-card-footer">
-                    <span>Lessons Balance:</span>
-                    <span class="lessons-balance"><%= student.lessonsPaid %></span>
-                </div>
+                    <% }); %>
+                <% } else { %>
+                    <p>You have no students assigned to you yet.</p>
+                <% } %>
             </div>
-        <% }); %>
+            </div>
+        </div>
     <% } else { %>
-        <p>You have no students assigned to you yet.</p>
+        <div class="card">
+            <div class="empty-state">
+                <div class="empty-state-icon"><i class="icon-users"></i></div>
+                <h3>No Students Assigned</h3>
+                <p>You don't have any students assigned to you yet. Please contact the administrator.</p>
+            </div>
+        </div>
     <% } %>
-</div>
 </div>

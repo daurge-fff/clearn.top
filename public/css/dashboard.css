@@ -433,3 +433,69 @@
     font-size: 0.9rem;
     color: var(--text-color);
 }
+/* === FLASH MESSAGES === */
+.flash-messages {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.flash-message {
+    padding: 15px 20px;
+    border-radius: 8px;
+    font-weight: 700;
+    color: #fff;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    animation: slideIn 0.3s ease-out;
+}
+.flash-success {
+    background-color: #2ecc71;
+}
+.flash-error {
+    background-color: #e74c3c;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(100%);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+/* === EMPTY STATE COMPONENT === */
+.empty-state {
+    text-align: center;
+    padding: 60px 40px;
+    background-color: var(--bg-color);
+    border-radius: 10px;
+}
+.empty-state-icon {
+    width: 60px;
+    height: 60px;
+    margin: 0 auto 20px auto;
+    opacity: 0.5;
+}
+.empty-state-icon i {
+    width: 100%;
+    height: 100%;
+    color: var(--accent-color-1);
+    background-color: var(--accent-color-1);
+}
+.empty-state h3 {
+    font-family: var(--font-headings);
+    font-size: 1.5rem;
+    margin: 0 0 10px 0;
+}
+.empty-state p {
+    max-width: 400px;
+    margin: 0 auto 25px auto;
+    opacity: 0.7;
+    line-height: 1.6;
+}
+.icon-inbox { --icon-url: url(/images/icon-inbox.svg); }

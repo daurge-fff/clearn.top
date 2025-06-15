@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Register - Code & Learn</title>
     <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/dashboard.css">
     <link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;800&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     <style>
         .auth-container {
@@ -48,6 +49,19 @@
     </style>
 </head>
 <body dir="ltr">
+    <% if ((locals.success_msg && locals.success_msg.length > 0) || (locals.error_msg && locals.error_msg.length > 0) || (locals.error && locals.error.length > 0)) { %>
+        <div class="flash-messages">
+            <% if (locals.success_msg && locals.success_msg.length > 0) { %>
+                <div class="flash-message flash-success"><%= success_msg %></div>
+            <% } %>
+            <% if (locals.error_msg && locals.error_msg.length > 0) { %>
+                 <div class="flash-message flash-error"><%= error_msg %></div>
+            <% } %>
+            <% if (locals.error && locals.error.length > 0) { %>
+                 <div class="flash-message flash-error"><%= error %></div>
+            <% } %>
+        </div>
+    <% } %>
     <div class="auth-container">
         <div class="auth-form-wrapper">
             <h1>Register</h1>
