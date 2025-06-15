@@ -15,13 +15,19 @@
             <!-- TODO: Display error messages here -->
             <form action="/users/login" method="POST">
                 <div class="form-group">
-                    <input type="email" id="email" name="email" required placeholder=" ">
-                    <label for="email">Email</label>
-                </div>
-                <div class="form-group">
+                <input type="email" id="email" name="email" required placeholder=" ">
+                <label for="email">Email</label>
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <div class="password-wrapper">
                     <input type="password" id="password" name="password" required placeholder=" ">
-                    <label for="password">Password</label>
+                    <button type="button" class="password-toggle" data-tooltip="Show/Hide Password">
+                        <i class="icon-eye"></i>
+                        <i class="icon-eye-off"></i>
+                    </button>
                 </div>
+            </div>
                 <div class="form-actions">
                     <button type="submit" class="form-submit-button">Login</button>
                 </div>

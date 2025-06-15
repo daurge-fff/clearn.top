@@ -34,7 +34,7 @@
                         <td><%= lesson.teacher.name %></td>
                         <td><%= new Date(lesson.lessonDate).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) %></td>
                         <td><span class="badge status-<%= lesson.status %>"><%= lesson.status.replace(/_/g, ' ') %></span></td>
-                        <td class="actions-cell">
+                        <td class="actions-cell <%= (lesson.status !== 'scheduled') ? 'is-empty' : '' %>">
                             <% if (lesson.status === 'scheduled') { %>
                                 <form action="/dashboard/lessons/cancel/<%= lesson._id %>" method="POST" style="display: inline;">
                                     <button type="submit" 
@@ -45,7 +45,7 @@
                                     </button>
                                 </form>
                             <% } else { %>
-         
+                                
                             <% } %>
                         </td>
                     </tr>

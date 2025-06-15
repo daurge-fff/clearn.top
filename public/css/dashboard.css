@@ -25,10 +25,55 @@
 .dashboard-content { padding: 30px; overflow-y: auto; height: 100vh; width: 100%; }
 
 /* === ICONS === */
-.nav-link i, .btn i, .btn-icon i, .header-btn i { display: inline-block; width: 20px; height: 20px; background-color: currentColor; -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; -webkit-mask-position: center; mask-position: center; -webkit-mask-size: contain; mask-size: contain; flex-shrink: 0; }
-.icon-dashboard, .icon-calendar, .icon-chart, .icon-users, .icon-list, .icon-settings, .icon-logout, .icon-add, .icon-edit, .icon-delete, .icon-sun, .icon-moon { -webkit-mask-image: var(--icon-url); mask-image: var(--icon-url); }
-.icon-dashboard { --icon-url: url(/images/icon-dashboard.svg); } .icon-calendar { --icon-url: url(/images/icon-calendar.svg); } .icon-chart { --icon-url: url(/images/icon-chart.svg); } .icon-users { --icon-url: url(/images/icon-users.svg); } .icon-list { --icon-url: url(/images/icon-list.svg); } .icon-settings { --icon-url: url(/images/icon-settings.svg); } .icon-logout { --icon-url: url(/images/icon-logout.svg); } .icon-add { --icon-url: url(/images/icon-add.svg); } .icon-edit { --icon-url: url(/images/icon-edit.svg); } .icon-delete { --icon-url: url(/images/icon-delete.svg); } .icon-sun { --icon-url: url(/images/icon-sun.svg); } .icon-moon { --icon-url: url(/images/icon-moon.svg); }
+/* === ICONS (UNIVERSAL FIX) === */
+[class^="icon-"] {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    background-color: currentColor;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    -webkit-mask-position: center;
+    mask-position: center;
+    -webkit-mask-size: contain;
+    mask-size: contain;
+    flex-shrink: 0;
+    -webkit-mask-image: var(--icon-url);
+    mask-image: var(--icon-url);
+}
 
+/* --- Определяем URL для каждой иконки --- */
+.icon-dashboard { --icon-url: url(/images/icon-dashboard.svg); }
+.icon-calendar { --icon-url: url(/images/icon-calendar.svg); }
+.icon-chart { --icon-url: url(/images/icon-chart.svg); }
+.icon-users { --icon-url: url(/images/icon-users.svg); }
+.icon-list { --icon-url: url(/images/icon-list.svg); }
+.icon-settings { --icon-url: url(/images/icon-settings.svg); }
+.icon-logout { --icon-url: url(/images/icon-logout.svg); }
+.icon-add { --icon-url: url(/images/icon-add.svg); }
+.icon-edit { --icon-url: url(/images/icon-edit.svg); }
+.icon-delete { --icon-url: url(/images/icon-delete.svg); }
+.icon-sun { --icon-url: url(/images/icon-sun.svg); }
+.icon-moon { --icon-url: url(/images/icon-moon.svg); }
+.icon-video { --icon-url: url(/images/icon-video.svg); }
+.icon-eye { --icon-url: url(/images/icon-eye.svg); }
+.icon-eye-off { --icon-url: url(/images/icon-eye-off.svg); }
+.icon-email { --icon-url: url(/images/icon-email.svg); }
+.icon-contact { --icon-url: url(/images/icon-contact.svg); }
+
+/* --- Корректируем размеры для специфичных случаев --- */
+.nav-link i, .header-btn i, .password-toggle i {
+    width: 20px;
+    height: 20px;
+}
+.btn i {
+    width: 16px;
+    height: 16px;
+}
+.btn-icon i {
+    width: 18px;
+    height: 18px;
+}
 /* === PAGE COMPONENTS === */
 .card { background-color: var(--card-bg); padding: 25px; border-radius: 12px; border: 1px solid var(--card-border); margin-bottom: 25px; }
 .page-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 25px; }
@@ -57,7 +102,12 @@
 .badge.status-completed { background-color: rgba(46, 204, 113, 0.2); color: #2ecc71; }
 .badge.status-cancelled_by_student, .badge.status-cancelled_by_teacher, .badge.status-no_show { background-color: rgba(231, 76, 60, 0.2); color: #e74c3c; }
 .badge.role-student { background-color: rgba(0, 242, 254, .2); color: var(--accent-color-1); } .badge.role-teacher { background-color: rgba(196, 58, 214, .2); color: var(--accent-color-2); } .badge.role-admin { background-color: rgba(255, 185, 43, .2); color: #ffb92b; }
-.actions-cell { display: flex; gap: 10px; }
+.actions-cell {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    min-width: 100px;
+}
 .btn-icon { position: relative; display: inline-block; padding: 5px; color: var(--text-color); opacity: .7; }
 .btn-icon:hover { opacity: 1; color: var(--accent-color-1); }
 .btn-icon.btn-danger:hover { color: var(--accent-color-2); }
@@ -244,6 +294,7 @@
 }
 .recording-link {
     max-width: 250px;
+    justify-content: center;
 }
 .link-discreet {
     color: var(--text-color);
@@ -320,4 +371,65 @@
 }
 .stat-number.small {
     font-size: 1.8rem;
+}
+/* === Password Toggle Button === */
+.password-wrapper {
+    position: relative;
+}
+.password-wrapper input {
+    padding-right: 50px; /* Освобождаем место для кнопки */
+}
+.password-toggle {
+    position: absolute;
+    top: 0;
+    right: 0;
+    height: 100%;
+    width: 50px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text-color);
+    opacity: 0.6;
+    transition: opacity 0.2s ease;
+}
+.password-toggle:hover {
+    opacity: 1;
+}
+.password-toggle i {
+    width: 20px;
+    height: 20px;
+}
+.password-toggle .icon-eye-off {
+    display: none;
+}
+.password-toggle.is-showing .icon-eye {
+    display: none;
+}
+.password-toggle.is-showing .icon-eye-off {
+    display: block;
+}
+.icon-eye { --icon-url: url(/images/icon-eye.svg); }
+.icon-eye-off { --icon-url: url(/images/icon-eye-off.svg); }
+
+.auth-form-wrapper .form-group {
+    position: static;
+}
+
+.auth-form-wrapper .form-group label {
+    position: static;
+    transform: none;
+    opacity: 0.9;
+    font-size: 0.9rem;
+    color: var(--text-color);
+    pointer-events: auto;
+    margin-bottom: 8px; 
+    padding: 0;
+    transition: none;
+}
+.auth-form-wrapper .form-group input:focus + label,
+.auth-form-wrapper .form-group input:not(:placeholder-shown) + label {
+    transform: none;
+    opacity: 0.9;
+    font-size: 0.9rem;
+    color: var(--text-color);
 }

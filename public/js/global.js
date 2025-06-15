@@ -18,3 +18,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const savedTheme = localStorage.getItem('theme') || 'light';
     setTheme(savedTheme);
 });
+
+// Password visibility toggle
+document.querySelectorAll('.password-toggle').forEach(button => {
+button.addEventListener('click', function() {
+this.classList.toggle('is-showing');
+const input = this.previousElementSibling;
+if (input.type === 'password') {
+input.type = 'text';
+} else {
+input.type = 'password';
+}
+});
+});
