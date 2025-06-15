@@ -3,13 +3,12 @@ const router = express.Router();
 const bcrypt = require('bcryptjs');
 const { ensureAuth, ensureRole } = require('../middleware/auth');
 
-// Подключаем модели
 const User = require('../models/User');
 const Lesson = require('../models/Lesson');
 const Course = require('../models/Course');
 const Grade = require('../models/Grade');
 
-// @desc    Главная страница личного кабинета (НОВАЯ ВЕРСИЯ)
+// @desc    Главная страница личного кабинета
 // @route   GET /dashboard
 router.get('/', ensureAuth, async (req, res) => {
     try {
@@ -81,20 +80,17 @@ router.post('/lessons/manage/:id', ensureAuth, async (req, res) => {
         const { status, topic, homework, recordingUrl, notes, score, comment } = req.body; // Добавили score и comment
         const originalStatus = lesson.status;
 
-        // Логика возврата/списания урока
         if (originalStatus === 'scheduled' && (status === 'cancelled_by_teacher' || status === 'cancelled_by_student')) {
             await User.findByIdAndUpdate(lesson.student, { $inc: { lessonsPaid: 1 } });
         } else if (originalStatus !== 'scheduled' && status === 'scheduled') {
             await User.findByIdAndUpdate(lesson.student, { $inc: { lessonsPaid: -1 } });
         }
 
-        // Обновляем данные урока
         await Lesson.findByIdAndUpdate(req.params.id, { status, topic, homework, recordingUrl, notes });
 
-        // Логика создания/обновления оценки
         if (score && score >= 1 && score <= 10) {
             await Grade.findOneAndUpdate(
-                { lesson: lesson._id }, // Найти оценку по ID урока
+                { lesson: lesson._id }, 
                 { 
                     lesson: lesson._id,
                     student: lesson.student,
@@ -102,7 +98,7 @@ router.post('/lessons/manage/:id', ensureAuth, async (req, res) => {
                     score: Number(score),
                     comment: comment
                 },
-                { upsert: true, new: true, setDefaultsOnInsert: true } // `upsert: true` создает документ, если он не найден
+                { upsert: true, new: true, setDefaultsOnInsert: true }
             );
         }
 
@@ -115,6 +111,7 @@ router.post('/lessons/manage/:id', ensureAuth, async (req, res) => {
 router.get('/my-lessons', ensureAuth, ensureRole('student'), async (req, res) => { try { const lessons = await Lesson.find({ student: req.user.id }).populate('teacher', 'name').populate('course', 'name').sort({ lessonDate: -1 }).lean(); res.render('student/my_lessons', { layout: 'layouts/dashboard', user: req.user, lessons: lessons, page_name: 'my-lessons' }); } catch (err) { console.error(err); res.status(500).send('Server Error'); } });
 router.post('/lessons/cancel/:id', ensureAuth, ensureRole('student'), async (req, res) => { try { const lesson = await Lesson.findById(req.params.id); if (!lesson) { return res.status(404).send('Lesson not found.'); } if (String(lesson.student) !== String(req.user.id)) { return res.status(403).send('Forbidden.'); } if (lesson.status !== 'scheduled') { return res.status(400).send('This lesson cannot be cancelled.'); } await Lesson.findByIdAndUpdate(req.params.id, { status: 'cancelled_by_student', cancellationReason: req.body.reason || 'Cancelled by student' }); await User.findByIdAndUpdate(req.user.id, { $inc: { lessonsPaid: 1 } }); res.redirect('/dashboard/my-lessons'); } catch (err) { console.error(err); res.status(500).send('Server Error'); } });
 router.get('/lessons/view/:id', ensureAuth, ensureRole('student'), async (req, res) => { try { const lesson = await Lesson.findById(req.params.id).populate('teacher', 'name').populate('course', 'name').lean(); if (!lesson) { return res.status(404).send('Lesson not found'); } if (String(lesson.student) !== String(req.user.id)) { return res.status(403).send('Forbidden: You can only view your own lessons.'); } res.render('student/lesson_view', { layout: 'layouts/dashboard', user: req.user, lesson: lesson, page_name: 'my-lessons' }); } catch (err) { console.error(err); res.status(500).send('Server Error'); } });
+
 // @desc    Страница просмотра прогресса
 // @route   GET /dashboard/progress
 router.get('/progress', ensureAuth, ensureRole('student'), (req, res) => {

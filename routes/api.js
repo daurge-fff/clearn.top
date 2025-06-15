@@ -30,7 +30,7 @@ router.get('/lessons', ensureAuth, async (req, res) => {
 
             if (req.user.role === 'student') {
                 title = `Lesson with ${lesson.teacher.name}`;
-                url = `/dashboard/lessons/view/${lesson._id}`; // ИЗМЕНЕНИЕ: У ученика теперь есть ссылка
+                url = `/dashboard/lessons/view/${lesson._id}`;
             } else if (req.user.role === 'teacher') {
                 title = `Lesson with ${lesson.student.name}`;
                 url = `/dashboard/lessons/manage/${lesson._id}`;
@@ -62,13 +62,12 @@ router.get('/lessons', ensureAuth, async (req, res) => {
 // @route   GET /api/progress/:studentId
 router.get('/progress/:studentId', ensureAuth, async (req, res) => {
     try {
-        // Проверка прав: админ или учитель могут смотреть прогресс любого, ученик - только свой
         if (req.user.role === 'student' && req.user.id !== req.params.studentId) {
             return res.status(403).json({ message: 'Forbidden' });
         }
 
         const grades = await Grade.find({ student: req.params.studentId })
-            .sort({ createdAt: 1 }) // Сортируем по дате создания оценки
+            .sort({ createdAt: 1 })
             .populate({ path: 'lesson', select: 'lessonDate' });
 
         const labels = grades.map(g => new Date(g.lesson.lessonDate).toLocaleDateString('en-GB'));

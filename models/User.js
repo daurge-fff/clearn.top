@@ -26,17 +26,16 @@ const UserSchema = new mongoose.Schema({
     },
     status: {
         type: String,
-        default: 'active' // e.g., active, inactive, paused
+        default: 'active'
     },
     lessonsPaid: {
         type: Number,
         default: 0
     },
-    teacher: { // The primary teacher assigned to the student
+    teacher: { 
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'
     },
-    // --- Teacher-specific fields ---
     students: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'

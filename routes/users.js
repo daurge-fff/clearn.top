@@ -3,13 +3,13 @@ const router = express.Router();
 const passport = require('passport');
 const bcrypt = require('bcryptjs');
 const User = require('../models/User');
-const { ensureGuest } = require('../middleware/auth'); // Middleware для гостей
+const { ensureGuest } = require('../middleware/auth');
 
 // @desc    Страница входа
 // @route   GET /users/login
 router.get('/login', ensureGuest, (req, res) => {
     res.render('login', {
-        layout: false // <-- ВОТ РЕШЕНИЕ
+        layout: false
     });
 });
 
@@ -27,8 +27,7 @@ router.post('/login', (req, res, next) => {
 // @route   GET /users/register
 router.get('/register', ensureGuest, (req, res) => {
     res.render('register', {
-        layout: false, // <-- И ЗДЕСЬ ТОЖЕ
-        // Передаем пустые значения для EJS шаблона
+        layout: false,
         name: '',
         email: '',
         contact: ''

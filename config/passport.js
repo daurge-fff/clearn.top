@@ -3,21 +3,17 @@ const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 
-// Load User model
 const User = require('../models/User');
 
 module.exports = function(passport) {
-    // Local Strategy (email/password)
     passport.use(
         new LocalStrategy({ usernameField: 'email' }, (email, password, done) => {
-            // Match user
             User.findOne({ email: email.toLowerCase() })
                 .then(user => {
                     if (!user) {
                         return done(null, false, { message: 'That email is not registered' });
                     }
 
-                    // Match password
                     bcrypt.compare(password, user.password, (err, isMatch) => {
                         if (err) throw err;
                         if (isMatch) {
@@ -31,7 +27,6 @@ module.exports = function(passport) {
         })
     );
 
-    // Google Strategy
     passport.use(
         new GoogleStrategy({
                 clientID: process.env.GOOGLE_CLIENT_ID,
@@ -43,7 +38,6 @@ module.exports = function(passport) {
                     googleId: profile.id,
                     name: profile.displayName,
                     email: profile.emails[0].value,
-                    // Note: We don't get a password from Google
                 };
 
                 try {
@@ -51,15 +45,12 @@ module.exports = function(passport) {
                     if (user) {
                         done(null, user);
                     } else {
-                        // Check if email already exists from a local registration
                         user = await User.findOne({ email: newUser.email });
                         if (user) {
-                             // Link Google ID to existing local account
                             user.googleId = newUser.googleId;
                             await user.save();
                             done(null, user);
                         } else {
-                            // Create new user
                             user = await User.create(newUser);
                             done(null, user);
                         }

@@ -5,7 +5,7 @@ const GradeSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Lesson',
         required: true,
-        unique: true // Одна оценка на один урок
+        unique: true
     },
     student: {
         type: mongoose.Schema.Types.ObjectId,
@@ -23,7 +23,7 @@ const GradeSchema = new mongoose.Schema({
         min: 1,
         max: 10
     },
-    comment: { // Небольшой комментарий учителя к оценке
+    comment: {
         type: String
     }
 }, { timestamps: true });

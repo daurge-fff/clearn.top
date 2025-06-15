@@ -2,7 +2,6 @@ const express = require('express');
 const router = express.Router();
 const { ensureGuest } = require('../middleware/auth');
 
-// Твои курсы
 const coursesData = {
     scratch: {},
     python: {},
@@ -15,7 +14,7 @@ const coursesData = {
 // @route   GET /
 router.get('/', (req, res) => {
     res.render('index', {
-        layout: false, // <-- ВОТ РЕШЕНИЕ: не использовать шаблон для этой страницы
+        layout: false,
         courses: coursesData,
         currentLang: 'en',
         lang: {
@@ -34,7 +33,7 @@ router.get('/', (req, res) => {
 // @route   GET /terms
 router.get('/terms', (req, res) => {
     res.render('offer', {
-        layout: false // <-- И здесь тоже
+        layout: false
     });
 });
 
@@ -42,7 +41,7 @@ router.get('/terms', (req, res) => {
 // @route   GET /privacy
 router.get('/privacy', (req, res) => {
     res.render('privacy', {
-        layout: false // <-- И здесь
+        layout: false
     });
 });
 
@@ -50,7 +49,7 @@ router.get('/privacy', (req, res) => {
 // @route   GET /successful-payment, /failed-payment
 router.get('/successful-payment', (req, res) => {
     res.render('successful-payment', {
-        layout: false, // <-- И здесь
+        layout: false,
         currentLang: 'en',
         lang: {
             dir: 'ltr',
@@ -63,7 +62,7 @@ router.get('/successful-payment', (req, res) => {
 
 router.get('/failed-payment', (req, res) => {
      res.render('failed-payment', {
-        layout: false, // <-- И здесь
+        layout: false,
         currentLang: 'en',
         lang: {
             dir: 'ltr',

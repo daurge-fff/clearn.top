@@ -9,9 +9,9 @@ const CourseSchema = new mongoose.Schema({
         type: String
     },
     ageGroup: {
-        type: String, // e.g., "5-7", "8-12"
+        type: String,
     },
-    tools: [String] // e.g., ["Scratch", "Miro"]
+    tools: [String]
 });
 
 const Course = mongoose.model('Course', CourseSchema);

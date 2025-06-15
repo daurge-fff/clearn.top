@@ -20,7 +20,7 @@ const LessonSchema = new mongoose.Schema({
         type: Date,
         required: true
     },
-    duration: { // in minutes
+    duration: {
         type: Number,
         required: true,
         default: 50
@@ -37,7 +37,7 @@ const LessonSchema = new mongoose.Schema({
     homework: {
         type: String
     },
-    notes: { // Teacher's private notes
+    notes: { 
         type: String
     },
     recordingUrl: {
@@ -46,7 +46,7 @@ const LessonSchema = new mongoose.Schema({
     cancellationReason: {
         type: String
     }
-}, { timestamps: true }); // Adds createdAt and updatedAt timestamps
+}, { timestamps: true }); 
 
 const Lesson = mongoose.model('Lesson', LessonSchema);
 

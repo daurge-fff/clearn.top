@@ -21,10 +21,10 @@ document.addEventListener('DOMContentLoaded', async function() {
         const progressChart = new Chart(ctx, {
             type: 'line', // Линейный график
             data: {
-                labels: data.labels, // Даты уроков
+                labels: data.labels,
                 datasets: [{
                     label: 'Grade per Lesson',
-                    data: data.scores, // Оценки
+                    data: data.scores,
                     fill: true,
                     backgroundColor: 'rgba(0, 242, 254, 0.2)',
                     borderColor: 'rgba(0, 242, 254, 1)',
