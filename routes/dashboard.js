@@ -59,7 +59,34 @@ router.get('/', ensureAuth, async (req, res) => {
     }
 });
 
-router.get('/users', ensureAuth, ensureRole('admin'), async (req, res) => { try { const users = await User.find().lean(); res.render('admin/users', { layout: 'layouts/dashboard', user: req.user, users: users, page_name: 'users' }); } catch (err) { console.error(err); res.status(500).send('Server Error'); } });
+// @desc    Страница управления пользователями (с фильтрацией)
+// @route   GET /dashboard/users
+router.get('/users', ensureAuth, ensureRole('admin'), async (req, res) => {
+    try {
+        const { role, status } = req.query;
+        const filter = {};
+
+        if (role) {
+            filter.role = role;
+        }
+        if (status) {
+            filter.status = status;
+        }
+
+        const users = await User.find(filter).sort({ name: 1 }).lean();
+
+        res.render('admin/users', {
+            layout: 'layouts/dashboard',
+            user: req.user,
+            users: users,
+            query: req.query,
+            page_name: 'users'
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Server Error');
+    }
+});
 router.get('/users/add', ensureAuth, ensureRole('admin'), (req, res) => { res.render('admin/user_add', { layout: 'layouts/dashboard', user: req.user, page_name: 'users' }); });
 router.post('/users/add', ensureAuth, ensureRole('admin'), async (req, res) => { const { name, email, password, role, contact, lessonsPaid } = req.body; if (!name || !email || !password || !role) return res.status(400).send('Please fill all required fields.'); try { if (await User.findOne({ email: email.toLowerCase() })) return res.status(400).send('User with this email already exists.'); const newUser = new User({ name, email: email.toLowerCase(), password, role, contact, lessonsPaid: role === 'student' ? Number(lessonsPaid) : 0 }); const salt = await bcrypt.genSalt(10); newUser.password = await bcrypt.hash(password, salt); await newUser.save(); res.redirect('/dashboard/users'); } catch (err) { console.error(err); res.status(500).send('Server Error'); } });
 router.get('/users/edit/:id', ensureAuth, ensureRole('admin'), async (req, res) => { try { const userToEdit = await User.findById(req.params.id).lean(); if (!userToEdit) return res.status(404).send('User not found'); const teachers = await User.find({ role: 'teacher' }).lean(); res.render('admin/user_edit', { layout: 'layouts/dashboard', user: req.user, userToEdit: userToEdit, teachers: teachers, page_name: 'users' }); } catch (err) { console.error(err); res.status(500).send('Server Error'); } });

@@ -1,7 +1,37 @@
 <div class="container">
     <div class="page-header">
         <h1>User Management</h1>
-        <a href="/dashboard/users/add" class="btn btn-primary"><i class="icon-add"></i> Add User</a>
+        <div class="page-actions">
+            <a href="#" id="export-btn" class="btn btn-secondary"><i class="icon-export"></i> Export to CSV</a>
+            <a href="/dashboard/users/add" class="btn btn-primary"><i class="icon-add"></i> Add User</a>
+        </div>
+    </div>
+
+    <div class="card filter-card">
+        <form action="/dashboard/users" method="GET" class="filter-form">
+            <div class="filter-group">
+                <label for="role">Filter by Role</label>
+                <select name="role" id="role">
+                    <option value="">All Roles</option>
+                    <option value="student" <%= (query && query.role === 'student') ? 'selected' : '' %>>Student</option>
+                    <option value="teacher" <%= (query && query.role === 'teacher') ? 'selected' : '' %>>Teacher</option>
+                    <option value="admin" <%= (query && query.role === 'admin') ? 'selected' : '' %>>Admin</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="status">Filter by Status</label>
+                <select name="status" id="status">
+                    <option value="">All Statuses</option>
+                    <option value="active" <%= (query && query.status === 'active') ? 'selected' : '' %>>Active</option>
+                    <option value="inactive" <%= (query && query.status === 'inactive') ? 'selected' : '' %>>Inactive</option>
+                    <option value="paused" <%= (query && query.status === 'paused') ? 'selected' : '' %>>Paused</option>
+                </select>
+            </div>
+            <div class="filter-actions">
+                <button type="submit" class="btn btn-primary">Apply</button>
+                <a href="/dashboard/users" class="btn btn-secondary">Clear</a>
+            </div>
+        </form>
     </div>
 
     <div class="card">
@@ -39,9 +69,31 @@
             <div class="empty-state">
                 <div class="empty-state-icon"><i class="icon-users"></i></div>
                 <h3>No Users Found</h3>
-                <p>There are no users in the system yet. Start by adding the first one!</p>
-                <a href="/dashboard/users/add" class="btn btn-primary"><i class="icon-add"></i> Add User</a>
+                <p>No users match your current filter criteria. Try clearing the filters.</p>
+                <a href="/dashboard/users" class="btn btn-secondary">Clear Filters</a>
             </div>
         <% } %>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const exportBtn = document.getElementById('export-btn');
+    
+    function updateExportLink() {
+        const role = document.getElementById('role').value;
+        const status = document.getElementById('status').value;
+        
+        const params = new URLSearchParams();
+        if (role) params.append('role', role);
+        if (status) params.append('status', status);
+        
+        exportBtn.href = `/api/users/export?${params.toString()}`;
+    }
+
+    updateExportLink();
+
+    document.getElementById('role').addEventListener('change', updateExportLink);
+    document.getElementById('status').addEventListener('change', updateExportLink);
+});
+</script>

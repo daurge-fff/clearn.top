@@ -4,6 +4,7 @@ const { ensureAuth } = require('../middleware/auth');
 const Lesson = require('../models/Lesson');
 const User = require('../models/User');
 const Grade = require('../models/Grade');
+const { Parser } = require('json2csv');
 
 // @desc    Получение уроков для FullCalendar
 // @route   GET /api/lessons
@@ -78,6 +79,65 @@ router.get('/progress/:studentId', ensureAuth, async (req, res) => {
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Server Error' });
+    }
+});
+
+// @desc    Экспорт пользователей в CSV
+// @route   GET /api/users/export
+router.get('/users/export', ensureAuth, async (req, res) => {
+    if (req.user.role !== 'admin') return res.status(403).send('Forbidden');
+    try {
+        const { role, status } = req.query;
+        const filter = {};
+        if (role) filter.role = role;
+        if (status) filter.status = status;
+
+        const users = await User.find(filter).lean();
+        const fields = ['name', 'email', 'role', 'status', 'contact', 'lessonsPaid', 'date_registered'];
+        const parser = new Parser({ fields, withBOM: true });
+        const csv = parser.parse(users);
+
+        res.header('Content-Type', 'text/csv; charset=UTF-8');
+        res.attachment('users_export.csv');
+        res.send(csv);
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Server Error');
+    }
+});
+
+// @desc    Экспорт уроков в CSV
+// @route   GET /api/lessons/export
+router.get('/lessons/export', ensureAuth, async (req, res) => {
+    if (req.user.role !== 'admin') return res.status(403).send('Forbidden');
+    try {
+        const lessons = await Lesson.find({})
+            .populate('student', 'name')
+            .populate('teacher', 'name')
+            .populate('course', 'name')
+            .lean();
+
+        const lessonsData = lessons.map(l => ({
+            lesson_date: new Date(l.lessonDate).toLocaleString('ru-RU'),
+            student_name: l.student.name,
+            teacher_name: l.teacher.name,
+            course_name: l.course.name,
+            topic: l.topic,
+            status: l.status,
+            homework: l.homework,
+            recording_url: l.recordingUrl
+        }));
+
+        const fields = ['lesson_date', 'student_name', 'teacher_name', 'course_name', 'topic', 'status', 'homework', 'recording_url'];
+        const parser = new Parser({ fields, withBOM: true });
+        const csv = parser.parse(lessonsData);
+
+        res.header('Content-Type', 'text/csv; charset=UTF-8');
+        res.attachment('lessons_export.csv');
+        res.send(csv);
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Server Error');
     }
 });
 

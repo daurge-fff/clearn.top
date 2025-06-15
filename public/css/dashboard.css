@@ -499,3 +499,48 @@
     line-height: 1.6;
 }
 .icon-inbox { --icon-url: url(/images/icon-inbox.svg); }
+
+/* === FILTER FORM STYLES === */
+.filter-card {
+    margin-bottom: 25px;
+}
+.filter-form {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 20px;
+}
+.filter-group {
+    flex-grow: 1;
+}
+.filter-group label {
+    display: block;
+    font-weight: 700;
+    margin-bottom: 8px;
+    font-size: 0.9rem;
+}
+.filter-group select {
+    width: 100%;
+    padding: 10px;
+    background: var(--bg-color);
+    border: 1px solid var(--card-border);
+    border-radius: 8px;
+    color: var(--text-color);
+    font-size: 1rem;
+}
+.filter-actions {
+    display: flex;
+    gap: 10px;
+    padding-bottom: 1px;
+}
+
+/* === Page Header Actions === */
+.page-header {
+    align-items: center;
+}
+.page-actions {
+    display: flex;
+    gap: 15px;
+}
+
+.icon-export { --icon-url: url(/images/icon-export.svg); }
