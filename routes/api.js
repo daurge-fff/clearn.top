@@ -141,4 +141,13 @@ router.get('/lessons/export', ensureAuth, async (req, res) => {
     }
 });
 
+// @desc    Получение данных о проектных работах
+// @route   GET /api/progress/:studentId/projects
+router.get('/progress/:studentId/projects', ensureAuth, async (req, res) => {
+    const grades = await Grade.find({ student: req.params.studentId, isProjectGrade: true }).sort({ createdAt: 1 }).populate('lesson', 'projectDetails.title');
+    const labels = grades.map(g => g.lesson.projectDetails.title);
+    const scores = grades.map(g => g.score);
+    res.json({ labels, scores });
+});
+
 module.exports = router;

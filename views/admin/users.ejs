@@ -51,7 +51,9 @@
                     <tbody>
                         <% users.forEach(u => { %>
                             <tr>
-                                <td><%= u.name %></td>
+                                <td>
+                                    <a href="/dashboard/user-profile/<%= u._id %>" class="link-discreet"><%= u.name %></a>
+                                </td>
                                 <td><%= u.email %></td>
                                 <td><span class="badge role-<%= u.role %>"><%= u.role %></span></td>
                                 <td><span class="badge status-<%= u.status %>"><%= u.status %></span></td>

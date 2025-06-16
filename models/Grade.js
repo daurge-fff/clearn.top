@@ -21,11 +21,12 @@ const GradeSchema = new mongoose.Schema({
         type: Number,
         required: true,
         min: 1,
-        max: 10
+        max: 25
     },
     comment: {
         type: String
-    }
+    },
+    isProjectGrade: { type: Boolean, default: false }
 }, { timestamps: true });
 
 const Grade = mongoose.model('Grade', GradeSchema);

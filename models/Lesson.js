@@ -45,7 +45,22 @@ const LessonSchema = new mongoose.Schema({
     },
     cancellationReason: {
         type: String
-    }
+    },
+    homework: { type: String },
+    teacherAttachment: {
+        path: String,
+        filename: String
+    },
+    studentAttachment: {
+        path: String,
+        filename: String
+    },
+    homeworkStatus: {
+        type: String,
+        enum: ['pending', 'submitted', 'checked'],
+        default: 'pending'
+    },
+    difficulty: String 
 }, { timestamps: true }); 
 
 const Lesson = mongoose.model('Lesson', LessonSchema);

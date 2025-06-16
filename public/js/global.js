@@ -41,3 +41,39 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 });
+
+document.querySelectorAll('.file-upload-wrapper').forEach(wrapper => {
+    const input = wrapper.querySelector('.file-input');
+    const fileNameEl = wrapper.querySelector('.file-name');
+
+    wrapper.addEventListener('click', () => {
+        input.click();
+    });
+    input.addEventListener('click', (e) => {
+        e.stopPropagation();
+    });
+
+    wrapper.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        wrapper.classList.add('is-dragging');
+    });
+    wrapper.addEventListener('dragleave', () => {
+        wrapper.classList.remove('is-dragging');
+    });
+    wrapper.addEventListener('drop', (e) => {
+        e.preventDefault();
+        wrapper.classList.remove('is-dragging');
+        if (e.dataTransfer.files.length > 0) {
+            input.files = e.dataTransfer.files;
+            fileNameEl.textContent = input.files[0].name;
+        }
+    });
+
+    input.addEventListener('change', () => {
+        if (input.files.length > 0) {
+            fileNameEl.textContent = input.files[0].name;
+        } else {
+            fileNameEl.textContent = '';
+        }
+    });
+});

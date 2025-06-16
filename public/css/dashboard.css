@@ -63,6 +63,15 @@
 .icon-contact { --icon-url: url(/images/icon-contact.svg); }
 .icon-prev { --icon-url: url(/images/icon-prev.svg); }
 .icon-next { --icon-url: url(/images/icon-next.svg); }
+.icon-email { --icon-url: url(/images/icon-email.svg); }
+.icon-contact { --icon-url: url(/images/icon-contact.svg); }
+.icon-video { --icon-url: url(/images/icon-video.svg); }
+.icon-eye { --icon-url: url(/images/icon-eye.svg); }
+.icon-eye-off { --icon-url: url(/images/icon-eye-off.svg); }
+.icon-inbox { --icon-url: url(/images/icon-inbox.svg); }
+.icon-upload { --icon-url: url(/images/icon-upload.svg); }
+.icon-file { --icon-url: url(/images/icon-file.svg); }
+.icon-check { --icon-url: url(/images/icon-check.svg); }
 
 /* --- Корректируем размеры для специфичных случаев --- */
 .nav-link i, .header-btn i, .password-toggle i {
@@ -296,8 +305,6 @@
     font-size: 1.2rem;
     color: var(--accent-color-1);
 }
-.icon-email { --icon-url: url(/images/icon-email.svg); }
-.icon-contact { --icon-url: url(/images/icon-contact.svg); }
 
 /* === Lesson View Page === */
 .lesson-view-card {
@@ -345,7 +352,6 @@
     color: var(--accent-color-1);
     text-decoration: underline;
 }
-.icon-video { --icon-url: url(/images/icon-video.svg); }
 .dashboard-content .container {
   width: 100%;
   max-width: 1200px;
@@ -356,61 +362,6 @@
     font-size: 1.8rem;
 }
 
-/* === DASHBOARD STATS (NEW) === */
-.stats-grid {
-    display: grid; 
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); 
-    gap: 25px;
-    margin-bottom: 30px;
-}
-.stat-card {
-    background-color: var(--card-bg);
-    border: 1px solid var(--card-border);
-    border-radius: 12px;
-    padding: 20px;
-    display: flex;
-    align-items: center;
-    gap: 20px;
-    transition: all 0.2s ease;
-}
-.stat-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 20px var(--shadow-color);
-}
-.stat-icon {
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: var(--icon-bg);
-}
-.stat-icon i {
-    width: 24px;
-    height: 24px;
-    color: var(--icon-color);
-    background-color: var(--icon-color);
-}
-.stat-info {
-    display: flex;
-    flex-direction: column;
-}
-.stat-number {
-    font-size: 1.8rem; 
-    font-weight: 800;
-    font-family: var(--font-headings);
-    color: var(--text-color);
-    line-height: 1.1;
-}
-.stat-label {
-    font-size: 0.85rem;
-    opacity: 0.7;
-}
-.stat-number.small {
-    font-size: 1.6rem;
-}
 /* === Password Toggle Button === */
 .password-wrapper {
     position: relative;
@@ -447,8 +398,6 @@
 .password-toggle.is-showing .icon-eye-off {
     display: block;
 }
-.icon-eye { --icon-url: url(/images/icon-eye.svg); }
-.icon-eye-off { --icon-url: url(/images/icon-eye-off.svg); }
 
 .auth-form-wrapper .form-group {
     position: static;
@@ -537,7 +486,6 @@
     opacity: 0.7;
     line-height: 1.6;
 }
-.icon-inbox { --icon-url: url(/images/icon-inbox.svg); }
 
 /* === FILTER FORM STYLES === */
 .filter-card {
@@ -653,4 +601,220 @@
 }
 .card {
     border-color: var(--card-border); 
+}
+.attachment-info {
+    margin-top: 10px;
+    padding: 10px;
+    background-color: var(--bg-color);
+    border-radius: 5px;
+    font-style: italic;
+    opacity: 0.8;
+}
+
+/* =================================== */
+/* === FINAL POLISHING STYLES        === */
+/* =================================== */
+
+/* === DASHBOARD STATS (REWORK 2.0) === */
+.stats-grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center; /* Центрируем виджеты, решая проблему "изгоя" */
+    gap: 25px;
+    margin-bottom: 30px;
+}
+
+/* 2. СТИЛЬ ПО УМОЛЧАНИЮ (для главной панели) */
+.stat-card {
+    flex: 1 1 280px; /* Гибкая ширина с базовым значением */
+    max-width: 400px;
+    background-color: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 12px;
+    padding: 20px;
+    display: flex;
+    align-items: center; /* Иконка и текст выровнены по вертикали */
+    gap: 20px;
+    transition: all 0.2s ease;
+}
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px var(--shadow-color);
+}
+.stat-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--icon-bg);
+}
+.stat-icon i {
+    width: 24px;
+    height: 24px;
+    background-color: var(--icon-color);
+}
+.stat-info {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+.stat-number {
+    font-size: 1.8rem;
+    font-weight: 800;
+    font-family: var(--font-headings);
+    color: var(--text-color);
+    line-height: 1.2;
+    overflow-wrap: break-word;
+}
+.stat-label {
+    font-size: 0.85rem;
+    opacity: 0.7;
+    margin-top: 4px;
+}
+.stat-number.small {
+    font-size: 1.1rem;
+}
+.stat-info .badge {
+    padding: 6px 12px;
+    font-size: 0.9rem;
+    display: inline-block;
+    width: fit-content;
+}
+
+.profile-page-container .stat-card {
+    flex-direction: column;
+    text-align: center;
+    justify-content: center;
+}
+
+.profile-page-container .stat-icon {
+    margin: 0 auto 10px auto; 
+}
+.profile-page-container .stat-label {
+    margin-top: 2px; 
+}
+
+.calendar-card h2 {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+/* === FILE UPLOAD & CHECKBOX (REWORK 2.0) === */
+.file-upload-wrapper {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 30px;
+    border: 2px dashed var(--card-border);
+    border-radius: 10px;
+    transition: all 0.2s ease;
+    text-align: center;
+    cursor: pointer;
+}
+.file-upload-wrapper.is-dragging {
+    border-color: var(--accent-color-1);
+    background-color: var(--bg-color);
+}
+.file-upload-wrapper .file-input {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    opacity: 0;
+    cursor: pointer;
+}
+.file-upload-wrapper .upload-icon {
+    width: 40px;
+    height: 40px;
+    margin-bottom: 15px;
+    color: var(--accent-color-1);
+}
+.file-upload-wrapper .upload-icon i {
+    width: 100%;
+    height: 100%;
+    background-color: currentColor; 
+}
+.file-upload-wrapper .upload-text { font-weight: 700; margin-bottom: 5px; }
+.file-upload-wrapper .upload-hint, .file-upload-wrapper .file-name { font-size: 0.9rem; opacity: 0.7; }
+.file-upload-wrapper .file-name { font-weight: bold; color: var(--accent-color-1); }
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    font-weight: 700;
+    padding: 10px;
+    border-radius: 8px;
+    transition: background-color 0.2s ease;
+}
+.checkbox-label:hover {
+    background-color: var(--bg-color);
+}
+.checkbox-label input[type="checkbox"] { display: none; }
+.checkbox-label .custom-checkbox {
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--card-border);
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    flex-shrink: 0; 
+}
+.checkbox-label .custom-checkbox .icon-check {
+    width: 14px;
+    height: 14px;
+    background-color: #fff;
+    opacity: 0;
+    transform: scale(0.5);
+    transition: all 0.2s ease;
+}
+.checkbox-label input[type="checkbox"]:checked + .custom-checkbox {
+    background-color: var(--accent-color-1);
+    border-color: var(--accent-color-1);
+}
+.checkbox-label input[type="checkbox"]:checked + .custom-checkbox .icon-check {
+    opacity: 1;
+    transform: scale(1);
+}
+.grade-value { color: var(--accent-color-1); }
+.grade-comment { margin-top: 5px !important; opacity: 0.8; }
+.attachment-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 10px;
+    padding: 10px 15px;
+    background-color: var(--bg-color);
+    border: 1px solid var(--card-border);
+    border-radius: 8px;
+}
+.attachment-info span {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 700;
+}
+.stat-card {
+    text-align: center;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.stat-icon {
+    margin: 0 auto 15px auto;
+}
+
+@media (max-width: 767.98px) {
+    .stats-grid {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    }
 }

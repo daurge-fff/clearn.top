@@ -55,6 +55,11 @@ mongoose.connect(MONGO_URI)
     .then(() => console.log('MongoDB Connected...'))
     .catch(err => console.error('MongoDB connection error:', err));
 
+app.get('/download/:filepath', (req, res) => {
+    const file = `./uploads/${req.params.filepath}`;
+    res.download(file);
+});
+
 
 const PORT = process.env.PORT || 3000;
 

@@ -1,0 +1,64 @@
+<div class="container profile-page-container">
+    <div class="page-header">
+        <h1>Profile: <%= userProfile.name %></h1>
+        <div class="page-actions">
+            <a href="/dashboard/users/edit/<%= userProfile._id %>" class="btn btn-secondary"><i class="icon-edit"></i> Edit User</a>
+            <a href="/dashboard/users" class="btn btn-secondary">Back to All Users</a>
+        </div>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-info">
+                <span class="stat-number small"><%= userProfile.email %></span>
+                <span class="stat-label">Email</span>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-info">
+                <span class="stat-number small"><span class="badge role-<%= userProfile.role %>"><%= userProfile.role %></span></span>
+                <span class="stat-label">Role</span>
+            </div>
+        </div>
+        <% if (userProfile.role === 'student') { %>
+            <div class="stat-card">
+                <div class="stat-info">
+                    <span class="stat-number"><%= userProfile.lessonsPaid %></span>
+                    <span class="stat-label">Lessons Balance</span>
+                </div>
+            </div>
+        <% } %>
+    </div>
+
+    <div class="card">
+        <h2>Lesson History</h2>
+        <div class="table-responsive">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th><%= userProfile.role === 'student' ? 'Teacher' : 'Student' %></th>
+                        <th>Topic</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% if (lessons && lessons.length > 0) { %>
+                        <% lessons.forEach(lesson => { %>
+                            <tr>
+                                <td><%= new Date(lesson.lessonDate).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) %></td>
+                                <td><%= userProfile.role === 'student' ? lesson.teacher.name : lesson.student.name %></td>
+                                <td><%= lesson.topic %></td>
+                                <td><span class="badge status-<%= lesson.status %>"><%= lesson.status.replace(/_/g, ' ') %></span></td>
+                            </tr>
+                        <% }); %>
+                    <% } else { %>
+                        <tr>
+                            <td colspan="4" style="text-align: center; padding: 20px;">No lesson history found.</td>
+                        </tr>
+                    <% } %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

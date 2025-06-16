@@ -4,50 +4,70 @@
     </div>
 
     <div class="card">
-        <h2>Performance Over Time</h2>
+        <h2>Performance in Regular Lessons (1-10 scale)</h2>
         <canvas id="progressChart"></canvas>
+    </div>
+
+    <div class="card">
+        <h2>Performance in Projects (1-25 scale)</h2>
+        <canvas id="projectProgressChart"></canvas>
     </div>
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', async function() {
-    try {
-        const response = await fetch(`/api/progress/<%= user._id %>`);
-        if (!response.ok) throw new Error('Failed to fetch progress data');
-        
-        const data = await response.json();
-        
-        const ctx = document.getElementById('progressChart').getContext('2d');
-        const progressChart = new Chart(ctx, {
-            type: 'line', // Линейный график
-            data: {
-                labels: data.labels,
-                datasets: [{
-                    label: 'Grade per Lesson',
-                    data: data.scores,
-                    fill: true,
-                    backgroundColor: 'rgba(0, 242, 254, 0.2)',
-                    borderColor: 'rgba(0, 242, 254, 1)',
-                    tension: 0.3 // Сглаживание линии
-                }]
+function createChart(canvasId, chartLabel, data, maxScore) {
+    const ctx = document.getElementById(canvasId).getContext('2d');
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: data.labels,
+            datasets: [{
+                label: chartLabel,
+                data: data.scores,
+                fill: true,
+                backgroundColor: 'rgba(0, 242, 254, 0.2)',
+                borderColor: 'rgba(0, 242, 254, 1)',
+                tension: 0.3
+            }]
+        },
+        options: {
+            scales: {
+                y: { beginAtZero: true, max: maxScore }
             },
-            options: {
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        max: 10
-                    }
-                },
-                plugins: {
-                    legend: {
-                        display: false
-                    }
-                }
-            }
-        });
+            plugins: { legend: { display: false } }
+        }
+    });
+}
+
+document.addEventListener('DOMContentLoaded', async function() {
+    // График обычных уроков
+    try {
+        const regularResponse = await fetch(`/api/progress/<%= user._id %>`);
+        if (!regularResponse.ok) throw new Error('Failed to fetch regular progress');
+        const regularData = await regularResponse.json();
+        if (regularData.scores.length > 0) {
+            createChart('progressChart', 'Grade per Lesson', regularData, 10);
+        } else {
+            document.getElementById('progressChart').outerHTML = '<p>No grades for regular lessons yet.</p>';
+        }
     } catch (error) {
         console.error(error);
         document.getElementById('progressChart').outerHTML = '<p>Could not load progress chart.</p>';
+    }
+
+    // График проектных уроков
+    try {
+        const projectResponse = await fetch(`/api/progress/<%= user._id %>/projects`);
+        if (!projectResponse.ok) throw new Error('Failed to fetch project progress');
+        const projectData = await projectResponse.json();
+        if (projectData.scores.length > 0) {
+            createChart('projectProgressChart', 'Grade per Project', projectData, 25);
+        } else {
+            document.getElementById('projectProgressChart').outerHTML = '<p>No grades for projects yet.</p>';
+        }
+    } catch (error) {
+        console.error(error);
+        document.getElementById('projectProgressChart').outerHTML = '<p>Could not load project progress chart.</p>';
     }
 });
 </script>

@@ -1,0 +1,68 @@
+<div class="container">
+    <div class="page-header">
+        <h1>Student Profile: <%= student.name %></h1>
+        <a href="/dashboard/my-students" class="btn btn-secondary">Back to My Students</a>
+    </div>
+
+    <!-- Карточки с информацией о студенте -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon" style="--icon-bg: rgba(0, 242, 254, 0.2); --icon-color: var(--accent-color-1);"><i class="icon-list"></i></div>
+            <div class="stat-info">
+                <span class="stat-number"><%= student.lessonsPaid %></span>
+                <span class="stat-label">Lessons Balance</span>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon" style="--icon-bg: rgba(82, 215, 123, 0.2); --icon-color: #52d77b;"><i class="icon-email"></i></div>
+            <div class="stat-info">
+                <span class="stat-number small"><%= student.email %></span>
+                <span class="stat-label">Email</span>
+            </div>
+        </div>
+        <% if (student.contact) { %>
+            <div class="stat-card">
+                <div class="stat-icon" style="--icon-bg: rgba(155, 89, 182, 0.2); --icon-color: #9b59b6;"><i class="icon-contact"></i></div>
+                <div class="stat-info">
+                    <span class="stat-number small"><%= student.contact %></span>
+                    <span class="stat-label">Contact</span>
+                </div>
+            </div>
+        <% } %>
+    </div>
+
+    <!-- Таблица с историей уроков -->
+    <div class="card">
+        <h2>Lesson History with You</h2>
+        <div class="table-responsive">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Topic</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% if (lessons && lessons.length > 0) { %>
+                        <% lessons.forEach(lesson => { %>
+                            <tr>
+                                <td><%= new Date(lesson.lessonDate).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) %></td>
+                                <td><%= lesson.topic %></td>
+                                <td><span class="badge status-<%= lesson.status %>"><%= lesson.status.replace(/_/g, ' ') %></span></td>
+                                <td class="actions-cell">
+                                    <a href="/dashboard/lessons/manage/<%= lesson._id %>" class="btn-icon" data-tooltip="Manage"><i class="icon-edit"></i></a>
+                                </td>
+                            </tr>
+                        <% }); %>
+                    <% } else { %>
+                        <tr>
+                            <td colspan="4" style="text-align: center; padding: 20px;">No lessons found with this student.</td>
+                        </tr>
+                    <% } %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

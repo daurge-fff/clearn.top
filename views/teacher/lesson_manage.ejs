@@ -6,7 +6,7 @@
 </div>
 
 <div class="card form-card">
-    <form action="/dashboard/lessons/manage/<%= lesson._id %>" method="POST">
+    <form action="/dashboard/lessons/manage/<%= lesson._id %>" method="POST" enctype="multipart/form-data">
         
         <div class="form-group">
             <label for="topic">Lesson Topic</label>
@@ -28,6 +28,22 @@
             <label for="homework">Homework</label>
             <textarea id="homework" name="homework" rows="3" placeholder="Describe the homework assignment..."><%= lesson.homework || '' %></textarea>
         </div>
+        <div class="form-group">
+            <label>Attach File (PDF, DOC, IMG, ZIP)</label>
+            <% if (lesson.teacherAttachment && lesson.teacherAttachment.filename) { %>
+                <div class="attachment-info">
+                    <span><i class="icon-file"></i> <%= lesson.teacherAttachment.filename %></span>
+                    <a href="/dashboard/lessons/delete-attachment/<%= lesson._id %>/teacher" class="btn-icon btn-danger" data-tooltip="Delete File" onclick="return confirm('Are you sure?')"><i class="icon-delete"></i></a>
+                </div>
+            <% } else { %>
+                <div class="file-upload-wrapper">
+                    <input type="file" id="teacherAttachment" name="teacherAttachment" class="file-input">
+                    <div class="upload-icon"><i class="icon-upload"></i></div>
+                    <div class="upload-text">Drag & Drop or Click to Upload</div>
+                    <div class="file-name"></div>
+                </div>
+            <% } %>
+        </div>
         
         <div class="form-group">
             <label for="recordingUrl">Lesson Recording URL</label>
@@ -38,6 +54,38 @@
             <label for="notes">My Private Notes</label>
             <textarea id="notes" name="notes" rows="2" placeholder="Notes only visible to you..."><%= lesson.notes || '' %></textarea>
         </div>
+        <div class="form-group">
+            <label>Student's Homework</label>
+            <% if (lesson.studentAttachment && lesson.studentAttachment.filename) { %>
+                <a href="/download/<%= lesson.studentAttachment.path.split('\\').pop() %>" class="btn btn-secondary">Download Student's HW</a>
+            <% } else { %>
+                <p>Student has not submitted homework yet.</p>
+            <% } %>
+        </div>
+        <div class="form-group">
+            <label for="homeworkStatus">Homework Status</label>
+            <select id="homeworkStatus" name="homeworkStatus">
+                <option value="pending" <%= lesson.homeworkStatus === 'pending' ? 'selected' : '' %>>Pending</option>
+                <option value="submitted" <%= lesson.homeworkStatus === 'submitted' ? 'selected' : '' %>>Submitted</option>
+                <option value="checked" <%= lesson.homeworkStatus === 'checked' ? 'selected' : '' %>>Checked</option>
+            </select>
+        </div>
+        <label class="checkbox-label form-group">
+            <input type="checkbox" id="isProject" name="isProject" <%= lesson.isProject ? 'checked' : '' %> onchange="toggleProjectFields()">
+            <span class="custom-checkbox"><i class="icon-check"></i></span>
+            <span>This is a Project Lesson</span>
+        </label>
+        <div id="project-fields" style="<%= lesson.isProject ? 'display:block;' : 'display:none;' %>">
+            <div class="form-group"><label for="projectTitle">Project Title</label><input type="text" name="projectDetails[title]" value="<%= lesson.projectDetails ? lesson.projectDetails.title : '' %>"></div>
+            <div class="form-group"><label for="projectDesc">Project Description</label><textarea name="projectDetails[description]"><%= lesson.projectDetails ? lesson.projectDetails.description : '' %></textarea></div>
+            <div class="form-group"><label for="projectRecording">Project Defense Recording URL</label><input type="url" name="projectDefenseRecordingUrl" value="<%= lesson.projectDefenseRecordingUrl || '' %>"></div>
+        </div>
+
+        <script>
+        function toggleProjectFields() {
+            document.getElementById('project-fields').style.display = document.getElementById('isProject').checked ? 'block' : 'none';
+        }
+        </script>
         <div class="form-group">
             <label for="score">Grade (1-10)</label>
             <input type="number" id="score" name="score" min="1" max="10" step="1" placeholder="Leave blank if not applicable">
