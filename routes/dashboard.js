@@ -333,5 +333,39 @@ router.get('/progress', ensureAuth, ensureRole('student'), (req, res) => {
         page_name: 'progress'
     });
 });
+// @desc    Страница настроек
+// @route   GET /dashboard/settings
+router.get('/settings', ensureAuth, (req, res) => {
+    res.render('settings', {
+        layout: 'layouts/dashboard',
+        user: req.user,
+        page_name: 'settings'
+    });
+});
+
+// @desc    Обработка формы настроек
+// @route   POST /dashboard/settings
+router.post('/settings', ensureAuth, async (req, res) => {
+    try {
+        const { name, password, telegramChatId } = req.body;
+        const user = await User.findById(req.user.id);
+
+        user.name = name;
+        user.telegramChatId = telegramChatId;
+
+        if (password) {
+            const salt = await bcrypt.genSalt(10);
+            user.password = await bcrypt.hash(password, salt);
+        }
+
+        await user.save();
+        req.flash('success_msg', 'Settings updated successfully!');
+        res.redirect('/dashboard/settings');
+    } catch (err) {
+        console.error(err);
+        req.flash('error_msg', 'Something went wrong.');
+        res.redirect('/dashboard/settings');
+    }
+});
 
 module.exports = router;

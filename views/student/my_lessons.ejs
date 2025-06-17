@@ -36,15 +36,13 @@
                             <td><%= lesson.teacher.name %></td>
                             <td><%= new Date(lesson.lessonDate).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) %></td>
                             <td><span class="badge status-<%= lesson.status %>"><%= lesson.status.replace(/_/g, ' ') %></span></td>
-                            <td class="actions-cell <%= (lesson.status !== 'scheduled') ? 'is-empty' : '' %>">
+                            <td class="actions-cell">
                                 <% if (lesson.status === 'scheduled') { %>
-                                    <form action="/dashboard/lessons/cancel/<%= lesson._id %>" method="POST" style="display: inline;">
-                                        <button type="submit" 
-                                                class="btn-icon btn-danger" 
-                                                data-tooltip="Cancel Lesson" 
-                                                onclick="return confirm('Are you sure you want to cancel this lesson? This action cannot be undone and a lesson credit will be returned to your balance.');">
+                                    <form action="/dashboard/lessons/cancel/<%= lesson._id %>" method="POST" onsubmit="return handleCancellation(this);">
+                                        <button type="submit" class="btn-icon btn-danger" data-tooltip="Cancel Lesson">
                                             <i class="icon-delete"></i>
                                         </button>
+                                        <input type="hidden" name="reason" value="">
                                     </form>
                                 <% } else { %>
                                     
@@ -96,4 +94,17 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     calendar.render();
 });
+</script>
+
+<script>
+function handleCancellation(form) {
+    const reason = prompt("Please enter the reason for cancellation (required):");
+    if (reason && reason.trim() !== "") {
+        form.querySelector('input[name="reason"]').value = reason;
+        return confirm('Are you sure you want to cancel this lesson?');
+    } else if (reason !== null) {
+        alert("Cancellation reason is required.");
+    }
+    return false;
+}
 </script>

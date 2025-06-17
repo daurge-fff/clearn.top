@@ -55,14 +55,15 @@
                     <% if(user.role === 'admin') { %>
                         <a href="/dashboard/users" class="nav-link <%= (typeof page_name !== 'undefined' && page_name === 'users') ? 'active' : '' %>"><i class="icon-users"></i><span>Users</span></a>
                         <a href="/dashboard/lessons" class="nav-link <%= (typeof page_name !== 'undefined' && page_name === 'lessons') ? 'active' : '' %>"><i class="icon-list"></i><span>All Lessons</span></a>
-                        <a href="/dashboard/settings" class="nav-link"><i class="icon-settings"></i><span>Settings</span></a>
                     <% } %>
 
                      <% if(user.role === 'teacher') { %>
                         <a href="/dashboard/schedule" class="nav-link <%= (typeof page_name !== 'undefined' && page_name === 'schedule') ? 'active' : '' %>"><i class="icon-calendar"></i><span>Schedule</span></a>
                         <a href="/dashboard/my-students" class="nav-link <%= (typeof page_name !== 'undefined' && page_name === 'students') ? 'active' : '' %>"><i class="icon-users"></i><span>My Students</span></a>
                     <% } %>
+                    <a href="/dashboard/settings" class="nav-link <%= (typeof page_name !== 'undefined' && page_name === 'settings') ? 'active' : '' %>"><i class="icon-settings"></i><span>Settings</span></a>
                 </nav>
+                
             </div>
             <div class="sidebar-footer">
                 <div class="user-profile">

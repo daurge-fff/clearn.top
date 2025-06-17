@@ -41,7 +41,11 @@ const UserSchema = new mongoose.Schema({
         ref: 'User'
     }],
     specialization: [String],
-
+    telegramChatId: {
+        type: String,
+        unique: true,
+        sparse: true
+    },
     date_registered: {
         type: Date,
         default: Date.now
