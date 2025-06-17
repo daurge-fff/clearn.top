@@ -10,7 +10,13 @@
                     <% students.forEach(student => { %>
                         <div class="user-card">
                             <div class="user-card-header">
-                                <div class="user-avatar"><%= student.name.charAt(0) %></div>
+                                <div class="user-avatar">
+                                    <% if (student.emojiAvatar) { %>
+                                        <img src="https://emojicdn.elk.sh/<%= encodeURIComponent(student.emojiAvatar) %>?style=apple" alt="Avatar" class="emoji-avatar-img">
+                                    <% } else { %>
+                                        <span><%= student.name.charAt(0) %></span>
+                                    <% } %>
+                                </div>
                                 <div class="user-info">
                                     <a href="/dashboard/student/<%= student._id %>" class="user-name link-discreet"><%= student.name %></a>
                                     <span class="user-role status-<%= student.status %>"><%= student.status %></span>

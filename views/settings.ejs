@@ -19,6 +19,11 @@
                 <input type="text" id="telegramChatId" name="telegramChatId" value="<%= user.telegramChatId || '' %>" placeholder="Get it from @CodeLearnHelperBot">
                 <p class="form-hint">To receive notifications, start a chat with our bot and enter the Chat ID it provides.</p>
             </div>
+            <label class="checkbox-label form-group">
+                <input type="checkbox" name="notifications[lessonReminders]" <%= (user.notifications && user.notifications.lessonReminders) ? 'checked' : '' %>>
+                <span class="custom-checkbox"><i class="icon-check"></i></span>
+                <span>Receive reminders about upcoming lessons</span>
+            </label>
             <div class="form-actions">
                 <button type="submit" class="btn btn-primary">Save Settings</button>
             </div>

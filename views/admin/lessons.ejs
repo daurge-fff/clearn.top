@@ -8,38 +8,56 @@
     </div>
     <div class="card filter-card">
         <form action="/dashboard/lessons" method="GET" class="filter-form">
-            <div class="filter-group">
-                <label for="teacher">Teacher</label>
-                <select name="teacher" id="teacher">
-                    <option value="">All Teachers</option>
-                    <% teachers.forEach(t => { %>
-                        <option value="<%= t._id %>" <%= (query.teacher == t._id) ? 'selected' : '' %>><%= t.name %></option>
-                    <% }); %>
-                </select>
+            <div class="filter-group main-search">
+                <label for="search-input">Search</label>
+                <div class="input-with-icon">
+                    <i class="icon-search"></i>
+                    <input type="text" id="search-input" name="search" placeholder="By student, teacher, topic..." value="<%= query.search || '' %>">
+                </div>
             </div>
-            <div class="filter-group">
-                <label for="student">Student</label>
-                <select name="student" id="student">
-                    <option value="">All Students</option>
-                    <% students.forEach(s => { %>
-                        <option value="<%= s._id %>" <%= (query.student == s._id) ? 'selected' : '' %>><%= s.name %></option>
-                    <% }); %>
-                </select>
-            </div>
-            <div class="filter-group">
-                <label for="status">Status</label>
-                <select name="status" id="status">
-                    <option value="">All Statuses</option>
-                    <option value="scheduled" <%= (query.status == 'scheduled') ? 'selected' : '' %>>Scheduled</option>
-                    <option value="completed" <%= (query.status == 'completed') ? 'selected' : '' %>>Completed</option>
-                    <option value="cancelled_by_student" <%= (query.status == 'cancelled_by_student') ? 'selected' : '' %>>Cancelled by Student</option>
-                    <option value="cancelled_by_teacher" <%= (query.status == 'cancelled_by_teacher') ? 'selected' : '' %>>Cancelled by Teacher</option>
-                    <option value="no_show" <%= (query.status == 'no_show') ? 'selected' : '' %>>No Show</option>
-                </select>
-            </div>
-            <div class="filter-actions">
-                <button type="submit" class="btn btn-primary">Apply</button>
-                <a href="/dashboard/lessons" class="btn btn-secondary">Clear</a>
+
+            <button type="button" id="mobile-filter-toggle" class="btn btn-secondary mobile-only">
+                <i class="icon-filter"></i>
+                <span>Filters</span>
+            </button>
+            
+            <div class="collapsible-filters">
+                <div class="filter-group">
+                    <label for="teacher">Teacher</label>
+                    <select name="teacher" id="teacher">
+                        <option value="">All Teachers</option>
+                        <% teachers.forEach(t => { %>
+                            <option value="<%= t._id %>" <%= (query.teacher == t._id) ? 'selected' : '' %>><%= t.name %></option>
+                        <% }); %>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="student">Student</label>
+                    <select name="student" id="student">
+                        <option value="">All Students</option>
+                        <% students.forEach(s => { %>
+                            <option value="<%= s._id %>" <%= (query.student == s._id) ? 'selected' : '' %>><%= s.name %></option>
+                        <% }); %>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="dateFrom">From</label>
+                    <div class="input-with-icon">
+                        <i class="icon-calendar"></i>
+                        <input type="date" name="dateFrom" id="dateFrom" value="<%= query.dateFrom || '' %>">
+                    </div>
+                </div>
+                <div class="filter-group">
+                    <label for="dateTo">To</label>
+                    <div class="input-with-icon">
+                        <i class="icon-calendar"></i>
+                        <input type="date" name="dateTo" id="dateTo" value="<%= query.dateTo || '' %>">
+                    </div>
+                </div>
+                <div class="filter-actions">
+                    <button type="submit" class="btn btn-primary">Apply</button>
+                    <a href="/dashboard/lessons" class="btn btn-secondary">Clear</a>
+                </div>
             </div>
         </form>
     </div>
@@ -49,13 +67,24 @@
         <% if (lessons && lessons.length > 0) { %>
             <div class="table-responsive">
                 <table class="data-table">
+                    <%
+                        const sortableLink = (field, text) => {
+                            const currentSort = query.sort === field;
+                            const order = currentSort && query.order === 'asc' ? 'desc' : 'asc';
+                            const icon = currentSort ? (query.order === 'asc' ? '▲' : '▼') : '';
+                            const params = new URLSearchParams(query);
+                            params.set('sort', field);
+                            params.set('order', order);
+                            return `<a href="?${params.toString()}">${text} ${icon}</a>`;
+                        };
+                    %>
                     <thead>
                         <tr>
                             <th>Student</th>
                             <th>Teacher</th>
-                            <th>Course</th>
-                            <th>Date & Time</th>
-                            <th>Status</th>
+                            <th><%- sortableLink('topic', 'Course / Topic') %></th>
+                            <th><%- sortableLink('lessonDate', 'Date & Time') %></th>
+                            <th><%- sortableLink('status', 'Status') %></th>
                             <th>Actions</th>
                         </tr>
                     </thead>

@@ -1,0 +1,53 @@
+<div class="container">
+    <div class="page-header">
+        <h1>Financial Analytics</h1>
+    </div>
+
+    <div class="stats-grid" id="analytics-stats">
+        <div class="stat-card"><div class="stat-info"><span class="stat-number">...</span><span class="stat-label">Loading</span></div></div>
+        <div class="stat-card"><div class="stat-info"><span class="stat-number">...</span><span class="stat-label">Loading</span></div></div>
+        <div class="stat-card"><div class="stat-info"><span class="stat-number">...</span><span class="stat-label">Loading</span></div></div>
+        <div class="stat-card"><div class="stat-info"><span class="stat-number">...</span><span class="stat-label">Loading</span></div></div>
+    </div>
+
+    <div class="card">
+        <h2>Revenue Over Time</h2>
+        <canvas id="revenueChart"></canvas>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', async function() {
+    try {
+        const response = await fetch('/api/analytics');
+        const stats = await response.json();
+
+        const statsContainer = document.getElementById('analytics-stats');
+        statsContainer.innerHTML = `
+            <div class="stat-card"><div class="stat-info"><span class="stat-number">€${stats.totalRevenue}</span><span class="stat-label">Total Revenue</span></div></div>
+            <div class="stat-card"><div class="stat-info"><span class="stat-number">${stats.paymentCount}</span><span class="stat-label">Total Payments</span></div></div>
+            <div class="stat-card"><div class="stat-info"><span class="stat-number">€${stats.averageCheck}</span><span class="stat-label">Average Check</span></div></div>
+            <div class="stat-card"><div class="stat-info"><span class="stat-number">${stats.totalLessonsSold}</span><span class="stat-label">Lessons Sold</span></div></div>
+        `;
+
+        const ctx = document.getElementById('revenueChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: stats.chartData.labels,
+                datasets: [{
+                    label: 'Revenue (€)',
+                    data: stats.chartData.data,
+                    backgroundColor: 'rgba(0, 242, 254, 0.5)',
+                    borderColor: 'rgba(0, 242, 254, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: { scales: { y: { beginAtZero: true } } }
+        });
+
+    } catch (error) {
+        console.error("Failed to load analytics:", error);
+    }
+});
+</script>

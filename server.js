@@ -6,6 +6,8 @@ const session = require('express-session');
 const expressLayouts = require('express-ejs-layouts');
 const path = require('path');
 const flash = require('connect-flash');
+const bot = require('./bot'); // Импортируем инстанс бота
+const { startScheduler } = require('./services/scheduler');
 
 dotenv.config({ path: './.env' });
 
@@ -60,6 +62,7 @@ app.get('/download/:filepath', (req, res) => {
     res.download(file);
 });
 
+startScheduler(bot);
 
 const PORT = process.env.PORT || 3000;
 

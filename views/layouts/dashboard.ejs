@@ -55,6 +55,7 @@
                     <% if(user.role === 'admin') { %>
                         <a href="/dashboard/users" class="nav-link <%= (typeof page_name !== 'undefined' && page_name === 'users') ? 'active' : '' %>"><i class="icon-users"></i><span>Users</span></a>
                         <a href="/dashboard/lessons" class="nav-link <%= (typeof page_name !== 'undefined' && page_name === 'lessons') ? 'active' : '' %>"><i class="icon-list"></i><span>All Lessons</span></a>
+                        <a href="/dashboard/analytics" class="nav-link <%= (typeof page_name !== 'undefined' && page_name === 'analytics') ? 'active' : '' %>"><i class="icon-chart"></i><span>Analytics</span></a>
                     <% } %>
 
                      <% if(user.role === 'teacher') { %>
@@ -67,7 +68,13 @@
             </div>
             <div class="sidebar-footer">
                 <div class="user-profile">
-                    <div class="user-avatar"><%= user.name.charAt(0) %></div>
+                    <div class="user-avatar">
+                        <% if (user.emojiAvatar) { %>
+                            <img src="https://emojicdn.elk.sh/<%= encodeURIComponent(user.emojiAvatar) %>?style=apple" alt="Avatar" class="emoji-avatar-img">
+                        <% } else { %>
+                            <span><%= user.name.charAt(0) %></span>
+                        <% } %>
+                    </div>
                     <div class="user-info">
                         <span class="user-name"><%= user.name %></span>
                         <span class="user-role"><%= user.role %></span>

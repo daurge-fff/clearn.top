@@ -1,10 +1,12 @@
 const express = require('express');
 const router = express.Router();
-const { ensureAuth } = require('../middleware/auth');
 const Lesson = require('../models/Lesson');
 const User = require('../models/User');
 const Grade = require('../models/Grade');
 const { Parser } = require('json2csv');
+const { ensureAuth, ensureRole } = require('../middleware/auth');
+const { processSuccessfulPayment } = require('../services/paymentService');
+const Payment = require('../models/Payment');
 
 // @desc    Получение уроков для FullCalendar
 // @route   GET /api/lessons
@@ -148,6 +150,47 @@ router.get('/progress/:studentId/projects', ensureAuth, async (req, res) => {
     const labels = grades.map(g => g.lesson.projectDetails.title);
     const scores = grades.map(g => g.score);
     res.json({ labels, scores });
+});
+// @desc    Получение данных для финансовой аналитики
+// @route   GET /api/analytics
+router.get('/analytics', ensureAuth, ensureRole('admin'), async (req, res) => {
+    try {
+        const payments = await Payment.find({}).sort({ createdAt: 1 });
+
+        if (payments.length === 0) {
+            return res.json({
+                totalRevenue: '0.00',
+                paymentCount: 0,
+                totalLessonsSold: 0,
+                averageCheck: '0.00',
+                chartData: { labels: [], data: [] }
+            });
+        }
+
+        const dailyRevenue = {};
+        payments.forEach(p => {
+            const day = new Date(p.createdAt).toISOString().split('T')[0];
+            if (!dailyRevenue[day]) dailyRevenue[day] = 0;
+            dailyRevenue[day] += p.amountPaid;
+        });
+
+        const totalRevenue = payments.reduce((sum, p) => sum + p.amountPaid, 0);
+        const totalLessonsSold = payments.reduce((sum, p) => sum + p.lessonsPurchased, 0);
+        
+        res.json({
+            totalRevenue: totalRevenue.toFixed(2),
+            paymentCount: payments.length,
+            totalLessonsSold: totalLessonsSold,
+            averageCheck: (totalRevenue / payments.length).toFixed(2),
+            chartData: {
+                labels: Object.keys(dailyRevenue),
+                data: Object.values(dailyRevenue)
+            }
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server Error' });
+    }
 });
 
 module.exports = router;

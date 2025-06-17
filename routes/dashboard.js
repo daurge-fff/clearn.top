@@ -61,21 +61,23 @@ router.get('/', ensureAuth, async (req, res) => {
     }
 });
 
-// @desc    Страница управления пользователями (с фильтрацией)
+// @desc    Страница управления пользователями (с фильтрацией и сортировкой)
 // @route   GET /dashboard/users
 router.get('/users', ensureAuth, ensureRole('admin'), async (req, res) => {
     try {
         const { role, status } = req.query;
-        const filter = {};
+        let filter = {};
+        if (role) filter.role = role;
+        if (status) filter.status = status;
 
-        if (role) {
-            filter.role = role;
-        }
-        if (status) {
-            filter.status = status;
+        let sort = {};
+        if (req.query.sort) {
+            sort[req.query.sort] = req.query.order === 'desc' ? -1 : 1;
+        } else {
+            sort.name = 1;
         }
 
-        const users = await User.find(filter).sort({ name: 1 }).lean();
+        const users = await User.find(filter).sort(sort).lean();
 
         res.render('admin/users', {
             layout: 'layouts/dashboard',
@@ -94,23 +96,50 @@ router.post('/users/add', ensureAuth, ensureRole('admin'), async (req, res) => {
 router.get('/users/edit/:id', ensureAuth, ensureRole('admin'), async (req, res) => { try { const userToEdit = await User.findById(req.params.id).lean(); if (!userToEdit) return res.status(404).send('User not found'); const teachers = await User.find({ role: 'teacher' }).lean(); res.render('admin/user_edit', { layout: 'layouts/dashboard', user: req.user, userToEdit: userToEdit, teachers: teachers, page_name: 'users' }); } catch (err) { console.error(err); res.status(500).send('Server Error'); } });
 router.post('/users/edit/:id', ensureAuth, ensureRole('admin'), async (req, res) => { try { const userId = req.params.id; const { name, email, role, contact, lessonsPaid, status, teacher: newTeacherId } = req.body; const userToUpdate = await User.findById(userId); if (!userToUpdate) return res.status(404).send('User not found'); const oldTeacherId = userToUpdate.teacher ? String(userToUpdate.teacher) : null; const newTeacherIdStr = newTeacherId || null; if (oldTeacherId !== newTeacherIdStr) { if (oldTeacherId) { await User.updateOne({ _id: oldTeacherId }, { $pull: { students: userId } }); } if (newTeacherIdStr && role === 'student') { await User.updateOne({ _id: newTeacherIdStr }, { $addToSet: { students: userId } }); } } userToUpdate.name = name; userToUpdate.email = email.toLowerCase(); userToUpdate.contact = contact; userToUpdate.status = status; if (userToUpdate.role !== 'student' && role === 'student') { userToUpdate.teacher = newTeacherIdStr; } else if (userToUpdate.role === 'student' && role !== 'student') { if(oldTeacherId) { await User.updateOne({ _id: oldTeacherId }, { $pull: { students: userId } }); } userToUpdate.teacher = null; } userToUpdate.role = role; if (role === 'student') { userToUpdate.lessonsPaid = Number(lessonsPaid); userToUpdate.teacher = newTeacherIdStr; } else { userToUpdate.lessonsPaid = 0; userToUpdate.teacher = null; } if (req.body.password) { const salt = await bcrypt.genSalt(10); userToUpdate.password = await bcrypt.hash(req.body.password, salt); } await userToUpdate.save(); res.redirect('/dashboard/users'); } catch (err) { console.error(err); res.status(500).send('Server Error'); } });
 router.get('/users/delete/:id', ensureAuth, ensureRole('admin'), async (req, res) => { try { await User.findByIdAndDelete(req.params.id); res.redirect('/dashboard/users'); } catch (err) { console.error(err); res.status(500).send('Server Error'); } });
-
-// @desc    Страница просмотра всех уроков (с фильтрацией)
+// @desc    Страница просмотра всех уроков (с поиском, фильтрацией и сортировкой)
 // @route   GET /dashboard/lessons
 router.get('/lessons', ensureAuth, ensureRole('admin'), async (req, res) => {
     try {
-        const { teacher, student, status } = req.query;
-        const filter = {};
-
+        const { search, teacher, student, status, dateFrom, dateTo } = req.query;
+        let filter = {};
         if (teacher) filter.teacher = teacher;
         if (student) filter.student = student;
         if (status) filter.status = status;
+
+        if (dateFrom || dateTo) {
+            filter.lessonDate = {};
+            if (dateFrom) filter.lessonDate.$gte = new Date(dateFrom);
+            if (dateTo) {
+                const to = new Date(dateTo);
+                filter.lessonDate.$lte = new Date(to.setDate(to.getDate() + 1));
+            }
+        }
+
+        if (search) {
+            const searchRegex = new RegExp(search, 'i');
+            
+            const matchingUsers = await User.find({ name: searchRegex }).select('_id');
+            const userIds = matchingUsers.map(u => u._id);
+
+            filter.$or = [
+                { topic: searchRegex },
+                { teacher: { $in: userIds } },
+                { student: { $in: userIds } }
+            ];
+        }
+
+        let sort = {};
+        if (req.query.sort) {
+            sort[req.query.sort] = req.query.order === 'desc' ? -1 : 1;
+        } else {
+            sort.lessonDate = -1;
+        }
 
         const lessons = await Lesson.find(filter)
             .populate('student', 'name')
             .populate('teacher', 'name')
             .populate('course', 'name')
-            .sort({ lessonDate: -1 })
+            .sort(sort)
             .lean();
         
         const allTeachers = await User.find({ role: 'teacher' }).sort({ name: 1 }).lean();
@@ -324,16 +353,7 @@ router.get('/user-profile/:id', ensureAuth, ensureRole('admin'), async (req, res
         res.status(500).send('Server Error');
     }
 });
-// @desc    Страница просмотра прогресса
-// @route   GET /dashboard/progress
-router.get('/progress', ensureAuth, ensureRole('student'), (req, res) => {
-    res.render('student/progress', {
-        layout: 'layouts/dashboard',
-        user: req.user,
-        page_name: 'progress'
-    });
-});
-// @desc    Страница настроек
+// @desc    ОТОБРАЖЕНИЕ страницы настроек
 // @route   GET /dashboard/settings
 router.get('/settings', ensureAuth, (req, res) => {
     res.render('settings', {
@@ -343,15 +363,22 @@ router.get('/settings', ensureAuth, (req, res) => {
     });
 });
 
-// @desc    Обработка формы настроек
+// @desc    ОБРАБОТКА формы настроек
 // @route   POST /dashboard/settings
 router.post('/settings', ensureAuth, async (req, res) => {
     try {
         const { name, password, telegramChatId } = req.body;
+        const receiveReminders = !!req.body['notifications[lessonReminders]'];
+
         const user = await User.findById(req.user.id);
+        if (!user) {
+            req.flash('error_msg', 'User not found.');
+            return res.redirect('/settings');
+        }
 
         user.name = name;
         user.telegramChatId = telegramChatId;
+        user.notifications.lessonReminders = receiveReminders;
 
         if (password) {
             const salt = await bcrypt.genSalt(10);
@@ -367,5 +394,109 @@ router.post('/settings', ensureAuth, async (req, res) => {
         res.redirect('/dashboard/settings');
     }
 });
+// @desc    Страница финансовой аналитики
+// @route   GET /dashboard/analytics
+router.get('/analytics', ensureAuth, ensureRole('admin'), (req, res) => {
+    res.render('admin/analytics', {
+        layout: 'layouts/dashboard',
+        user: req.user,
+        page_name: 'analytics'
+    });
+});
+// @desc    Ручная корректировка баланса
+// @route   POST /dashboard/user-profile/:id/adjust-balance
+router.post('/user-profile/:id/adjust-balance', ensureAuth, ensureRole('admin'), async (req, res) => {
+    try {
+        const { adjustment, reason } = req.body;
+        const amount = parseInt(adjustment, 10);
 
+        if (!amount || !reason) {
+            req.flash('error_msg', 'Amount and reason are required.');
+            return res.redirect(`/dashboard/user-profile/${req.params.id}`);
+        }
+
+        const user = await User.findById(req.params.id);
+        const newBalance = user.lessonsPaid + amount;
+
+        user.lessonsPaid = newBalance;
+        user.balanceHistory.push({
+            change: amount,
+            balanceAfter: newBalance,
+            reason: `Manual Correction: ${reason}`
+        });
+        await user.save();
+
+        req.flash('success_msg', 'Balance adjusted successfully.');
+        res.redirect(`/dashboard/user-profile/${req.params.id}`);
+
+    } catch (err) {
+        console.error(err);
+        req.flash('error_msg', 'Something went wrong.');
+        res.redirect(`/dashboard/user-profile/${req.params.id}`);
+    }
+});
+router.post('/users/add', ensureAuth, ensureRole('admin'), async (req, res) => {
+    const { name, email, password, role, contact, lessonsPaid } = req.body;
+    
+    if (!name || !email || !password || !role) {
+        req.flash('error_msg', 'Please enter all required fields');
+        return res.redirect('/dashboard/users/add');
+    }
+    
+    try {
+        const existingUser = await User.findOne({ email: email.toLowerCase() });
+        if (existingUser) {
+            req.flash('error_msg', 'Email already exists');
+            return res.redirect('/dashboard/users/add');
+        }
+        
+        const getRandomEmoji = () => {
+            const ranges = [[0x1F600, 0x1F64F], [0x2700, 0x27BF], [0x1F300, 0x1F5FF]];
+            let emoji;
+            do {
+                const [min, max] = ranges[Math.floor(Math.random() * ranges.length)];
+                emoji = String.fromCodePoint(Math.floor(Math.random() * (max - min + 1)) + min);
+            } while (!/[\p{Emoji}]/gu.test(emoji));
+            return emoji;
+        };
+
+        let randomEmoji;
+        let isUnique = false;
+        let attempts = 0;
+        const usedEmojis = await User.find({ emojiAvatar: { $ne: null } }).distinct('emojiAvatar');
+        
+        while (!isUnique && attempts < 100) {
+            randomEmoji = getRandomEmoji();
+            if (!usedEmojis.includes(randomEmoji)) {
+                isUnique = true;
+            }
+            attempts++;
+        }
+        if (!isUnique) randomEmoji = '🤖';
+
+
+        const newUser = new User({
+            name,
+            email: email.toLowerCase(),
+            password,
+            role,
+            contact,
+            lessonsPaid: role === 'student' ? Number(lessonsPaid) : 0,
+            emojiAvatar: randomEmoji
+        });
+
+        const salt = await bcrypt.genSalt(10);
+        newUser.password = await bcrypt.hash(password, salt);
+        
+        await newUser.save();
+
+        req.flash('success_msg', 'User created successfully');
+        res.redirect('/dashboard/users');
+
+    } catch (err) {
+        console.error(err);
+        req.flash('error_msg', 'Something went wrong');
+        res.redirect('/dashboard/users/add');
+    }
+});
 module.exports = router;

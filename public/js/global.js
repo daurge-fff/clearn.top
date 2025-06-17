@@ -77,3 +77,12 @@ document.querySelectorAll('.file-upload-wrapper').forEach(wrapper => {
         }
     });
 });
+
+const mobileFilterToggle = document.getElementById('mobile-filter-toggle');
+const collapsibleFilters = document.querySelector('.collapsible-filters');
+
+if (mobileFilterToggle && collapsibleFilters) {
+    mobileFilterToggle.addEventListener('click', function() {
+        collapsibleFilters.classList.toggle('is-open');
+    });
+}

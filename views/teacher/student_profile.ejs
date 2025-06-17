@@ -1,10 +1,25 @@
-<div class="container">
-    <div class="page-header">
-        <h1>Student Profile: <%= student.name %></h1>
-        <a href="/dashboard/my-students" class="btn btn-secondary">Back to My Students</a>
+<div class="container profile-page-container">
+    <div class="page-header profile-header">
+        <div class="profile-info-block">
+            <div class="user-avatar header-avatar">
+                <% if (student.emojiAvatar) { %>
+                    <img src="https://emojicdn.elk.sh/<%= encodeURIComponent(student.emojiAvatar) %>?style=apple" alt="Avatar" class="emoji-avatar-img">
+                <% } else { %>
+                    <span><%= student.name.charAt(0) %></span>
+                <% } %>
+            </div>
+            <div class="header-title-block">
+                <h1><%= student.name %></h1>
+                <p class="section-subtitle">Student Profile</p>
+            </div>
+        </div>
+        
+        <div class="page-actions">
+            <a href="/dashboard/my-students" class="btn btn-secondary">Back to My Students</a>
+        </div>
+
     </div>
 
-    <!-- Карточки с информацией о студенте -->
     <div class="stats-grid">
         <div class="stat-card">
             <div class="stat-icon" style="--icon-bg: rgba(0, 242, 254, 0.2); --icon-color: var(--accent-color-1);"><i class="icon-list"></i></div>
@@ -31,7 +46,6 @@
         <% } %>
     </div>
 
-    <!-- Таблица с историей уроков -->
     <div class="card">
         <h2>Lesson History with You</h2>
         <div class="table-responsive">

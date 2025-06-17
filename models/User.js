@@ -46,6 +46,18 @@ const UserSchema = new mongoose.Schema({
         unique: true,
         sparse: true
     },
+    notifications: {
+        lessonReminders: { type: Boolean, default: true }
+    },
+    emojiAvatar: {
+        type: String
+    },
+    balanceHistory: [{
+        date: { type: Date, default: Date.now },
+        change: Number,
+        balanceAfter: Number,
+        reason: String
+    }],
     date_registered: {
         type: Date,
         default: Date.now

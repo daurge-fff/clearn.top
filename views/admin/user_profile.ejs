@@ -1,10 +1,24 @@
 <div class="container profile-page-container">
-    <div class="page-header">
-        <h1>Profile: <%= userProfile.name %></h1>
+    <div class="page-header profile-header">
+        <div class="profile-info-block">
+            <div class="user-avatar header-avatar">
+                <% if (userProfile.emojiAvatar) { %>
+                    <img src="https://emojicdn.elk.sh/<%= encodeURIComponent(userProfile.emojiAvatar) %>?style=apple" alt="Avatar" class="emoji-avatar-img">
+                <% } else { %>
+                    <span><%= userProfile.name.charAt(0) %></span>
+                <% } %>
+            </div>
+            <div class="header-title-block">
+                <h1><%= userProfile.name %></h1>
+                <p class="section-subtitle">User Profile</p>
+            </div>
+        </div>
+
         <div class="page-actions">
             <a href="/dashboard/users/edit/<%= userProfile._id %>" class="btn btn-secondary"><i class="icon-edit"></i> Edit User</a>
             <a href="/dashboard/users" class="btn btn-secondary">Back to All Users</a>
         </div>
+
     </div>
 
     <div class="stats-grid">
@@ -29,6 +43,25 @@
             </div>
         <% } %>
     </div>
+
+    <% if (userProfile.role === 'student') { %>
+        <div class="card">
+            <h2>Manual Balance Adjustment</h2>
+            <form action="/dashboard/user-profile/<%= userProfile._id %>/adjust-balance" method="POST" class="adjustment-form">
+                <div class="form-group">
+                    <label for="adjustment">Adjustment Amount</label>
+                    <input type="number" name="adjustment" placeholder="e.g., 10 or -2" required>
+                </div>
+                <div class="form-group reason-group">
+                    <label for="reason">Reason</label>
+                    <input type="text" name="reason" placeholder="e.g., Bonus lesson, Payment correction" required>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Adjust</button>
+                </div>
+            </form>
+        </div>
+    <% } %>
 
     <div class="card">
         <h2>Lesson History</h2>

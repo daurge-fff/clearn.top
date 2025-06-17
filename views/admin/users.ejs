@@ -38,13 +38,22 @@
         <% if (users && users.length > 0) { %>
             <div class="table-responsive">
                 <table class="data-table">
+                    <%
+                        const sortableLink = (field, text) => {
+                            const currentSort = query.sort === field;
+                            const order = currentSort && query.order === 'asc' ? 'desc' : 'asc';
+                            const icon = currentSort ? (query.order === 'asc' ? '▲' : '▼') : '';
+                            const params = new URLSearchParams(query);
+                            params.set('sort', field);
+                            params.set('order', order);
+                            return `<a href="?${params.toString()}">${text} ${icon}</a>`;
+                        };
+                    %>
                     <thead>
                         <tr>
-                            <th>Name</th>
-                            <th>Email</th>
-                            <th>Role</th>
-                            <th>Status</th>
-                            <th>Lessons Paid</th>
+                            <th><%- sortableLink('name', 'Name') %></th>
+                            <th><%- sortableLink('email', 'Email') %></th>
+                            <th><%- sortableLink('role', 'Role') %></th>
                             <th>Actions</th>
                         </tr>
                     </thead>
