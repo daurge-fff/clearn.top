@@ -60,10 +60,19 @@ const LessonSchema = new mongoose.Schema({
         enum: ['pending', 'submitted', 'checked'],
         default: 'pending'
     },
+    isProject: {
+        type: Boolean,
+        default: false
+    },
+    projectDetails: {
+        title: String,
+        description: String
+    },
     remindersSent: {
         oneHour: { type: Boolean, default: false },
         twentyFourHour: { type: Boolean, default: false }
     },
+    postLessonPrompt: { type: Boolean, default: false },
     difficulty: String 
 }, { timestamps: true }); 
 

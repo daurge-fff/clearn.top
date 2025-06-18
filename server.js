@@ -52,6 +52,27 @@ app.use('/users', require('./routes/users'));
 app.use('/dashboard', require('./routes/dashboard'));
 app.use('/api', require('./routes/api'));
 
+app.use((req, res, next) => {
+    res.status(404).render('error', { 
+        layout: false, 
+        errorCode: 404, 
+        errorMessage: "Oops! Page Not Found." 
+    });
+});
+
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    const statusCode = err.statusCode || 500;
+    const message = err.message || "Oops! Something went wrong on our end.";
+    
+    res.status(statusCode).render('error', {
+        layout: false,
+        errorCode: statusCode,
+        errorMessage: message
+    });
+});
+
+
 const MONGO_URI = process.env.MONGO_URI;
 mongoose.connect(MONGO_URI)
     .then(() => console.log('MongoDB Connected...'))

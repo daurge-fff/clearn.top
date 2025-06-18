@@ -745,12 +745,25 @@
 .file-upload-wrapper .upload-hint, .file-upload-wrapper .file-name { font-size: 0.9rem; opacity: 0.7; }
 .file-upload-wrapper .file-name { font-weight: bold; color: var(--accent-color-1); }
 
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    margin-bottom: 20px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    transition: background-color 0.2s ease;
+}
+
 .checkbox-label:hover {
     background-color: var(--bg-color);
 }
+
 .checkbox-label input[type="checkbox"] {
     display: none;
 }
+
 .checkbox-label .custom-checkbox {
     width: 20px;
     height: 20px;
@@ -762,6 +775,7 @@
     transition: all 0.2s ease;
     flex-shrink: 0;
 }
+
 .checkbox-label .custom-checkbox .icon-check {
     width: 14px;
     height: 14px;
@@ -770,10 +784,12 @@
     transform: scale(0.5);
     transition: all 0.2s ease;
 }
+
 .checkbox-label input[type="checkbox"]:checked + .custom-checkbox {
     background-color: var(--accent-color-1);
     border-color: var(--accent-color-1);
 }
+
 .checkbox-label input[type="checkbox"]:checked + .custom-checkbox .icon-check {
     opacity: 1;
     transform: scale(1);
@@ -986,7 +1002,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 
 .page-header.profile-header {
     display: flex;
-    justify-content: space-between;
+    justify-content: space-between; 
     align-items: center;
     gap: 20px;
     width: 100%;

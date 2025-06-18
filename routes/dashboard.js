@@ -499,4 +499,48 @@ router.post('/users/add', ensureAuth, ensureRole('admin'), async (req, res) => {
         res.redirect('/dashboard/users/add');
     }
 });
+// @desc    Ручная регистрация платежа админом
+// @route   POST /dashboard/user-profile/:id/register-payment
+router.post('/user-profile/:id/register-payment', ensureAuth, ensureRole('admin'), async (req, res) => {
+    try {
+        const { lessonsPurchased, amountPaid, paymentSystem } = req.body;
+        const lessons = parseInt(lessonsPurchased, 10);
+        const amount = parseFloat(amountPaid);
+
+        if (!lessons || !amount || !paymentSystem) {
+            req.flash('error_msg', 'All fields are required.');
+            return res.redirect(`/dashboard/user-profile/${req.params.id}`);
+        }
+
+        const user = await User.findById(req.params.id);
+        const newBalance = user.lessonsPaid + lessons;
+
+        user.lessonsPaid = newBalance;
+        user.balanceHistory.push({
+            change: lessons,
+            balanceAfter: newBalance,
+            reason: `Manual Payment: +${lessons} lessons via ${paymentSystem}`
+        });
+        await user.save();
+
+        await Payment.create({
+            userId: req.params.id,
+            amountPaid: amount,
+            baseAmount: amount,
+            discountApplied: 0,
+            lessonsPurchased: lessons,
+            pricePerLesson: amount / lessons,
+            paymentSystem: paymentSystem,
+            transactionType: 'Manual'
+        });
+
+        req.flash('success_msg', 'Payment registered and balance updated.');
+        res.redirect(`/dashboard/user-profile/${req.params.id}`);
+
+    } catch (err) {
+        console.error(err);
+        req.flash('error_msg', 'Something went wrong.');
+        res.redirect(`/dashboard/user-profile/${req.params.id}`);
+    }
+});
 module.exports = router;

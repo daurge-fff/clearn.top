@@ -35,6 +35,18 @@ function startScheduler(bot) {
                 sendReminder(bot, lesson, '24 hours');
                 await Lesson.updateOne({ _id: lesson._id }, { 'remindersSent.twentyFourHour': true });
             }
+            const postLessonPrompts = await Lesson.find({
+                status: 'scheduled',
+                'remindersSent.postLessonPrompt': { $ne: true },
+                lessonDate: {
+                    $lt: new Date(now.getTime() - 50 * 60 * 1000)
+                }
+            }).populate('student', 'name').populate('teacher', 'name telegramChatId');
+            
+            for (const lesson of postLessonPrompts) {
+                sendPostLessonPrompt(bot, lesson);
+                await Lesson.updateOne({ _id: lesson._id }, { 'remindersSent.postLessonPrompt': true });
+            }
 
         } catch (error) {
             console.error('Scheduler error:', error);
@@ -45,16 +57,32 @@ function startScheduler(bot) {
 function sendReminder(bot, lesson, time) {
     const lessonTime = new Date(lesson.lessonDate).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
 
-    // Уведомление для ученика
     if (lesson.student?.telegramChatId && lesson.student.notifications?.lessonReminders) {
         const studentMsg = `🔔 *Reminder!* Your lesson with *${lesson.teacher.name}* is in ~${time}.\n\n🗓️ Topic: *${lesson.topic}*\n⏰ Time: *${lessonTime}*`;
         bot.sendMessage(lesson.student.telegramChatId, studentMsg, { parse_mode: 'Markdown' });
     }
 
-    // Уведомление для учителя
     if (lesson.teacher?.telegramChatId && lesson.teacher.notifications?.lessonReminders) {
         const teacherMsg = `🔔 *Reminder!* Your lesson with *${lesson.student.name}* is in ~${time}.\n\n🗓️ Topic: *${lesson.topic}*\n⏰ Time: *${lessonTime}*`;
         bot.sendMessage(lesson.teacher.telegramChatId, teacherMsg, { parse_mode: 'Markdown' });
+    }
+}
+
+function sendPostLessonPrompt(bot, lesson) {
+    if (lesson.teacher?.telegramChatId) {
+        const message = `💬 Урок с *${lesson.student.name}* должен был закончиться. Как все прошло?`;
+        const options = {
+            parse_mode: 'Markdown',
+            reply_markup: {
+                inline_keyboard: [
+                    [
+                        { text: "✅ Проведен успешно", callback_data: `lesson_completed_${lesson._id}` },
+                        { text: "👻 Студент не пришел", callback_data: `lesson_noshow_${lesson._id}` }
+                    ]
+                ]
+            }
+        };
+        bot.sendMessage(lesson.teacher.telegramChatId, message, options);
     }
 }
 

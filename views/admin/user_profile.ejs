@@ -46,18 +46,22 @@
 
     <% if (userProfile.role === 'student') { %>
         <div class="card">
-            <h2>Manual Balance Adjustment</h2>
-            <form action="/dashboard/user-profile/<%= userProfile._id %>/adjust-balance" method="POST" class="adjustment-form">
+            <h2>Manual Payment Registration</h2>
+            <form action="/dashboard/user-profile/<%= userProfile._id %>/register-payment" method="POST" class="adjustment-form">
                 <div class="form-group">
-                    <label for="adjustment">Adjustment Amount</label>
-                    <input type="number" name="adjustment" placeholder="e.g., 10 or -2" required>
+                    <label for="lessonsPurchased">Lessons Purchased</label>
+                    <input type="number" name="lessonsPurchased" placeholder="e.g., 10" required>
+                </div>
+                <div class="form-group">
+                    <label for="amountPaid">Amount Paid (EUR)</label>
+                    <input type="number" step="0.01" name="amountPaid" placeholder="e.g., 180" required>
                 </div>
                 <div class="form-group reason-group">
-                    <label for="reason">Reason</label>
-                    <input type="text" name="reason" placeholder="e.g., Bonus lesson, Payment correction" required>
+                    <label for="paymentSystem">Payment Method / Reason</label>
+                    <input type="text" name="paymentSystem" placeholder="e.g., Direct Bank Transfer, Cash" required>
                 </div>
                 <div class="form-actions">
-                    <button type="submit" class="btn btn-primary">Adjust</button>
+                    <button type="submit" class="btn btn-primary">Register Payment</button>
                 </div>
             </form>
         </div>

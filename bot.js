@@ -49,10 +49,40 @@ bot.on('callback_query', async (query) => {
         case 'cancel': return handleCancellationCallback(query, user, params);
         case 'page': return handlePaginationCallback(query, user, params);
         case 'adjust': return handleAdjustmentCallback(query, user, params);
-        default: return bot.answerCallbackQuery(query.id);
+        case 'lesson':
+            return handleLessonCallback(query, lessonId, params);
+        default:
+            return bot.answerCallbackQuery(query.id);
     }
 });
 
+async function handleLessonCallback(query, lessonId, params) {
+    const chatId = query.message.chat.id;
+    const actionType = params[0];
+
+    try {
+        if (actionType === 'completed') {
+            await Lesson.findByIdAndUpdate(lessonId, { status: 'completed' });
+            bot.editMessageText(`✅ Статус урока обновлен на "Проведен".`, {
+                chat_id: chatId,
+                message_id: query.message.message_id
+            });
+            userStates[chatId] = { type: 'awaiting_grade', lessonId: lessonId };
+            bot.sendMessage(chatId, "Теперь, пожалуйста, введите оценку от 1 до 10.");
+
+        } else if (actionType === 'noshow') {
+            await Lesson.findByIdAndUpdate(lessonId, { status: 'no_show' });
+            bot.editMessageText(`👻 Статус урока обновлен на "Неявка".`, {
+                chat_id: chatId,
+                message_id: query.message.message_id
+            });
+        }
+        bot.answerCallbackQuery(query.id);
+    } catch (error) {
+        console.error("Lesson callback error:", error);
+        bot.answerCallbackQuery(query.id, { text: "Произошла ошибка" });
+    }
+}
 
 async function handleMenuCommand(msg) {
     const chatId = msg.chat.id;
@@ -199,6 +229,26 @@ async function handleStatefulInput(chatId, user, text) {
             break;
         case 'awaiting_emoji':
             return handleEmojiChange(chatId, user, text);
+        case 'awaiting_grade':
+            delete userStates[chatId];
+            const grade = parseInt(text, 10);
+            if (!isNaN(grade) && grade >= 1 && grade <= 10) {
+                const lesson = await Lesson.findById(state.lessonId);
+                await Grade.findOneAndUpdate(
+                    { lesson: state.lessonId },
+                    { 
+                        lesson: state.lessonId,
+                        student: lesson.student,
+                        teacher: lesson.teacher,
+                        score: grade,
+                    },
+                    { upsert: true, new: true }
+                );
+                bot.sendMessage(chatId, `✅ Оценка ${grade} успешно выставлена!`);
+            } else {
+                bot.sendMessage(chatId, "❌ Неверный формат оценки. Введите число от 1 до 10.");
+            }
+            break;
     }
 }
 

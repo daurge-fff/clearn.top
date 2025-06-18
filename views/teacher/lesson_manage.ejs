@@ -70,7 +70,7 @@
                 <option value="checked" <%= lesson.homeworkStatus === 'checked' ? 'selected' : '' %>>Checked</option>
             </select>
         </div>
-        <label class="checkbox-label form-group">
+        <label class="checkbox-label">
             <input type="checkbox" id="isProject" name="isProject" <%= lesson.isProject ? 'checked' : '' %> onchange="toggleProjectFields()">
             <span class="custom-checkbox"><i class="icon-check"></i></span>
             <span>This is a Project Lesson</span>

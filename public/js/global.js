@@ -86,3 +86,12 @@ if (mobileFilterToggle && collapsibleFilters) {
         collapsibleFilters.classList.toggle('is-open');
     });
 }
+
+document.addEventListener('DOMContentLoaded', function() {
+    const isProjectCheckbox = document.getElementById('isProject');
+    if (isProjectCheckbox) {
+        isProjectCheckbox.addEventListener('change', function() {
+            document.getElementById('project-fields').style.display = this.checked ? 'block' : 'none';
+        });
+    }
+});

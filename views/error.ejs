@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <title>Error <%= errorCode %></title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        body { text-align: center; padding: 40px 20px; display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; }
+        .error-code { font-size: 10rem; font-weight: 800; font-family: var(--font-headings); line-height: 1; background: linear-gradient(90deg, var(--accent-color-1), var(--accent-color-2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; text-fill-color: transparent; }
+        .error-message { font-size: 1.5rem; margin-top: 0; margin-bottom: 30px; }
+        .home-button { display: inline-block; padding: 12px 30px; border-radius: 50px; text-decoration: none; font-weight: 700; background-color: var(--accent-color-1); color: #fff; }
+    </style>
+</head>
+<body>
+    <div class="error-code"><%= errorCode %></div>
+    <h1 class="error-message"><%= errorMessage %></h1>
+    <a href="/" class="home-button">Back to Homepage</a>
+    <script src="/js/script.js"></script>
+</body>
+</html>

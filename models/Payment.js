@@ -12,7 +12,7 @@ const PaymentSchema = new mongoose.Schema({
     // Цена за один урок в рамках этой транзакции
     pricePerLesson: { type: Number, required: true },
     paymentSystem: { type: String, required: true },
-    lessonFormat: { type: String, enum: ['25min', '50min', 'Donation', 'Manual'] }
+    transactionType: { type: String, enum: ['25min', '50min', 'Donation', 'Manual'] }
 }, { timestamps: true });
 
 module.exports = mongoose.model('Payment', PaymentSchema);

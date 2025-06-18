@@ -61,6 +61,30 @@ router.get('/lessons', ensureAuth, async (req, res) => {
     }
 });
 
+router.post('/manage/:id', async (req, res) => {
+    try {
+        const { isProject, ...otherData } = req.body;
+        
+        const updatedLesson = await Lesson.findByIdAndUpdate(
+            req.params.id,
+            {
+                ...otherData,
+                isProject: isProject === 'on',
+                projectDetails: isProject === 'on' ? {
+                    title: req.body['projectDetails[title]'],
+                    description: req.body['projectDetails[description]']
+                } : null
+            },
+            { new: true }
+        );
+
+        res.redirect(`/dashboard/lessons/manage/${req.params.id}?success=Lesson updated`);
+    } catch (err) {
+        console.error(err);
+        res.redirect(`/dashboard/lessons/manage/${req.params.id}?error=Error updating lesson`);
+    }
+});
+
 // @desc    Получение данных об успеваемости для графика
 // @route   GET /api/progress/:studentId
 router.get('/progress/:studentId', ensureAuth, async (req, res) => {
