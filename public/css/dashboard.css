@@ -1041,3 +1041,211 @@ input[type="date"]::-webkit-calendar-picker-indicator {
     margin-left: auto; 
     flex-shrink: 0;
 }
+.status-cell {
+    position: relative;
+    cursor: pointer;
+    padding-right: 35px !important; 
+}
+
+.status-cell::after {
+    content: '';
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 12px;
+    height: 12px;
+    background-color: currentColor;
+    opacity: 0.5;
+    -webkit-mask-image: url(/images/icon-chevron-down.svg);
+    mask-image: url(/images/icon-chevron-down.svg);
+    -webkit-mask-size: contain;
+    mask-size: contain;
+    transition: transform 0.2s ease;
+}
+
+.status-cell.is-open::after {
+    transform: translateY(-50%) rotate(180deg);
+}
+
+.status-dropdown {
+    display: none;
+    position: absolute;
+    top: calc(100% + 5px);
+    left: 50%;
+    transform: translateX(-50%);
+    width: 200px;
+    background-color: var(--popup-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 8px;
+    box-shadow: 0 10px 30px var(--shadow-color);
+    z-index: 100;
+    overflow: hidden;
+    animation: fadeInScaleUp 0.2s ease-out;
+}
+
+@keyframes fadeInScaleUp {
+    from {
+        opacity: 0;
+        transform: translateX(-50%) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(-50%) scale(1);
+    }
+}
+
+.status-dropdown.show {
+    display: block;
+}
+
+.status-dropdown-item {
+    display: block;
+    padding: 10px 15px;
+    color: var(--text-color);
+    text-decoration: none;
+    font-weight: 700;
+    transition: background-color 0.2s ease;
+    cursor: pointer;
+    border-bottom: 1px solid var(--card-border);
+}
+
+.status-dropdown-item:last-child {
+    border-bottom: none;
+}
+
+.status-dropdown-item:hover {
+    background-color: var(--bg-color);
+}
+
+.status-dropdown-item.is-active {
+    background-color: var(--accent-color-1);
+    color: #fff;
+}
+[data-theme="light"] .status-dropdown-item.is-active {
+    color: #fff;
+}
+/* === Modal Window Styles === */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    z-index: 1050;
+    animation: fadeIn 0.3s ease;
+}
+
+.modal-container {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 90%;
+    max-width: 600px;
+    background-color: var(--popup-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 12px;
+    box-shadow: 0 10px 40px var(--shadow-color);
+    z-index: 1051;
+    animation: slideInUp 0.3s ease-out;
+}
+
+body.modal-open {
+    overflow: hidden;
+}
+
+body.modal-open .modal-overlay,
+body.modal-open .modal-container {
+    display: block;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 25px;
+    border-bottom: 1px solid var(--card-border);
+}
+
+.modal-header h2 {
+    margin: 0;
+    font-family: var(--font-headings);
+    font-size: 1.5rem;
+}
+
+.modal-close-btn {
+    background: none;
+    border: none;
+    font-size: 2rem;
+    line-height: 1;
+    color: var(--text-color);
+    opacity: 0.5;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+}
+
+.modal-close-btn:hover {
+    opacity: 1;
+}
+
+.modal-body {
+    padding: 25px;
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
+.modal-body .form-actions {
+    padding-top: 15px;
+    border-top: 1px solid var(--card-border);
+}
+
+.spinner {
+    border: 4px solid var(--card-border);
+    border-top: 4px solid var(--accent-color-1);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    margin: 40px auto;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes slideInUp { from { transform: translate(-50%, -40%); opacity: 0; } to { transform: translate(-50%, -50%); opacity: 1; } }
+
+/* === Toast Notification Styles === */
+.toast-notification {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    padding: 15px 25px;
+    background: linear-gradient(90deg, var(--accent-color-1), var(--accent-color-2));
+    color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 5px 20px var(--shadow-color);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    font-weight: 700;
+}
+.toast-notification.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+.toast-notification .icon-check {
+    width: 20px;
+    height: 20px;
+    background-color: #fff;
+}
