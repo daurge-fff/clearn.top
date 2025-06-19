@@ -46,7 +46,6 @@ const LessonSchema = new mongoose.Schema({
     cancellationReason: {
         type: String
     },
-    homework: { type: String },
     teacherAttachment: {
         path: String,
         filename: String

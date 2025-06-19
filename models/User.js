@@ -46,6 +46,11 @@ const UserSchema = new mongoose.Schema({
         unique: true,
         sparse: true
     },
+    botState: {
+        name: { type: String },
+        context: { type: mongoose.Schema.Types.Mixed, default: {} },
+        updatedAt: { type: Date }
+    },
     notifications: {
         lessonReminders: { type: Boolean, default: true }
     },
@@ -62,6 +67,13 @@ const UserSchema = new mongoose.Schema({
         type: Date,
         default: Date.now
     }
+});
+
+UserSchema.pre('save', function(next) {
+    if (this.isModified('botState') && this.botState.name) {
+        this.botState.updatedAt = new Date();
+    }
+    next();
 });
 
 const User = mongoose.model('User', UserSchema);

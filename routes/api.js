@@ -217,4 +217,31 @@ router.get('/analytics', ensureAuth, ensureRole('admin'), async (req, res) => {
     }
 });
 
+/**
+ * @route   DELETE /api/lessons/:id
+ * @desc    Delete a lesson
+ * @access  Private (Admin only)
+ */
+router.delete('/lessons/:id', ensureAuth, ensureRole('admin'), async (req, res) => {
+    try {
+        const lesson = await Lesson.findById(req.params.id);
+
+        if (!lesson) {
+            return res.status(404).json({ msg: 'Lesson not found' });
+        }
+
+        if (lesson.status === 'scheduled') {
+            await User.findByIdAndUpdate(lesson.student, { $inc: { lessonsPaid: 1 } });
+        }
+
+        await lesson.remove();
+
+        res.json({ msg: 'Lesson removed successfully' });
+
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server Error');
+    }
+});
+
 module.exports = router;

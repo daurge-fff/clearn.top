@@ -90,7 +90,7 @@
                     </thead>
                     <tbody>
                         <% lessons.forEach(lesson => { %>
-                            <tr>
+                            <tr data-lesson-id="<%= lesson._id %>">
                                 <td><%= lesson.student.name %></td>
                                 <td><%= lesson.teacher.name %></td>
                                 <td><%= lesson.course.name %></td>
@@ -98,6 +98,9 @@
                                 <td><span class="badge status-<%= lesson.status %>"><%= lesson.status.replace(/_/g, ' ') %></span></td>
                                 <td class="actions-cell">
                                     <a href="/dashboard/lessons/manage/<%= lesson._id %>" class="btn-icon" data-tooltip="Manage"><i class="icon-edit"></i></a>
+                                    <button class="btn-icon btn-danger delete-lesson-btn" data-id="<%= lesson._id %>" data-tooltip="Delete">
+                                        <i class="icon-delete"></i>
+                                    </button>
                                 </td>
                             </tr>
                         <% }); %>
@@ -114,3 +117,47 @@
         <% } %>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const table = document.querySelector('.data-table');
+
+    if (table) {
+        table.addEventListener('click', async (e) => {
+            const deleteButton = e.target.closest('.delete-lesson-btn');
+            
+            if (!deleteButton) {
+                return;
+            }
+
+            const lessonId = deleteButton.dataset.id;
+            
+            if (confirm('Are you sure you want to permanently delete this lesson? This action cannot be undone.')) {
+                try {
+                    const response = await fetch(`/api/lessons/${lessonId}`, {
+                        method: 'DELETE',
+                    });
+
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.msg || 'Failed to delete the lesson.');
+                    }
+                    
+                    const rowToRemove = document.querySelector(`tr[data-lesson-id="${lessonId}"]`);
+                    if (rowToRemove) {
+                        rowToRemove.style.transition = 'opacity 0.3s ease';
+                        rowToRemove.style.opacity = '0';
+                        setTimeout(() => rowToRemove.remove(), 300);
+                    }
+
+                    alert('Lesson deleted successfully!');
+
+                } catch (error) {
+                    console.error('Deletion error:', error);
+                    alert(`Error: ${error.message}`);
+                }
+            }
+        });
+    }
+});
+</script>
