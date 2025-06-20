@@ -1,5 +1,5 @@
 const User = require('../../models/User');
-const { createPaginationKeyboard } = require('../utils/helpers');
+const { createPaginationKeyboard, escapeHtml, getRoleEmoji, getUserStatusEmoji } = require('../utils/helpers');
 
 let BASE_URL;
 
@@ -28,8 +28,12 @@ async function listStudentsForTeacher(bot, chatId, teacher, page = 1, messageId 
     const keyboardRows = [];
 
     result.users.forEach(s => {
-        response += `*${s.name}* ${s.emojiAvatar || ''}\n- Balance: ${s.lessonsPaid} lessons\n- Contact: ${s.contact || 'not specified'}\n\n`;
-        keyboardRows.push([{ text: `View ${s.name.split(' ')[0]}'s Profile`, url: `${BASE_URL}/dashboard/student/${s._id}` }]);
+        const studentName = escapeHtml(s.name);
+        const emoji = s.emojiAvatar || '';
+        const contact = escapeHtml(s.contact || 'not specified');
+
+        response += `*${studentName}* ${emoji}\n\- Balance: ${s.lessonsPaid} lessons\n\- Contact: ${contact}\n\n`;
+        keyboardRows.push([{ text: `${s.name.split(' ')[0]}`, url: `${BASE_URL}/dashboard/student/${s._id}` }]);
     });
 
     const paginationKeyboard = createPaginationKeyboard('teacher_list_students', result.currentPage, result.totalPages, 'all');
@@ -59,14 +63,30 @@ async function findUserForAdmin(bot, chatId, searchString, page = 1, messageId =
     let response = `*Found users (Page ${result.currentPage}/${result.totalPages}):*\n\n`;
     const keyboardRows = [];
     result.users.forEach(u => {
-        response += `*${u.name}* (${u.role}) - ${u.status}\nEmail: ${u.email || 'not set'}\n\n`;
-        keyboardRows.push([{ text: `View ${u.name.split(' ')[0]}'s Profile`, url: `${BASE_URL}/dashboard/user-profile/${u._id}` }]);
+        const emoji = u.emojiAvatar || getRoleEmoji('student');
+        const statusIcon = getUserStatusEmoji(u.status);
+        response += `${emoji} <b>${name}</b> ${statusIcon}\nEmail: ${email}\n\n`;
+        keyboardRows.push([{ text: `${u.name.split(' ')[0]}`, url: `${BASE_URL}/dashboard/user-profile/${u._id}` }]);
     });
-    const paginationKeyboard = createPaginationKeyboard('admin_user_search', result.currentPage, result.totalPages, searchString);
-    if (paginationKeyboard.inline_keyboard.length > 0) keyboardRows.push(paginationKeyboard.inline_keyboard[0]);
-    const options = { chat_id: chatId, parse_mode: 'Markdown', reply_markup: { inline_keyboard: keyboardRows } };
-    if (messageId) return bot.editMessageText(response, { ...options, message_id: messageId });
-    else return bot.sendMessage(chatId, response, options);
+    const paginationKeyboard = createPaginationKeyboard('admin_list_users', result.currentPage, result.totalPages, 'all');
+    if (paginationKeyboard.inline_keyboard.length > 0) {
+        keyboardRows.push(paginationKeyboard.inline_keyboard[0]);
+    }
+    const options = {
+        chat_id: chatId,
+        parse_mode: 'MarkdownV2', 
+        reply_markup: { inline_keyboard: keyboardRows }
+    };
+    try {
+        if (messageId) {
+            return await bot.editMessageText(response, { ...options, message_id: messageId });
+        } else {
+            return await bot.sendMessage(chatId, response, options);
+        }
+    } catch (error) {
+        console.error("Telegram send/edit error:", error.response.body);
+        return bot.sendMessage(chatId, "Could not display user list due to a formatting error.");
+    }
 }
 
 async function findStudentForTeacher(bot, chatId, teacher, studentName, page = 1, messageId = null) {
@@ -87,7 +107,7 @@ async function findStudentForTeacher(bot, chatId, teacher, studentName, page = 1
 
     result.users.forEach(s => {
         response += `*${s.name}*\n- Balance: ${s.lessonsPaid} lessons\n- Contact: ${s.contact || 'not specified'}\n\n`;
-        keyboardRows.push([{ text: `View ${s.name.split(' ')[0]}'s Profile`, url: `${BASE_URL}/dashboard/user-profile/${s._id}` }]);
+        keyboardRows.push([{ text: `${s.name.split(' ')[0]}`, url: `${BASE_URL}/dashboard/user-profile/${s._id}` }]);
     });
 
     const paginationKeyboard = createPaginationKeyboard('teacher_student_search', result.currentPage, result.totalPages, studentName);
@@ -108,9 +128,49 @@ async function findStudentForTeacher(bot, chatId, teacher, studentName, page = 1
     }
 }
 
+async function listAllUsers(bot, chatId, page = 1, messageId = null) {
+    const result = await findUser({}, page); 
+
+    if (result.users.length === 0) {
+        const text = "No users found in the system.";
+        return messageId ? bot.editMessageText(text, { chat_id: chatId, message_id: messageId }) : bot.sendMessage(chatId, text);
+    }
+
+    let response = `<b>All Users (Page ${result.currentPage}/${result.totalPages}):</b>\n\n`;
+    const keyboardRows = [];
+    
+    result.users.forEach(u => {
+        const name = escapeHtml(u.name);
+        const email = escapeHtml(u.email || 'not provided');
+        const roleIcon = getRoleEmoji(u.role);
+        const statusIcon = getUserStatusEmoji(u.status);
+        response += `${roleIcon} <b>${name}</b> ${statusIcon}\nEmail: ${email}\n\n`;
+        keyboardRows.push([{ text: `${u.name.split(' ')[0]}`, url: `${BASE_URL}/dashboard/user-profile/${u._id}` }]);
+    });
+    
+    const paginationKeyboard = createPaginationKeyboard('admin_list_users', result.currentPage, result.totalPages, 'all');
+    if (paginationKeyboard.inline_keyboard.length > 0) {
+        keyboardRows.push(paginationKeyboard.inline_keyboard[0]);
+    }
+
+    const options = {
+        chat_id: chatId,
+        parse_mode: 'HTML',
+        reply_markup: { inline_keyboard: keyboardRows }
+    };
+
+    if (messageId) {
+        return bot.editMessageText(response, { ...options, message_id: messageId });
+    } else {
+        return bot.sendMessage(chatId, response, options);
+    }
+}
+
+
 
 module.exports = {
     init,
+    listAllUsers,
     listStudentsForTeacher,
     findUserForAdmin,
 };

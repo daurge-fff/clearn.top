@@ -1,7 +1,7 @@
 const User = require('../../models/User');
 const Lesson = require('../../models/Lesson');
 const Course = require('../../models/Course');
-const { getStatusEmoji } = require('../utils/helpers');
+const { getStatusEmoji, escapeHtml } = require('../utils/helpers');
 const { createCalendarKeyboard } = require('../keyboards/calendarKeyboards');
 const stateService = require('../services/stateService');
 const searchService = require('../services/searchService');
@@ -156,8 +156,7 @@ async function handleMenuButton(bot, chatId, user, text) {
         case '📊 Reports':
             return bot.sendMessage(chatId, "Admin reports are under development.");
         case '👤 Users':
-            await stateService.setState(chatId, 'awaiting_user_search');
-            return bot.sendMessage(chatId, "Enter the name or email of the user to find:");
+            return searchService.listAllUsers(bot, chatId);
         case '💳 Balance Adjustment':
             await stateService.setState(chatId, 'awaiting_user_for_adjustment');
             return bot.sendMessage(chatId, "Enter name or email of the user to adjust balance for:");
@@ -172,8 +171,6 @@ async function handleMenuButton(bot, chatId, user, text) {
                     await bot.sendMessage(chatId, `✅ Action undone. Lesson status reverted to "${lastAction.data.previousStatus}".`);
                 } else {
                     await bot.sendMessage(chatId, "Sorry, this action cannot be undone.");
-                    // Optional: Push the action back if it's not supported
-                    // undoStack.push(lastAction);
                 }
             }
             return handleMenuCommand(bot, { chat: { id: chatId } });
@@ -278,18 +275,25 @@ async function sendTodaysLessons(bot, chatId, user) {
     const lessons = await Lesson.find({
         teacher: user._id,
         lessonDate: { $gte: startOfDay, $lte: endOfDay }
-    }).sort({ lessonDate: 1 }).populate('student', 'name').populate('course', 'name').lean(); // <-- This line caused the crash
+    }).sort({ lessonDate: 1 }).populate('student', 'name').populate('course', 'name').lean(); 
 
-    let response = `*Your lessons for today, ${new Date().toLocaleDateString('en-GB')}:*\n\n`;
+    const dateTitle = escapeHtml(new Date().toLocaleDateString('en-GB'));
+    let response = `<b>Your lessons for today, ${dateTitle}:</b>\n\n`;
+
     if (lessons.length > 0) {
         lessons.forEach(l => {
-            const time = new Date(l.lessonDate).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
-            response += `*${time}* - ${l.student.name} _(${(l.course && l.course.name) ? l.course.name : 'General'})_ - ${getStatusEmoji(l.status)}\n`;
+            const time = escapeHtml(new Date(l.lessonDate).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }));
+            const studentName = escapeHtml(l.student.name);
+            const courseName = escapeHtml(l.course.name || 'General');
+            const status = getStatusEmoji(l.status);
+
+            response += `${status} <b>${time}</b> - ${studentName} <i>(${courseName.split(' ')[0]})</i>\n`;
         });
     } else {
         response = "You have no lessons scheduled for today.";
     }
-    bot.sendMessage(chatId, response, { parse_mode: 'Markdown' });
+    
+    await bot.sendMessage(chatId, response, { parse_mode: 'HTML' });
 }
 async function sendTeacherList(bot, chatId, user) {
     const teacherIds = user.teachers && user.teachers.length > 0 ? user.teachers : (user.teacher ? [user.teacher] : []);
@@ -325,7 +329,7 @@ function sendSettingsMenu(bot, chatId, user) {
 function sendHelpMessage(bot, chatId) {
     const message = "❓ *Help Section*\n\n" +
         "You can use the menu buttons to navigate.\n" +
-        "If you encounter an issue, try using `/start` to refresh the bot.\n\n" +
+        "If you encounter an issue, try using /start to refresh the bot.\n\n" +
         `For technical support, please contact us through our website: ${BASE_URL}`;
     bot.sendMessage(chatId, message, { parse_mode: 'Markdown', disable_web_page_preview: true });
 }

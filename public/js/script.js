@@ -76,12 +76,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const data = Object.fromEntries(formData.entries());
         const currentLang = localStorage.getItem('language') || 'en';
         submitButton.disabled = true;
-        submitButton.textContent = translations[currentLang]?.form_sending || 'Sending...';
+        submitButton.textContent = (translations[currentLang]?.form_sending || 'Sending...');
         try {
             const response = await fetch('/submit-form', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
             const result = await response.json();
             if (response.ok) {
-                formStatus.textContent = translations[currentLang]?.form_success || "Your request has been sent!";
+                formStatus.textContent = (translations[currentLang]?.form_success || "Your request has been sent!");
                 formStatus.style.color = 'var(--accent-color-1)';
                 feedbackForm.reset();
             } else {
@@ -93,14 +93,13 @@ document.addEventListener('DOMContentLoaded', () => {
             formStatus.style.color = 'var(--accent-color-2)';
         } finally {
             setTimeout(() => {
-                submitButton.textContent = translations[currentLang]?.form_button || "Send Request";
+                submitButton.textContent = (translations[currentLang]?.form_button || "Send Request");
                 submitButton.disabled = false;
                 formStatus.textContent = '';
             }, 5000);
         }
     }
 
-    // --- ФУНКЦИИ ДЛЯ МОДАЛЬНОГО ОКНА ДЕТАЛЕЙ КУРСА ---
     async function openCourseDetailsModal(courseKey) {
         if (!courseDetailsModal) return;
 
@@ -119,8 +118,7 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const response = await fetch(`/images/${courseKey}.svg`);
             if (response.ok) {
-                const svgContent = await response.text();
-                detailsImageContainer.innerHTML = svgContent;
+                detailsImageContainer.innerHTML = await response.text();
             } else {
                 detailsImageContainer.innerHTML = 'Icon not found';
             }
@@ -151,11 +149,11 @@ document.addEventListener('DOMContentLoaded', () => {
             </li>`).join('');
         courseDetailsModal.classList.add('is-open');
     }
+
     function closeCourseDetailsModal() {
         if (courseDetailsModal) courseDetailsModal.classList.remove('is-open');
     }
     
-    // --- ФУНКЦИИ ДЛЯ МОДАЛЬНОГО ОКНА ОПЛАТЫ ---
     function updatePaymentModalPrice() {
         if (!paymentModal) return;
         let quantity = 1;
@@ -181,6 +179,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('modal-total-price').textContent = `${finalTotal.toFixed(2)} ${paymentConfig.currency}`;
         updatePayButtonState();
     }
+
     function updatePayButtonState() {
         if (!paymentModal) return;
         const finalPayButton = document.getElementById('final-pay-button');
@@ -188,6 +187,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const isReadyToPay = selectedPaymentSystem && termsCheckbox.checked;
         if (finalPayButton) finalPayButton.disabled = !isReadyToPay || selectedPaymentSystem === 'paypal';
     }
+
     function openPaymentModal(tariffDuration, donationMode = false) {
         if (!paymentModal) return;
         isDonationMode = donationMode;
@@ -233,7 +233,6 @@ document.addEventListener('DOMContentLoaded', () => {
         paymentModal.classList.add('is-open');
     }
 
-    // --- ОБРАБОТЧИКИ СОБЫТИЙ ---
     if (languageSwitcher) {
         const langButton = languageSwitcher.querySelector('.current-lang');
         const langDropdown = languageSwitcher.querySelector('.lang-dropdown');
@@ -254,11 +253,14 @@ document.addEventListener('DOMContentLoaded', () => {
             button.addEventListener('click', () => openPaymentModal(button.dataset.duration, false));
         }
     });
-
-    document.querySelector('.courses-grid').addEventListener('click', (e) => {
-        const card = e.target.closest('.course-card');
-        if (card) openCourseDetailsModal(card.dataset.courseKey);
-    });
+    
+    const coursesGrid = document.querySelector('.courses-grid');
+    if (coursesGrid) {
+        coursesGrid.addEventListener('click', (e) => {
+            const card = e.target.closest('.course-card');
+            if (card) openCourseDetailsModal(card.dataset.courseKey);
+        });
+    }
 
     if (courseDetailsModal) {
         courseDetailsModal.querySelector('.close-button').addEventListener('click', closeCourseDetailsModal);
@@ -270,8 +272,7 @@ document.addEventListener('DOMContentLoaded', () => {
             programContainer.addEventListener('click', (e) => {
                 const title = e.target.closest('.module-title');
                 if (title) {
-                    const item = title.parentElement;
-                    item.classList.toggle('active');
+                    title.parentElement.classList.toggle('active');
                 }
             });
         }
@@ -279,9 +280,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (paymentModal) {
         const finalPayButton = document.getElementById('final-pay-button');
-        const paypalButtonsContainer = document.createElement('div');
-        paypalButtonsContainer.id = 'paypal-button-container';
-        finalPayButton.parentNode.insertBefore(paypalButtonsContainer, finalPayButton);
+        const paypalButtonsContainer = document.getElementById('paypal-button-container');
         const termsCheckbox = document.getElementById('terms-checkbox');
         document.getElementById('lesson-quantity').addEventListener('input', updatePaymentModalPrice);
         document.getElementById('donation-amount').addEventListener('input', updatePaymentModalPrice);
@@ -340,10 +339,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 createOrder: async () => {
                     const amount = document.getElementById('modal-total-price').textContent.split(' ')[0];
                     let description = currentTariffName;
-                    if (!isDonationMode) {
-                        const quantity = document.getElementById('lesson-quantity').value;
-                        description += ` x${quantity}`;
-                    }
+                    if (!isDonationMode) description += ` x${document.getElementById('lesson-quantity').value}`;
                     const response = await fetch("/api/orders", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ amount: parseFloat(amount), currency: paymentConfig.currency, description }) });
                     const orderData = await response.json();
                     if (!response.ok) throw new Error(orderData.message || 'Could not create PayPal order.');
@@ -353,8 +349,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     try {
                         const response = await fetch(`/api/orders/${data.orderID}/capture`, { method: "POST" });
                         const orderData = await response.json();
-                        if (orderData.status === 'COMPLETED') window.location.href = '/successful-payment';
-                        else window.location.href = '/failed-payment';
+                        window.location.href = orderData.status === 'COMPLETED' ? '/successful-payment' : '/failed-payment';
                     } catch (error) { window.location.href = '/failed-payment'; }
                 },
                 onError: (err) => { console.error('PayPal Buttons Error:', err); alert('An error occurred.'); }
@@ -367,7 +362,6 @@ document.addEventListener('DOMContentLoaded', () => {
         window.addEventListener('keydown', (event) => { if (event.key === 'Escape' && paymentModal.classList.contains('is-open')) closePaymentModal(); });
     }
     
-    // --- ЗАПУСК ПРИ ЗАГРУЗКЕ СТРАНИЦЫ ---
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add('visible'); });
     }, { threshold: 0.1 });

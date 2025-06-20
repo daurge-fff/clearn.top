@@ -1,120 +1,103 @@
+const cron = require('node-cron');
 const Lesson = require('../models/Lesson');
-const User = require('../models/User');
 
+/**
+ * Initializes and starts all cron jobs for the application.
+ * @param {object} bot - The initialized Telegram Bot instance.
+ */
 function startScheduler(bot) {
-    console.log('Scheduler started. Checking for reminders every minute.');
+    console.log('Scheduler started using node-cron.');
 
-    setInterval(async () => {
+    cron.schedule('* * * * *', async () => {
         try {
             const now = new Date();
-            
             const oneHourLessons = await Lesson.find({
                 status: 'scheduled',
                 'remindersSent.oneHour': { $ne: true },
                 lessonDate: {
-                    $gte: new Date(now.getTime() + 55 * 60 * 1000),
-                    $lte: new Date(now.getTime() + 65 * 60 * 1000)
+                    $gte: new Date(now.getTime() + 59 * 60 * 1000),
+                    $lte: new Date(now.getTime() + 61 * 60 * 1000)
                 }
-            }).populate('student teacher');
+            }).populate('student teacher', 'name telegramChatId notifications');
 
+            for (const lesson of oneHourLessons) {
+                await sendReminder(bot, lesson, 'in ~1 hour');
+                await Lesson.updateOne({ _id: lesson._id }, { 'remindersSent.oneHour': true });
+            }
+        } catch (error) {
+            console.error('Scheduler (1-hour reminder) error:', error);
+        }
+    });
+
+    cron.schedule('*/10 * * * *', async () => {
+        try {
+            const now = new Date();
             const twentyFourHourLessons = await Lesson.find({
                 status: 'scheduled',
                 'remindersSent.twentyFourHour': { $ne: true },
                 lessonDate: {
-                    $gte: new Date(now.getTime() + 23.5 * 60 * 60 * 1000),
-                    $lte: new Date(now.getTime() + 24.5 * 60 * 60 * 1000)
+                    $gte: new Date(now.getTime() + (24 * 60 - 5) * 60 * 1000),
+                    $lte: new Date(now.getTime() + (24 * 60 + 5) * 60 * 1000)
                 }
-            }).populate('student teacher');
-
-            for (const lesson of oneHourLessons) {
-                if (shouldSendReminder(lesson)) {
-                    await sendReminder(bot, lesson, '1 hour');
-                    await Lesson.updateOne({ _id: lesson._id }, { 'remindersSent.oneHour': true });
-                }
-            }
+            }).populate('student teacher', 'name telegramChatId notifications');
 
             for (const lesson of twentyFourHourLessons) {
-                if (shouldSendReminder(lesson)) {
-                    await sendReminder(bot, lesson, '24 hours');
-                    await Lesson.updateOne({ _id: lesson._id }, { 'remindersSent.twentyFourHour': true });
-                }
+                await sendReminder(bot, lesson, 'in ~24 hours');
+                await Lesson.updateOne({ _id: lesson._id }, { 'remindersSent.twentyFourHour': true });
             }
+        } catch (error) {
+            console.error('Scheduler (24-hour reminder) error:', error);
+        }
+    });
 
+    cron.schedule('*/5 * * * *', async () => {
+        try {
+            const now = new Date();
             const postLessonLessons = await Lesson.find({
                 status: 'scheduled',
-                'remindersSent.postLessonPrompt': { $ne: true },
+                postLessonPrompt: { $ne: true },
                 lessonDate: {
+                    $gte: new Date(now.getTime() - 60 * 60 * 1000),
                     $lt: new Date(now.getTime() - 50 * 60 * 1000)
                 }
-            }).populate('student teacher');
+            }).populate('teacher student', 'name telegramChatId');
 
             for (const lesson of postLessonLessons) {
                 if (lesson.teacher?.telegramChatId) {
                     await sendPostLessonPrompt(bot, lesson);
-                    await Lesson.updateOne({ _id: lesson._id }, { 
-                        'remindersSent.postLessonPrompt': true,
-                        status: 'awaiting_confirmation'
-                    });
+                    await Lesson.updateOne({ _id: lesson._id }, { $set: { postLessonPrompt: true } });
                 }
             }
-
         } catch (error) {
-            console.error('Scheduler error:', error);
+            console.error('Scheduler (post-lesson prompt) error:', error);
         }
-    }, 60 * 1000);
-}
-
-function shouldSendReminder(lesson) {
-    return (
-        (lesson.student?.telegramChatId && lesson.student.notifications?.lessonReminders) ||
-        (lesson.teacher?.telegramChatId && lesson.teacher.notifications?.lessonReminders)
-    );
+    });
 }
 
 async function sendReminder(bot, lesson, time) {
-    const lessonTime = new Date(lesson.lessonDate).toLocaleTimeString('en-US', { 
-        hour: '2-digit', 
-        minute: '2-digit'
-    });
-
+    const lessonTime = new Date(lesson.lessonDate).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
     const topicText = lesson.topic ? `\n📝 Topic: *${lesson.topic}*` : '';
 
     if (lesson.student?.telegramChatId && lesson.student.notifications?.lessonReminders) {
-        const studentMsg = `🔔 *Reminder!* Your lesson with ${lesson.teacher.name} starts in ~${time}.\n⏰ Time: *${lessonTime}*${topicText}`;
+        const studentMsg = `🔔 *Reminder!* Your lesson with ${lesson.teacher.name} starts ${time}.\n⏰ Time: *${lessonTime}*${topicText}`;
         await bot.sendMessage(lesson.student.telegramChatId, studentMsg, { parse_mode: 'Markdown' });
     }
 
     if (lesson.teacher?.telegramChatId && lesson.teacher.notifications?.lessonReminders) {
-        const teacherMsg = `🔔 *Reminder!* Your lesson with ${lesson.student.name} starts in ~${time}.\n⏰ Time: *${lessonTime}*${topicText}`;
+        const teacherMsg = `🔔 *Reminder!* Your lesson with ${lesson.student.name} starts ${time}.\n⏰ Time: *${lessonTime}*${topicText}`;
         await bot.sendMessage(lesson.teacher.telegramChatId, teacherMsg, { parse_mode: 'Markdown' });
     }
 }
 
 async function sendPostLessonPrompt(bot, lesson) {
-    const message = `📝 Lesson with *${lesson.student.name}* should be finished. How did it go?`;
+    const message = `📝 The lesson with *${lesson.student.name}* should be finished. Please update its status.`;
     const options = {
         parse_mode: 'Markdown',
         reply_markup: {
-            inline_keyboard: [
-                [
-                    { 
-                        text: "✅ Completed successfully", 
-                        callback_data: `lesson_${lesson._id}_completed` 
-                    },
-                ],
-                [
-                    { 
-                        text: "👻 Student no-show", 
-                        callback_data: `lesson_${lesson._id}_noshow` 
-                    }
-                ],
-                [
-                    {
-                        text: "🚫 Cancel (undo)",
-                        callback_data: `undo_${lesson._id}`
-                    }
-                ]
-            ]
+            inline_keyboard: [[
+                { text: "✅ Completed", callback_data: `lesson_${lesson._id}_completed` },
+                { text: "👻 No Show", callback_data: `lesson_${lesson._id}_noshow` }
+            ]]
         }
     };
     await bot.sendMessage(lesson.teacher.telegramChatId, message, options);

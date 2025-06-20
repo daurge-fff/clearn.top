@@ -1,11 +1,32 @@
 function getStatusEmoji(status) {
     switch (status) {
-        case 'scheduled': return '🗓️ Scheduled';
-        case 'completed': return '✅ Completed';
-        case 'cancelled_by_student': return '❌ Cancelled (Student)';
-        case 'cancelled_by_teacher': return '❌ Cancelled (Teacher)';
-        case 'no_show': return '👻 No Show';
+        case 'scheduled': return '🗓️';
+        case 'completed': return '✅';
+        case 'cancelled_by_student': return '❌';
+        case 'cancelled_by_teacher': return '🚫';
+        case 'no_show': return '👻';
+        case 'pending': return '⏳';
+        case 'in_progress': return '🚀';
+        case 'awaiting_confirmation': return '⏳';
         default: return status;
+    }
+}
+
+function getRoleEmoji(role) {
+    switch (role) {
+        case 'student': return '👨‍🎓';
+        case 'teacher': return '👨‍🏫';
+        case 'admin':   return '⚙️';
+        default:        return '👤';
+    }
+}
+
+function getUserStatusEmoji(status) {
+    switch (status) {
+        case 'active':   return '🟢';
+        case 'inactive': return '🔴';
+        case 'paused':   return '⏸️';
+        default:         return '⚪️';
     }
 }
 
@@ -22,7 +43,20 @@ function createPaginationKeyboard(prefix, currentPage, totalPages, searchTerm) {
     return { inline_keyboard: [row] };
 }
 
+function escapeHtml(text) {
+    if (text === null || typeof text === 'undefined') return '';
+    const map = {
+        '&': '&',
+        '<': '<',
+        '>': '>',
+    };
+    return String(text).replace(/[&<>]/g, (s) => map[s]);
+}
+
 module.exports = {
     getStatusEmoji,
     createPaginationKeyboard,
+    escapeHtml,
+    getRoleEmoji,
+    getUserStatusEmoji
 };

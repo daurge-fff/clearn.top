@@ -2,53 +2,46 @@ const User = require('../../models/User');
 const Lesson = require('../../models/Lesson');
 const Grade = require('../../models/Grade');
 const { createCalendarKeyboard } = require('../keyboards/calendarKeyboards');
-const { getStatusEmoji, createPaginationKeyboard } = require('../utils/helpers'); // Ensure createPaginationKeyboard is imported
+const { getStatusEmoji, createPaginationKeyboard, escapeHtml } = require('../utils/helpers');
 const stateService = require('../services/stateService');
 const searchService = require('../services/searchService');
 
-let BASE_URL;
-let undoStack;
-
-async function handleCancellationRequest(bot, query, user) {
+async function handleCancellationRequest(bot, query, user, params, { answer }) {
     const lessonId = query.data.split('_')[2];
     await stateService.setState(user.telegramChatId, 'awaiting_cancellation_reason', { lessonId });
-    await bot.answerCallbackQuery(query.id);
     await bot.editMessageText("Please provide a brief reason for the cancellation:", {
         chat_id: query.message.chat.id,
         message_id: query.message.message_id
     });
+    await answer();
 }
 
-async function handleRefreshCallback(bot, query, user, params) {
+async function handleRefreshCallback(bot, query, user, params, { answer }) {
     if (params.join('_') === 'balance') {
-        await bot.answerCallbackQuery(query.id, { text: "Refreshing..." });
+        await answer({ text: "Refreshing..." });
         const updatedUser = await User.findById(user._id).lean();
         try {
             await bot.editMessageText(`You have *${updatedUser.lessonsPaid}* paid lessons remaining.`, {
-                chat_id: query.message.chat.id, message_id: query.message.message_id,
-                parse_mode: 'Markdown', reply_markup: query.message.reply_markup
+                chat_id: query.message.chat.id,
+                message_id: query.message.message_id,
+                parse_mode: 'Markdown',
+                reply_markup: query.message.reply_markup
             });
         } catch (error) {
-            console.error('Error editing message');
+            if (!error.response?.body?.description.includes('message is not modified')) {
+                 console.error('Error editing message on refresh:', error);
+            }
         }
     }
 }
 
-async function handleLessonCallback(bot, query, user, params) {
+async function handleLessonCallback(bot, query, user, params, { undoStack, answer }) {
     const chatId = query.message.chat.id;
     const [lessonId, actionType] = params;
-
     const lesson = await Lesson.findById(lessonId).populate('student', 'name');
-    if (!lesson) return bot.answerCallbackQuery(query.id, { text: "Lesson not found" });
+    if (!lesson) return answer({ text: "Lesson not found" });
 
-    undoStack.push({
-        chatId: chatId,
-        type: 'lesson_status',
-        data: {
-            lessonId: lessonId,
-            previousStatus: lesson.status
-        }
-    });
+    undoStack.push({ chatId, type: 'lesson_status', data: { lessonId, previousStatus: lesson.status } });
 
     if (actionType === 'completed') {
         await Lesson.findByIdAndUpdate(lessonId, { status: 'completed' });
@@ -60,25 +53,25 @@ async function handleLessonCallback(bot, query, user, params) {
         await bot.editMessageText(`👻 Lesson with ${lesson.student.name} marked as "no show".`, { chat_id: chatId, message_id: query.message.message_id });
     }
     
-    await bot.answerCallbackQuery(query.id, { text: "Status updated. You can undo this from the main menu." });
+    await answer({ text: "Status updated. You can undo this from the main menu." });
 }
 
-async function handleCalendarCallback(bot, query, user, params) {
+async function handleCalendarCallback(bot, query, user, params, { answer }) {
     const messageId = query.message.message_id;
     const chatId = query.message.chat.id;
     const [type, ...rest] = params;
     
-    if (type === 'ignore') return bot.answerCallbackQuery(query.id);
+    if (type === 'ignore') return answer();
+
     if (type === 'nav') {
-        await bot.answerCallbackQuery(query.id);
         const [year, month] = rest;
         const newDate = new Date(year, month);
         const keyboard = await createCalendarKeyboard(user, newDate);
-        return bot.editMessageReplyMarkup(keyboard, { chat_id: chatId, message_id: messageId });
+        await bot.editMessageReplyMarkup(keyboard, { chat_id: chatId, message_id: messageId });
+        return answer();
     } 
 
     if (type === 'day') {
-        await bot.answerCallbackQuery(query.id, `Loading lessons...`);
         const [year, month, day] = rest;
         const selectedDate = new Date(year, month, day);
         const startOfDay = new Date(new Date(selectedDate).setHours(0, 0, 0, 0));
@@ -86,32 +79,35 @@ async function handleCalendarCallback(bot, query, user, params) {
         const q = { lessonDate: { $gte: startOfDay, $lte: endOfDay } };
         if (user.role === 'student') q.student = user._id;
         if (user.role === 'teacher') q.teacher = user._id;
-        const lessons = await Lesson.find(q).sort({lessonDate: 1}).populate('teacher student', 'name').lean();
-        let response = `*Lessons for ${selectedDate.toLocaleDateString('en-GB')}*\n\n`;
+        const lessons = await Lesson.find(q).sort({lessonDate: 1}).populate('teacher student', 'name').populate('course', 'name').lean();
+        let response = `<b>Lessons for ${selectedDate.toLocaleDateString('en-GB')}</b>\n\n`;
         let k = { inline_keyboard: [] };
         if (lessons.length > 0) {
             lessons.forEach(l => {
-                let lw = user.role === 'student' ? l.teacher.name : l.student.name;
-                const time = new Date(l.lessonDate).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
-                response += `*${time}* - Lesson with ${lw} (${getStatusEmoji(l.status)})\n`;
-                if (l.status === 'scheduled' && user.role === 'teacher') {
-                     k.inline_keyboard.push([
-                        { text: `✅ Completed`, callback_data: `lesson_${l._id}_completed` },
-                        { text: `👻 No Show`, callback_data: `lesson_${l._id}_noshow` }
-                    ]);
-                }
+                let lw = escapeHtml(user.role === 'student' ? (l.teacher?.name || 'N/A') : (l.student?.name || 'N/A'));
+                const courseName = escapeHtml(l.course?.name || 'General');
+                const time = escapeHtml(new Date(l.lessonDate).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }));
+                const status = getStatusEmoji(l.status);
+                response += `${status} <b>${time}</b> - ${lw} <i>(${courseName})</i>\n`;
                 if (l.status === 'scheduled') {
+                    if (user.role === 'teacher') {
+                         k.inline_keyboard.push([{ text: `✅ Completed`, callback_data: `lesson_${l._id}_completed` }, { text: `👻 No Show`, callback_data: `lesson_${l._id}_noshow` }]);
+                    }
                     k.inline_keyboard.push([{ text: `❌ Cancel Lesson at ${time}`, callback_data: `cancel_request_${l._id}` }]);
                 }
             });
         } else { response = `You have no lessons on ${selectedDate.toLocaleDateString('en-GB')}.`; }
-        return bot.sendMessage(chatId, response, { parse_mode: 'Markdown', reply_markup: k });
-    } if (type === 'filter') {
-        const [filterType] = rest;
-        await bot.answerCallbackQuery(query.id);
-        return sendFilteredLessons(bot, query, user, filterType, 1);
+        await bot.sendMessage(chatId, response, { parse_mode: 'HTML', reply_markup: k });
+        return answer();
     }
-    await bot.answerCallbackQuery(query.id);
+    
+    if (type === 'filter') {
+        const [filterType] = rest;
+        await sendFilteredLessons(bot, query, user, filterType, 1);
+        return answer();
+    }
+    
+    await answer();
 }
 
 async function sendFilteredLessons(bot, query, user, filterType, page = 1) {
@@ -142,47 +138,49 @@ async function sendFilteredLessons(bot, query, user, filterType, page = 1) {
         return bot.answerCallbackQuery(query.id, { text: `You have no lessons for this ${filterType}.` });
     }
     
-    const lessons = await Lesson.find(q).sort({ lessonDate: 1 }).limit(limit).skip(skip).populate('teacher student', 'name').lean();
+    const lessons = await Lesson.find(q).sort({ lessonDate: 1 }).limit(limit).skip(skip).populate('teacher student', 'name').populate('course', 'name').lean();
     const totalPages = Math.ceil(totalLessons / limit);
 
-    let response = `*Lessons for this ${filterType} (Page ${page}/${totalPages}):*\n\n`;
+    let response = `<b>Lessons for this ${filterType} (Page ${page}/${totalPages}):</b>\n\n`;
     lessons.forEach(l => {
-        const date = new Date(l.lessonDate).toLocaleDateString('en-GB');
-        const time = new Date(l.lessonDate).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
-        let lessonWith = user.role === 'student' ? (l.teacher ? l.teacher.name : 'N/A') : (l.student ? l.student.name : 'N/A');
-        response += `*${date} ${time}* - ${lessonWith} (${getStatusEmoji(l.status)})\n`;
+        const date = escapeHtml(new Date(l.lessonDate).toLocaleDateString('en-GB'));
+        const time = escapeHtml(new Date(l.lessonDate).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }));
+        const lessonWith = escapeHtml(user.role === 'student' ? (l.teacher?.name || 'N/A') : (l.student?.name || 'N/A'));
+        const status = getStatusEmoji(l.status);
+
+        response += `${status} <b>${date} (${time})</b> - ${lessonWith.split(' ')[0]} <i>(${escapeHtml(l.course?.name || 'General').split(' ')[0]})</i>\n`;
     });
 
     const keyboard = createPaginationKeyboard(`cal_filter_${filterType}`, page, totalPages, 'page');
 
-    return bot.editMessageText(response, { 
-        chat_id: chatId, message_id: messageId, 
-        parse_mode: 'Markdown', reply_markup: keyboard
-    });
+    try {
+        await bot.editMessageText(response, { 
+            chat_id: chatId, 
+            message_id: messageId, 
+            parse_mode: 'HTML',
+            reply_markup: keyboard 
+        });
+    } catch (error) {
+        if (!error.response?.body?.description.includes('message is not modified')) {
+            console.error("Error in sendFilteredLessons:", error.response?.body || error.message);
+            await bot.sendMessage(chatId, "An error occurred while displaying lessons.");
+        }
+    }
 }
 
-async function handleSettingsCallback(bot, query, user, params) {
+
+async function handleSettingsCallback(bot, query, user, params, { answer }) {
     const chatId = query.message.chat.id;
     const action = params[0];
-    
-    await bot.answerCallbackQuery(query.id);
 
     if (action === 'toggle' && params[1] === 'notifications') {
         user.notifications.lessonReminders = !user.notifications.lessonReminders;
         await user.save();
-        
-        const newKeyboard = {
-            inline_keyboard: [
-                [{ text: `Notifications: ${user.notifications.lessonReminders ? 'ON' : 'OFF'}`, callback_data: "settings_toggle_notifications" }],
-                [{ text: `Change Emoji Avatar: ${user.emojiAvatar || 'Not set'}`, callback_data: "settings_change_emoji" }]
-            ]
-        };
+        const newKeyboard = { inline_keyboard: [[{ text: `Notifications: ${user.notifications.lessonReminders ? 'ON' : 'OFF'}`, callback_data: "settings_toggle_notifications" }], [{ text: `Change Emoji Avatar: ${user.emojiAvatar || 'Not set'}`, callback_data: "settings_change_emoji" }]] };
         try {
             await bot.editMessageReplyMarkup(newKeyboard, { chat_id: chatId, message_id: query.message.message_id });
         } catch (error) {
-            if (error.response && error.response.body.description.includes('message is not modified')) {
-                console.log("Ignored 'message is not modified' error in settings.");
-            } else {
+            if (!error.response?.body?.description.includes('message is not modified')) {
                 console.error("Error in handleSettingsCallback:", error);
             }
         }
@@ -192,86 +190,101 @@ async function handleSettingsCallback(bot, query, user, params) {
         await stateService.setState(chatId, 'awaiting_new_emoji');
         await bot.sendMessage(chatId, "OK, send me the new emoji you'd like to use as your avatar.");
     }
+    await answer();
 }
 
-async function handlePaginationCallback(bot, query, user, params) {
+async function handlePaginationCallback(bot, query, user, params, { answer }) {
     const [prefix, ...rest] = params;
-    await bot.answerCallbackQuery(query.id);
     try {
         if (prefix === 'cal' && rest[0] === 'filter') {
             const [_, filterType, pageStr] = rest;
-            return await sendFilteredLessons(bot, query, user, filterType, parseInt(pageStr, 10));
-        }
-        
-        if (prefix === 'teacher' && rest[0] === 'list' && rest[1] === 'students') {
-            const page = parseInt(rest[3], 10);
-            return await searchService.listStudentsForTeacher(bot, query.message.chat.id, user, page, query.message.message_id);
-        }
-
-        if (prefix === 'admin' && rest[0] === 'user' && rest[1] === 'search') {
-            const [__, pageStr, ...searchTermParts] = rest;
-            const searchTerm = searchTermParts.join('_');
-            const page = parseInt(pageStr, 10);
-            return await searchService.findUserForAdmin(bot, query.message.chat.id, searchTerm, page, query.message.message_id);
+            await sendFilteredLessons(bot, query, user, filterType, parseInt(pageStr, 10));
+        } else if (prefix === 'teacher' && rest[0] === 'list' && rest[1] === 'students') {
+            const page = parseInt(rest[2], 10);
+            await searchService.listStudentsForTeacher(bot, query.message.chat.id, user, page, query.message.message_id);
+        } 
+        else if (prefix === 'admin' && rest[0] === 'list' && rest[1] === 'users') {
+            const page = parseInt(rest[2], 10);
+            await searchService.listAllUsers(bot, query.message.chat.id, page, query.message.message_id);
         }
     } catch (error) {
-        if (error.response && error.response.body.description.includes('message is not modified')) {
-            console.log("Ignored 'message is not modified' error during pagination.");
-        } else {
+        if (!error.response?.body?.description.includes('message is not modified')) {
             console.error("Error during pagination callback:", error);
         }
     }
+    await answer();
 }
 
-async function handleLessonGrade(bot, query, user, lessonId, grade) {
+
+async function handleLessonGrade(bot, query, user, lessonId, grade, { answer }) {
     try {
         const lesson = await Lesson.findById(lessonId).populate('student', 'name');
-        if (!lesson) return bot.answerCallbackQuery(query.id, { text: "Lesson not found" });
+        if (!lesson) return answer({ text: "Lesson not found" });
         await Grade.findOneAndUpdate({ lesson: lessonId }, { lesson: lessonId, student: lesson.student._id, teacher: lesson.teacher, score: parseInt(grade), date: new Date() }, { upsert: true, new: true, setDefaultsOnInsert: true });
         await bot.editMessageReplyMarkup({ inline_keyboard: [] }, { chat_id: query.message.chat.id, message_id: query.message.message_id });
         await bot.sendMessage(query.message.chat.id, `✅ You have graded the lesson with ${lesson.student.name} a ${grade}.`);
-        await bot.answerCallbackQuery(query.id, { text: `Grade ${grade} saved` });
+        await answer({ text: `Grade ${grade} saved` });
     } catch (error) {
         console.error("Grade error:", error);
-        await bot.answerCallbackQuery(query.id, { text: "Error saving the grade" });
+        await answer({ text: "Error saving the grade" });
     }
 }
 
 function registerCallbackQueryHandler(botInstance, dependencies) {
     const bot = botInstance;
-    BASE_URL = dependencies.BASE_URL;
-    undoStack = dependencies.undoStack;
-    searchService.init(dependencies);
 
     bot.on('callback_query', async (query) => {
-        if (!query.data) return bot.answerCallbackQuery(query.id);
-        const chatId = query.message.chat.id;
-        const [action, ...params] = query.data.split('_');
-        const user = await User.findOne({ telegramChatId: String(chatId) });
-        if (!user) return bot.answerCallbackQuery(query.id, { text: "Account not found." });
+        const chatId = query.message?.chat.id;
+        
+        if (!query.data || !chatId) {
+            return bot.answerCallbackQuery(query.id).catch(e => console.error("Safe answerCallbackQuery failed:", e.message));
+        }
 
         try {
+            const [action, ...params] = query.data.split('_');
+            
+            const user = await User.findOne({ telegramChatId: String(chatId) });
+            if (!user) {
+                return bot.answerCallbackQuery(query.id, { text: "Account not found. Use /start" });
+            }
+
+            let wasAnswered = false;
+            const answer = (options) => {
+                if (wasAnswered) return Promise.resolve();
+                wasAnswered = true;
+                return bot.answerCallbackQuery(query.id, options).catch(e => console.error("Error in answer function:", e.message));
+            };
+
+            const context = { ...dependencies, answer };
+
             switch (action) {
-                case 'cancel': return handleCancellationRequest(bot, query, user);
-                case 'settings': return handleSettingsCallback(bot, query, user, params); 
-                case 'cal': return handleCalendarCallback(bot, query, user, params);
-                case 'page': return handlePaginationCallback(bot, query, user, params);
-                case 'adjust': return handleAdjustmentCallback(bot, query, user, params);
-                case 'lesson': return handleLessonCallback(bot, query, user, params);
-                case 'grade': return handleLessonGrade(bot, query, user, params[0], params[1]);
-                case 'refresh': return handleRefreshCallback(bot, query, user, params);
-                case 'ignore': return bot.answerCallbackQuery(query.id);
-                
+                case 'cancel':  await handleCancellationRequest(bot, query, user, params, context); break;
+                case 'settings':await handleSettingsCallback(bot, query, user, params, context); break;
+                case 'cal':     await handleCalendarCallback(bot, query, user, params, context); break;
+                case 'page':    await handlePaginationCallback(bot, query, user, params, context); break;
+                case 'lesson':  await handleLessonCallback(bot, query, user, params, context); break;
+                case 'grade':   await handleLessonGrade(bot, query, user, params[0], params[1], context); break;
+                case 'refresh': await handleRefreshCallback(bot, query, user, params, context); break;
+                case 'ignore': break;
                 default: 
                     console.warn(`Unknown action in callback_query: ${action}`);
-                    return bot.answerCallbackQuery(query.id);
+                    await answer({ text: "Unknown command." });
+                    return;
             }
+
+            if (!wasAnswered) {
+                await answer();
+            }
+
         } catch (error) {
-            console.error(`Error processing callback_query ${query.id} for action ${action}:`, error);
-            await bot.answerCallbackQuery(query.id, { text: 'An internal error occurred.' });
+            console.error(`!!! CRITICAL ERROR processing callback_query:`, query.data, error);
+            try {
+                await bot.answerCallbackQuery(query.id, { text: 'An error occurred. Please try again later.', show_alert: true });
+            } catch (e) {
+                console.error("Failed to answer callback query with error alert:", e.message);
+            }
         }
     });
 }
-
 
 module.exports = { registerCallbackQueryHandler };
