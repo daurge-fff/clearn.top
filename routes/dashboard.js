@@ -335,10 +335,19 @@ router.get('/user-profile/:id', ensureAuth, ensureRole('admin'), async (req, res
         if (!userProfile) return res.status(404).send('User not found');
 
         let lessons = [];
+        const lessonQuery = {};
         if (userProfile.role === 'student') {
-            lessons = await Lesson.find({ student: userProfile._id }).populate('teacher', 'name').sort({ lessonDate: -1 }).lean();
+            lessonQuery.student = userProfile._id;
         } else if (userProfile.role === 'teacher') {
-            lessons = await Lesson.find({ teacher: userProfile._id }).populate('student', 'name').sort({ lessonDate: -1 }).lean();
+            lessonQuery.teacher = userProfile._id;
+        }
+        
+        if (userProfile.role !== 'admin') {
+            lessons = await Lesson.find(lessonQuery)
+                .populate('teacher', 'name')
+                .populate('student', 'name')
+                .sort({ lessonDate: -1 })
+                .lean();
         }
 
         res.render('admin/user_profile', {
@@ -346,7 +355,8 @@ router.get('/user-profile/:id', ensureAuth, ensureRole('admin'), async (req, res
             user: req.user,
             userProfile: userProfile,
             lessons: lessons,
-            page_name: 'users'
+            page_name: 'users',
+            scripts: ['/js/user_profile.js'] 
         });
     } catch (err) {
         console.error(err);

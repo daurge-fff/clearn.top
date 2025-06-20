@@ -69,7 +69,7 @@
                                 <td><%= u.role === 'student' ? u.lessonsPaid : 'N/A' %></td>
                                 <td class="actions-cell">
                                     <a href="/dashboard/users/edit/<%= u._id %>" class="btn-icon" data-tooltip="Edit"><i class="icon-edit"></i></a>
-                                    <a href="/dashboard/users/delete/<%= u._id %>" class="btn-icon btn-danger" data-tooltip="Delete" onclick="return confirm('Are you sure?')"><i class="icon-delete"></i></a>
+                                    <a href="/dashboard/users/delete/<%= u._id %>" class="btn-icon btn-danger" data-tooltip="Delete"><i class="icon-delete"></i></a>
                                 </td>
                             </tr>
                         <% }); %>

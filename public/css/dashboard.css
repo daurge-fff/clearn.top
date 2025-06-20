@@ -74,6 +74,7 @@
 .icon-check { --icon-url: url(/images/icon-check.svg); }
 .icon-search { --icon-url: url(/images/icon-search.svg); }
 .icon-filter { --icon-url: url(/images/icon-filter.svg); }
+.icon-key { --icon-url: url(/images/icon-key.svg); }
 
 .nav-link i, .header-btn i, .password-toggle i {
     width: 20px;

@@ -10,7 +10,7 @@
             </div>
             <div class="header-title-block">
                 <h1><%= userProfile.name %></h1>
-                <p class="section-subtitle">User Profile</p>
+                <p class="section-subtitle">User Profile (<%= userProfile.role %>)</p>
             </div>
         </div>
 
@@ -18,7 +18,18 @@
             <a href="/dashboard/users/edit/<%= userProfile._id %>" class="btn btn-secondary"><i class="icon-edit"></i> Edit User</a>
             <a href="/dashboard/users" class="btn btn-secondary">Back to All Users</a>
         </div>
+    </div>
 
+    <div class="card">
+        <div class="page-actions" style="justify-content: flex-start; padding: 0; flex-wrap: wrap; gap: 10px;">
+            <% if (userProfile.role === 'student') { %>
+                <a href="/dashboard/lessons/add" class="btn btn-primary" data-student-id="<%= userProfile._id %>">
+                    <i class="icon-add"></i> Schedule Lesson
+                </a>
+                <button id="adjust-balance-btn" class="btn btn-secondary"><i class="icon-edit"></i> Adjust Balance</button>
+            <% } %>
+            <button id="reset-password-btn" class="btn btn-secondary"><i class="icon-key"></i> Send Password Reset</button>
+        </div>
     </div>
 
     <div class="stats-grid">
@@ -30,8 +41,8 @@
         </div>
         <div class="stat-card">
             <div class="stat-info">
-                <span class="stat-number small"><span class="badge role-<%= userProfile.role %>"><%= userProfile.role %></span></span>
-                <span class="stat-label">Role</span>
+                <span class="stat-number small"><span class="badge status-<%= userProfile.status %>"><%= userProfile.status %></span></span>
+                <span class="stat-label">Status</span>
             </div>
         </div>
         <% if (userProfile.role === 'student') { %>
@@ -43,22 +54,22 @@
             </div>
         <% } %>
     </div>
-
+    
     <% if (userProfile.role === 'student') { %>
         <div class="card">
             <h2>Manual Payment Registration</h2>
             <form action="/dashboard/user-profile/<%= userProfile._id %>/register-payment" method="POST" class="adjustment-form">
                 <div class="form-group">
                     <label for="lessonsPurchased">Lessons Purchased</label>
-                    <input type="number" name="lessonsPurchased" placeholder="e.g., 10" required>
+                    <input type="number" id="lessonsPurchased" name="lessonsPurchased" placeholder="e.g., 10" required>
                 </div>
                 <div class="form-group">
                     <label for="amountPaid">Amount Paid (EUR)</label>
-                    <input type="number" step="0.01" name="amountPaid" placeholder="e.g., 180" required>
+                    <input type="number" step="0.01" id="amountPaid" name="amountPaid" placeholder="e.g., 180" required>
                 </div>
                 <div class="form-group reason-group">
                     <label for="paymentSystem">Payment Method / Reason</label>
-                    <input type="text" name="paymentSystem" placeholder="e.g., Direct Bank Transfer, Cash" required>
+                    <input type="text" id="paymentSystem" name="paymentSystem" placeholder="e.g., Direct Bank Transfer, Cash" required>
                 </div>
                 <div class="form-actions">
                     <button type="submit" class="btn btn-primary">Register Payment</button>
@@ -77,25 +88,68 @@
                         <th><%= userProfile.role === 'student' ? 'Teacher' : 'Student' %></th>
                         <th>Topic</th>
                         <th>Status</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     <% if (lessons && lessons.length > 0) { %>
                         <% lessons.forEach(lesson => { %>
-                            <tr>
+                            <tr data-lesson-id="<%= lesson._id %>">
                                 <td><%= new Date(lesson.lessonDate).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) %></td>
-                                <td><%= userProfile.role === 'student' ? lesson.teacher.name : lesson.student.name %></td>
+                                <td><%= userProfile.role === 'student' ? (lesson.teacher ? lesson.teacher.name : 'N/A') : (lesson.student ? lesson.student.name : 'N/A') %></td>
                                 <td><%= lesson.topic %></td>
-                                <td><span class="badge status-<%= lesson.status %>"><%= lesson.status.replace(/_/g, ' ') %></span></td>
+                                <td class="status-cell" data-lesson-id="<%= lesson._id %>" data-current-status="<%= lesson.status %>">
+                                    <span class="badge status-<%= lesson.status %> current-status-badge"><%= lesson.status.replace(/_/g, ' ') %></span>
+                                    <div class="status-dropdown">
+                                        <div class="status-dropdown-item" data-status="scheduled">Scheduled</div>
+                                        <div class="status-dropdown-item" data-status="completed">Completed</div>
+                                        <div class="status-dropdown-item" data-status="cancelled_by_student">Cancelled (Student)</div>
+                                        <div class="status-dropdown-item" data-status="cancelled_by_teacher">Cancelled (Teacher)</div>
+                                        <div class="status-dropdown-item" data-status="no_show">No Show</div>
+                                    </div>
+                                </td>
+                                <td class="actions-cell">
+                                    <button class="btn-icon delete-lesson-btn" data-id="<%= lesson._id %>" data-tooltip="Delete"><i class="icon-delete"></i></button>
+                                </td>
                             </tr>
                         <% }); %>
                     <% } else { %>
-                        <tr>
-                            <td colspan="4" style="text-align: center; padding: 20px;">No lesson history found.</td>
-                        </tr>
+                        <tr><td colspan="5" style="text-align: center; padding: 20px;">No lesson history found.</td></tr>
                     <% } %>
                 </tbody>
             </table>
         </div>
     </div>
+    
+    <% if (userProfile.balanceHistory && userProfile.balanceHistory.length > 0) { %>
+    <div class="card">
+        <h2>Balance History</h2>
+        <div class="table-responsive">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Change</th>
+                        <th>Balance After</th>
+                        <th>Reason</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% userProfile.balanceHistory.slice().reverse().forEach(entry => { %>
+                        <tr>
+                            <td><%= new Date(entry.date).toLocaleString('en-GB') %></td>
+                            <td>
+                                <span class="badge <%= entry.change > 0 ? 'status-completed' : 'status-cancelled_by_teacher' %>">
+                                    <%= entry.change > 0 ? '+' : '' %><%= entry.change %>
+                                </span>
+                            </td>
+                            <td><%= entry.balanceAfter %></td>
+                            <td><%= entry.reason %></td>
+                        </tr>
+                    <% }); %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <% } %>
 </div>

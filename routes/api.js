@@ -7,6 +7,7 @@ const { Parser } = require('json2csv');
 const { ensureAuth, ensureRole } = require('../middleware/auth');
 const { processSuccessfulPayment } = require('../services/paymentService');
 const Payment = require('../models/Payment');
+const bcrypt = require('bcryptjs');
 
 // @desc    Получение уроков для FullCalendar
 // @route   GET /api/lessons
@@ -224,13 +225,19 @@ router.get('/analytics', ensureAuth, ensureRole('admin'), async (req, res) => {
  */
 router.delete('/lessons/:id', ensureAuth, ensureRole('admin'), async (req, res) => {
     try {
-        const lesson = await Lesson.findByIdAndDelete(req.params.id);
+        const lesson = await Lesson.findById(req.params.id);
+
         if (!lesson) {
             return res.status(404).json({ msg: 'Lesson not found' });
         }
+
         if (lesson.status === 'scheduled') {
             await User.findByIdAndUpdate(lesson.student, { $inc: { lessonsPaid: 1 } });
+            console.log(`Lesson refund processed for student ${lesson.student}`);
         }
+        
+        await lesson.deleteOne();
+
         res.json({ msg: 'Lesson removed successfully' });
 
     } catch (err) {
@@ -408,6 +415,62 @@ router.get('/admin/lessons-table', ensureAuth, ensureRole('admin'), async (req, 
     } catch (err) {
         console.error(err);
         res.status(500).json({ msg: "Server Error" });
+    }
+});
+
+const crypto = require('crypto');
+const bot = require('../bot');
+
+// @desc    Send a direct message to a user via Telegram bot
+// @route   POST /api/notify/telegram
+// @access  Private (Admin only)
+router.post('/notify/telegram', ensureAuth, ensureRole('admin'), async (req, res) => {
+    const { userId, message } = req.body;
+    if (!userId || !message) {
+        return res.status(400).json({ msg: 'User ID and message are required.' });
+    }
+
+    try {
+        const user = await User.findById(userId).select('telegramChatId name').lean();
+        if (!user) {
+            return res.status(404).json({ msg: 'User not found.' });
+        }
+        if (!user.telegramChatId) {
+            return res.status(400).json({ msg: `User ${user.name} has not linked their Telegram account.` });
+        }
+
+        await bot.sendMessage(user.telegramChatId, message, { parse_mode: 'Markdown' });
+        res.json({ msg: `Message successfully sent to ${user.name}.` });
+
+    } catch (error) {
+        console.error("Telegram notification error:", error);
+        res.status(500).json({ msg: "Failed to send Telegram message." });
+    }
+});
+
+// @desc    Initiate a password reset for a user
+// @route   POST /api/users/:id/reset-password
+router.post('/users/:id/reset-password', ensureAuth, ensureRole('admin'), async (req, res) => {
+    try {
+        const user = await User.findById(req.params.id);
+        if (!user) return res.status(404).json({ msg: 'User not found' });
+        if (!user.telegramChatId) return res.status(400).json({ msg: 'User has not linked their Telegram account.' });
+
+        const newPassword = crypto.randomBytes(4).toString('hex');
+        
+        const salt = await bcrypt.genSalt(10);
+        user.password = await bcrypt.hash(newPassword, salt);
+        await user.save();
+        
+        const message = `🔑 *Password Reset*\n\nHi ${user.name}! An administrator has reset your password.\n\nYour new temporary password is: \`${newPassword}\`\n\nPlease log in and change it in your settings as soon as possible.`;
+        
+        await bot.sendMessage(user.telegramChatId, message, { parse_mode: 'Markdown' });
+
+        res.json({ msg: `A new temporary password has been sent to ${user.name} via Telegram.` });
+
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).json({ msg: 'Server Error' });
     }
 });
 

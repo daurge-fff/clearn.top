@@ -38,7 +38,7 @@
                             <td><span class="badge status-<%= lesson.status %>"><%= lesson.status.replace(/_/g, ' ') %></span></td>
                             <td class="actions-cell">
                                 <% if (lesson.status === 'scheduled') { %>
-                                    <form action="/dashboard/lessons/cancel/<%= lesson._id %>" method="POST" onsubmit="return handleCancellation(this);">
+                                    <form action="/dashboard/lessons/cancel/<%= lesson._id %>" method="POST" class="cancel-lesson-form">
                                         <button type="submit" class="btn-icon btn-danger" data-tooltip="Cancel Lesson">
                                             <i class="icon-delete"></i>
                                         </button>

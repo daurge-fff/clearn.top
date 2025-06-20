@@ -118,6 +118,13 @@
             </form>
         </div>
     </div>
+    <script src="/js/global.js"></script>
+
+    <% if (typeof scripts !== 'undefined' && scripts) { %>
+        <% scripts.forEach(script => { %>
+            <script src="<%= script %>"></script>
+        <% }) %>
+    <% } %>
     
 </body>
 </html>
