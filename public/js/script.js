@@ -25,6 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentTariffName = '';
     let selectedPaymentSystem = null;
     let isDonationMode = false;
+    let paypalButtonsRendered = false;
 
     function setLanguage(lang) {
         if (lang === 'ua') lang = 'uk';
@@ -102,7 +103,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function openCourseDetailsModal(courseKey) {
         if (!courseDetailsModal) return;
-
         const lang = localStorage.getItem('language') || 'en';
         const t = translations[lang];
         if (!t) return;
@@ -154,6 +154,19 @@ document.addEventListener('DOMContentLoaded', () => {
         if (courseDetailsModal) courseDetailsModal.classList.remove('is-open');
     }
     
+    function updatePayButtonState() {
+        if (!paymentModal) return;
+
+        const finalPayButton = document.getElementById('final-pay-button');
+        const termsCheckbox = document.getElementById('terms-checkbox');
+        const identifierInput = document.getElementById('payment-identifier');
+        
+        if (!finalPayButton || !termsCheckbox || !identifierInput) return;
+
+        const isReadyToPay = selectedPaymentSystem && termsCheckbox.checked && identifierInput.value.trim() !== '';
+        finalPayButton.disabled = !isReadyToPay;
+    }
+
     function updatePaymentModalPrice() {
         if (!paymentModal) return;
         let quantity = 1;
@@ -179,21 +192,14 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('modal-total-price').textContent = `${finalTotal.toFixed(2)} ${paymentConfig.currency}`;
         updatePayButtonState();
     }
-
-    function updatePayButtonState() {
-        if (!paymentModal) return;
-        const finalPayButton = document.getElementById('final-pay-button');
-        const termsCheckbox = document.getElementById('terms-checkbox');
-        const isReadyToPay = selectedPaymentSystem && termsCheckbox.checked;
-        if (finalPayButton) finalPayButton.disabled = !isReadyToPay || selectedPaymentSystem === 'paypal';
-    }
-
+    
     function openPaymentModal(tariffDuration, donationMode = false) {
         if (!paymentModal) return;
         isDonationMode = donationMode;
         const lessonSelector = document.getElementById('lesson-quantity-selector');
         const donationSelector = document.getElementById('donation-amount-selector');
         const priceBreakdown = document.querySelector('.price-breakdown');
+
         if (isDonationMode) {
             currentBasePrice = 1;
             currentTariffName = 'Donation';
@@ -207,11 +213,17 @@ document.addEventListener('DOMContentLoaded', () => {
             donationSelector.style.display = 'none';
             priceBreakdown.style.display = 'block';
         }
+
         document.getElementById('modal-tariff-name').textContent = currentTariffName;
         document.getElementById('lesson-quantity').value = 1;
         document.getElementById('donation-amount').value = 10;
         document.getElementById('terms-checkbox').checked = false;
+        document.getElementById('payment-identifier').value = '';
+        const errorP = document.getElementById('identifier-error');
+        if(errorP) errorP.style.display = 'none';
+
         selectedPaymentSystem = null;
+        paypalButtonsRendered = false;
         const systemsContainer = paymentModal.querySelector('.systems');
         systemsContainer.innerHTML = '';
         paymentConfig.availableSystems.forEach(system => {
@@ -221,12 +233,14 @@ document.addEventListener('DOMContentLoaded', () => {
             card.textContent = system.name;
             systemsContainer.appendChild(card);
         });
+        
         const paypalContainer = document.getElementById('paypal-button-container');
-        if (paypalContainer) {
-            paypalContainer.innerHTML = '';
-            paypalContainer.style.display = 'none';
-        }
-        document.getElementById('final-pay-button').style.display = 'block';
+        if (paypalContainer) paypalContainer.innerHTML = '';
+        
+        const finalPayButton = document.getElementById('final-pay-button');
+        if(finalPayButton) finalPayButton.style.display = 'block';
+        if(paypalContainer) paypalContainer.style.display = 'none';
+
         const currentLang = localStorage.getItem('language') || 'en';
         setLanguage(currentLang);
         updatePaymentModalPrice();
@@ -280,80 +294,161 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (paymentModal) {
         const finalPayButton = document.getElementById('final-pay-button');
-        const paypalButtonsContainer = document.getElementById('paypal-button-container');
-        const termsCheckbox = document.getElementById('terms-checkbox');
+        const errorP = document.getElementById('identifier-error');
+
         document.getElementById('lesson-quantity').addEventListener('input', updatePaymentModalPrice);
         document.getElementById('donation-amount').addEventListener('input', updatePaymentModalPrice);
-        termsCheckbox.addEventListener('change', updatePayButtonState);
+        document.getElementById('terms-checkbox').addEventListener('change', updatePayButtonState);
+        document.getElementById('payment-identifier').addEventListener('input', updatePayButtonState);
 
         paymentModal.querySelector('.systems').addEventListener('click', (e) => {
             const target = e.target.closest('.payment-system-card');
             if (!target) return;
+            
             paymentModal.querySelectorAll('.payment-system-card').forEach(card => card.classList.remove('active'));
             target.classList.add('active');
             selectedPaymentSystem = target.dataset.system;
-            const isPaypal = selectedPaymentSystem === 'paypal';
-            finalPayButton.style.display = isPaypal ? 'none' : 'block';
-            paypalButtonsContainer.style.display = isPaypal ? 'block' : 'none';
-            if (isPaypal && typeof paypal !== 'undefined') renderPayPalButtons();
+
+            const paypalContainer = document.getElementById('paypal-button-container');
+            const finalPayButton = document.getElementById('final-pay-button');
+            if(finalPayButton) finalPayButton.style.display = (selectedPaymentSystem === 'paypal') ? 'none' : 'block';
+            if(paypalContainer) paypalContainer.style.display = (selectedPaymentSystem === 'paypal') ? 'block' : 'none';
+
+            if (selectedPaymentSystem === 'paypal' && !paypalButtonsRendered) {
+                renderPayPalButtons();
+                paypalButtonsRendered = true;
+            }
             updatePayButtonState();
         });
 
         finalPayButton.addEventListener('click', async () => {
             const button = finalPayButton;
-            const originalText = button.innerHTML;
+            const originalText = button.textContent;
+            
             button.disabled = true;
             button.textContent = 'Creating invoice...';
+            
             const amount = document.getElementById('modal-total-price').textContent.split(' ')[0];
-            const quantity = document.getElementById('lesson-quantity').value;
-            const description = `${currentTariffName} x${quantity}`;
-            const orderId = `clearn-${Date.now()}`;
+            const quantity = isDonationMode ? 1 : document.getElementById('lesson-quantity').value;
+            const description = isDonationMode ? "Donation" : `${currentTariffName} x${quantity}`;
+            const identifier = document.getElementById('payment-identifier').value;
+
             try {
-                const response = await fetch('/create-payment', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ amount: parseFloat(amount), currency: paymentConfig.currency, description, orderId, paymentSystem: selectedPaymentSystem }) });
+                const response = await fetch('/api/create-payment', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        amount: parseFloat(amount),
+                        currency: paymentConfig.currency,
+                        description,
+                        paymentSystem: selectedPaymentSystem,
+                        identifier
+                    })
+                });
                 const data = await response.json();
-                if (response.ok && data.paymentUrl) window.location.href = data.paymentUrl;
-                else { alert('Error creating invoice: ' + (data.error || 'Unknown error')); button.innerHTML = originalText; button.disabled = false; }
-            } catch (error) { alert('Network error. Please try again.'); button.innerHTML = originalText; button.disabled = false; }
+                if (response.ok && data.paymentUrl) {
+                    window.location.href = data.paymentUrl;
+                } else {
+                    if (errorP) {
+                        errorP.textContent = 'Error: ' + (data.error || 'Failed to create payment invoice.');
+                        errorP.style.display = 'block';
+                    }
+                    button.textContent = originalText;
+                    button.disabled = false;
+                }
+            } catch (error) {
+                if (errorP) {
+                    errorP.textContent = 'Network error. Please try again.';
+                    errorP.style.display = 'block';
+                }
+                button.textContent = originalText;
+                button.disabled = false;
+            }
         });
 
         function renderPayPalButtons() {
-            if (typeof paypal === 'undefined') { console.error("PayPal SDK is not loaded."); return; }
-            paypalButtonsContainer.innerHTML = '';
+            const paypalContainer = document.getElementById('paypal-button-container');
+            if (typeof paypal === 'undefined' || !paypalContainer) {
+                console.error("PayPal SDK is not loaded or container not found.");
+                return;
+            }
+            paypalContainer.innerHTML = '';
             paypal.Buttons({
                 style: { layout: 'vertical', label: 'pay', height: 48 },
-                onInit: (data, actions) => {
-                    termsCheckbox.checked ? actions.enable() : actions.disable();
-                    termsCheckbox.addEventListener('change', (event) => { event.target.checked ? actions.enable() : actions.disable(); });
-                },
-                onClick: (data, actions) => {
-                    if (!termsCheckbox.checked) {
-                        const label = document.querySelector('.terms-agreement label');
-                        label.style.transition = 'transform 0.1s ease';
-                        label.style.transform = 'scale(1.05)';
-                        setTimeout(() => { label.style.transform = 'scale(1)'; }, 150);
-                        return actions.reject();
-                    }
-                    updatePaymentModalPrice();
-                    return actions.resolve();
-                },
-                createOrder: async () => {
+
+                createOrder: function(data, actions) {
                     const amount = document.getElementById('modal-total-price').textContent.split(' ')[0];
-                    let description = currentTariffName;
-                    if (!isDonationMode) description += ` x${document.getElementById('lesson-quantity').value}`;
-                    const response = await fetch("/api/orders", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ amount: parseFloat(amount), currency: paymentConfig.currency, description }) });
-                    const orderData = await response.json();
-                    if (!response.ok) throw new Error(orderData.message || 'Could not create PayPal order.');
-                    return orderData.id;
+                    return actions.order.create({
+                        purchase_units: [{
+                            amount: {
+                                value: parseFloat(amount).toFixed(2),
+                                currency_code: paymentConfig.currency
+                            }
+                        }]
+                    });
                 },
-                onApprove: async (data) => {
-                    try {
-                        const response = await fetch(`/api/orders/${data.orderID}/capture`, { method: "POST" });
-                        const orderData = await response.json();
-                        window.location.href = orderData.status === 'COMPLETED' ? '/successful-payment' : '/failed-payment';
-                    } catch (error) { window.location.href = '/failed-payment'; }
+                onApprove: function(data, actions) {
+                    const errorP = document.getElementById('identifier-error');
+                    if (errorP) {
+                        errorP.textContent = 'Processing your payment, please wait...';
+                        errorP.style.display = 'block';
+                        errorP.style.color = 'var(--text-color)';
+                    }
+                    return actions.order.capture().then(async function(details) {
+                        const identifier = document.getElementById('payment-identifier').value;
+                        const quantity = isDonationMode ? 0 : parseInt(document.getElementById('lesson-quantity').value, 10);
+                        const description = isDonationMode ? "Donation" : `${currentTariffName} x${quantity}`;
+                        const response = await fetch('/api/paypal/record-payment', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                paypalOrderID: details.id,
+                                amount: details.purchase_units[0].amount.value,
+                                currency: details.purchase_units[0].amount.currency_code,
+                                lessonsPurchased: quantity,
+                                description: description,
+                                identifier: identifier
+                            })
+                        });
+                        if (response.ok) {
+                            window.location.href = '/successful-payment';
+                        } else {
+                            const errorData = await response.json();
+                            console.error('Server failed to record payment:', errorData);
+                            if (errorP) {
+                                errorP.textContent = 'Payment successful, but failed to credit your account. Please contact support.';
+                                errorP.style.color = 'var(--accent-color-2)';
+                            }
+                            setTimeout(() => { window.location.href = '/successful-payment'; }, 3000);
+                        }
+                    }).catch(err => {
+                        console.error('Failed to capture PayPal payment:', err);
+                        if (errorP) {
+                            errorP.textContent = 'Failed to process your payment. Please try again.';
+                            errorP.style.color = 'var(--accent-color-2)';
+                        }
+                    });
                 },
-                onError: (err) => { console.error('PayPal Buttons Error:', err); alert('An error occurred.'); }
-            }).render('#paypal-button-container');
+                onInit: (data, actions) => {
+                    const identifierInput = document.getElementById('payment-identifier');
+                    const termsCheckbox = document.getElementById('terms-checkbox');
+                    const checkReadiness = () => {
+                        const isReady = termsCheckbox.checked && identifierInput.value.trim() !== '';
+                        isReady ? actions.enable() : actions.disable();
+                    };
+                    checkReadiness();
+                    termsCheckbox.addEventListener('change', checkReadiness);
+                    identifierInput.addEventListener('input', checkReadiness);
+                },
+                onError: (err) => {
+                    console.error('PayPal Buttons Error:', err);
+                    const errorP = document.getElementById('identifier-error');
+                    if (errorP) {
+                        errorP.textContent = 'An error occurred with PayPal. Please try again.';
+                        errorP.style.color = 'var(--accent-color-2)';
+                    }
+                }
+            }).render(paypalContainer);
         }
         
         const closePaymentModal = () => paymentModal.classList.remove('is-open');

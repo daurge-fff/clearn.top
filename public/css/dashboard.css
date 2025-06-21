@@ -423,6 +423,7 @@
     font-size: 0.9rem;
     color: var(--text-color);
 }
+
 /* === FLASH MESSAGES === */
 .flash-messages {
     position: fixed;
@@ -432,30 +433,38 @@
     display: flex;
     flex-direction: column;
     gap: 10px;
+    width: 320px;
 }
+
 .flash-message {
     padding: 15px 20px;
     border-radius: 8px;
     font-weight: 700;
     color: #fff;
     box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-    animation: slideIn 0.3s ease-out;
-}
-.flash-success {
-    background-color: #2ecc71;
-}
-.flash-error {
-    background-color: #e74c3c;
+    animation: slideInAndFadeOut 5s ease-out forwards;
+    opacity: 0;
 }
 
-@keyframes slideIn {
-    from {
+.flash-success { background-color: #2ecc71; }
+.flash-error { background-color: #e74c3c; }
+
+@keyframes slideInAndFadeOut {
+    0% {
         opacity: 0;
         transform: translateX(100%);
     }
-    to {
+    15% {
         opacity: 1;
         transform: translateX(0);
+    }
+    85% {
+        opacity: 1;
+        transform: translateX(0);
+    }
+    100% {
+        opacity: 0;
+        transform: translateX(100%);
     }
 }
 /* === EMPTY STATE COMPONENT === */

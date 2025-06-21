@@ -4,6 +4,7 @@ const passport = require('passport');
 const bcrypt = require('bcryptjs');
 const User = require('../models/User');
 const { ensureGuest } = require('../middleware/auth');
+const { claimPendingPaymentsForUser } = require('../services/paymentService');
 
 // Login Page
 router.get('/login', ensureGuest, (req, res) => {
@@ -15,7 +16,7 @@ router.post('/login', (req, res, next) => {
     passport.authenticate('local', {
         successRedirect: '/dashboard',
         failureRedirect: '/users/login',
-        failureFlash: true // Включаем flash-сообщения от Passport (напр. "Password incorrect")
+        failureFlash: true
     })(req, res, next);
 });
 
@@ -34,7 +35,6 @@ router.post('/register', (req, res) => {
     if (password.length < 6) errors.push({ msg: 'Password must be at least 6 characters' });
 
     if (errors.length > 0) {
-        // Отправляем ошибки как flash-сообщения
         errors.forEach(err => req.flash('error_msg', err.msg));
         res.redirect('/users/register');
     } else {
@@ -49,11 +49,12 @@ router.post('/register', (req, res) => {
                         if (err) throw err;
                         newUser.password = hash;
                         newUser.save()
-                            .then(user => {
-                                req.flash('success_msg', 'You are now registered and can log in');
-                                res.redirect('/users/login');
-                            })
-                            .catch(err => console.log(err));
+                        .then(async user => {
+                            await claimPendingPaymentsForUser(user);
+                            req.flash('success_msg', 'You are now registered and can log in');
+                            res.redirect('/users/login');
+                        })
+                        .catch(err => console.log(err));
                     });
                 });
             }

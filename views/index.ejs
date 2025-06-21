@@ -266,6 +266,12 @@
                         <p><span data-translate="payment_modal_discount">Discount:</span> <span id="modal-discount">0%</span></p>
                         <h3 class="total-price"><span data-translate="payment_modal_total">Total:</span> <span id="modal-total-price"></span></h3>
                     </div>
+                    <div class="form-group" style="margin-bottom: 20px; position: relative;">
+                        <input type="text" id="payment-identifier" name="identifier" required placeholder=" ">
+                        <label for="payment-identifier" data-translate="payment_modal_identifier">Your Email or Telegram</label>
+                        <p class="form-hint" data-translate="payment_modal_identifier_hint">We'll use this to credit lessons to your account.</p>
+                        <p class="payment-error" id="identifier-error" style="display: none;"></p>
+                    </div>
                     <div class="payment-system-chooser">
                         <h4 data-translate="payment_modal_choose_system">Choose payment system</h4>
                         <div class="systems"></div>
@@ -283,6 +289,7 @@
                     </label>
                 </div>
                 <button id="final-pay-button" class="form-submit-button" data-translate="payment_modal_pay_button" disabled>Pay</button>
+                <div id="paypal-button-container"></div>
             </div>
         </div>
     </div>

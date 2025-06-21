@@ -442,6 +442,50 @@ input[type="range"]::-moz-range-thumb { width: 24px; height: 24px; background: v
 .terms-agreement label { font-size: 0.9rem; opacity: 0.8; line-height: 1.4; }
 .terms-agreement label a { color: var(--accent-color-1); text-decoration: underline; }
 
+#payment-identifier {
+    width: 100%;
+    padding: 15px;
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid var(--card-border);
+    color: var(--text-color);
+    font-size: 1rem;
+    font-family: var(--font-main);
+    transition: border-color 0.3s;
+}
+#payment-identifier:focus {
+    outline: none;
+    border-bottom-color: var(--accent-color-1);
+}
+#payment-identifier + label {
+    position: absolute;
+    top: 15px;
+    left: 5px;
+    color: var(--text-color);
+    opacity: 0.7;
+    transition: all 0.3s;
+    pointer-events: none;
+}
+#payment-identifier:focus + label,
+#payment-identifier:not(:placeholder-shown) + label {
+    top: -15px;
+    left: 0;
+    font-size: 0.8rem;
+    color: var(--accent-color-1);
+    opacity: 1;
+}
+#payment-identifier::placeholder {
+    color: transparent;
+}
+.form-hint {
+    font-size: 0.8rem;
+    opacity: 0.6;
+    text-align: left;
+    margin-top: 8px;
+    padding-left: 5px;
+}
+.payment-error { color: var(--accent-color-2); font-size: 0.9rem; font-weight: bold; margin-top: 10px; }
+
 /* === LEGAL PAGES === */
 .legal-page-container { max-width: 800px; margin: 0 auto; padding: 120px 20px 100px; color: var(--text-color); }
 .legal-page-container h1 { font-family: var(--font-headings); font-size: 2.8rem; color: var(--accent-color-1); margin-bottom: 10px; border-bottom: 2px solid var(--card-border); padding-bottom: 15px; }
@@ -536,4 +580,69 @@ input[type="range"]::-moz-range-thumb { width: 24px; height: 24px; background: v
     color: #2e7d32;
     padding: 12px;
     text-align: center;
+}
+/* === FLOATING LABEL FORM GROUP FIX === */
+.form-group {
+    position: relative;
+}
+
+.form-group input:not(input[type="range"]):not(input[type="checkbox"]),
+.form-group textarea {
+    width: 100%;
+    padding: 15px 5px 10px 5px;
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid var(--card-border);
+    color: var(--text-color);
+    font-size: 1rem;
+    font-family: var(--font-main);
+    transition: border-color 0.3s;
+}
+
+.form-group input::placeholder {
+    color: transparent;
+}
+
+.form-group label {
+    position: absolute;
+    top: 15px;
+    left: 5px;
+    color: var(--text-color);
+    opacity: 0.7;
+    transition: all 0.3s;
+    pointer-events: none;
+}
+
+.form-group input:focus + label,
+.form-group input:not(:placeholder-shown) + label {
+    top: -10px;
+    font-size: 0.8rem;
+    color: var(--accent-color-1);
+    opacity: 1;
+}
+/* === PAYPAL DEBIT/CREDIT CARD FORM FIX (FINAL V2) === */
+
+#payment-modal .modal-content {
+    display: flex;
+    flex-direction: column;
+    max-height: 90vh;
+    overflow: hidden; 
+}
+
+#payment-modal .modal-body {
+    flex-grow: 1;
+    overflow-y: auto;
+}
+
+#payment-modal .modal-footer {
+    flex-shrink: 0;
+}
+
+#paypal-button-container {
+    min-height: 150px;
+}
+
+#paypal-button-container iframe {
+    min-height: 150px !important;
+    height: auto !important;
 }

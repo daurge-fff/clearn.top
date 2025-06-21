@@ -10,8 +10,6 @@ const coursesData = {
     minecraft: {},
 };
 
-// @desc    Главная страница
-// @route   GET /
 router.get('/', (req, res) => {
     res.render('index', {
         layout: false,
@@ -29,24 +27,18 @@ router.get('/', (req, res) => {
     });
 });
 
-// @desc    Страница Условий обслуживания
-// @route   GET /terms
 router.get('/terms', (req, res) => {
     res.render('offer', {
         layout: false
     });
 });
 
-// @desc    Страница Политики конфиденциальности
-// @route   GET /privacy
 router.get('/privacy', (req, res) => {
     res.render('privacy', {
         layout: false
     });
 });
 
-// @desc    Страницы успешной/неуспешной оплаты
-// @route   GET /successful-payment, /failed-payment
 router.get('/successful-payment', (req, res) => {
     res.render('successful-payment', {
         layout: false,
