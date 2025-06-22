@@ -8,19 +8,18 @@
             <div class="stat-card">
                 <div class="stat-icon" style="--icon-bg: rgba(0, 242, 254, 0.2); --icon-color: var(--accent-color-1);"><i class="icon-list"></i></div>
                 <div class="stat-info">
-                    <span class="stat-number"><%= stats.lessonsPaid %></span>
                     <span class="stat-label">Lessons Paid</span>
+                    <span class="stat-number"><%= stats.lessonsPaid %></span>
                 </div>
             </div>
             <div class="stat-card">
                 <div class="stat-icon" style="--icon-bg: rgba(196, 58, 214, 0.2); --icon-color: var(--accent-color-2);"><i class="icon-calendar"></i></div>
                 <div class="stat-info">
+                    <span class="stat-label">Next Lesson</span>
                     <% if (stats.upcomingLesson) { %>
                         <span class="stat-number small"><%= new Date(stats.upcomingLesson.lessonDate).toLocaleDateString('en-GB', { month: 'short', day: 'numeric' }) %></span>
-                        <span class="stat-label">Next Lesson</span>
                     <% } else { %>
-                        <span class="stat-number small">--</span>
-                        <span class="stat-label">No lessons scheduled</span>
+                        <span class="stat-number small">No lessons scheduled</span>
                     <% } %>
                 </div>
             </div>
@@ -30,15 +29,15 @@
             <div class="stat-card">
                 <div class="stat-icon" style="--icon-bg: rgba(46, 204, 113, 0.2); --icon-color: #2ecc71;"><i class="icon-calendar"></i></div>
                 <div class="stat-info">
-                    <span class="stat-number"><%= stats.lessonsThisWeek %></span>
                     <span class="stat-label">Lessons This Week</span>
+                    <span class="stat-number"><%= stats.lessonsThisWeek %></span>
                 </div>
             </div>
             <div class="stat-card">
                 <div class="stat-icon" style="--icon-bg: rgba(52, 152, 219, 0.2); --icon-color: #3498db;"><i class="icon-users"></i></div>
                 <div class="stat-info">
-                    <span class="stat-number"><%= stats.studentCount %></span>
                     <span class="stat-label">Active Students</span>
+                    <span class="stat-number"><%= stats.studentCount %></span>
                 </div>
             </div>
         <% } %>
@@ -47,29 +46,28 @@
              <div class="stat-card">
                 <div class="stat-icon" style="--icon-bg: rgba(52, 152, 219, 0.2); --icon-color: #3498db;"><i class="icon-users"></i></div>
                 <div class="stat-info">
-                    <span class="stat-number"><%= stats.studentCount %></span>
                     <span class="stat-label">Total Students</span>
+                    <span class="stat-number"><%= stats.studentCount %></span>
                 </div>
             </div>
              <div class="stat-card">
                 <div class="stat-icon" style="--icon-bg: rgba(155, 89, 182, 0.2); --icon-color: #9b59b6;"><i class="icon-briefcase"></i></div>
                 <div class="stat-info">
-                    <span class="stat-number"><%= stats.teacherCount %></span>
                     <span class="stat-label">Total Teachers</span>
+                    <span class="stat-number"><%= stats.teacherCount %></span>
                 </div>
             </div>
             <div class="stat-card">
                 <div class="stat-icon" style="--icon-bg: rgba(46, 204, 113, 0.2); --icon-color: #2ecc71;"><i class="icon-list"></i></div>
                 <div class="stat-info">
-                    <span class="stat-number"><%= stats.lessonsScheduled %></span>
                     <span class="stat-label">Upcoming Lessons</span>
+                    <span class="stat-number"><%= stats.lessonsScheduled %></span>
                 </div>
             </div>
         <% } %>
     </div>
     
     <div class="card calendar-card">
-        <h2>Schedule Overview</h2>
         <div id="calendar" style="min-height: 500px;"></div>
     </div>
     <div id="events-list"></div> 
@@ -88,7 +86,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         allEvents = await response.json();
     } catch (error) {
         console.error(error);
-        calendarEl.innerHTML = '<p>Could not load schedule.</p>';
+        if(calendarEl) calendarEl.innerHTML = '<p>Could not load schedule.</p>';
         return;
     }
 
@@ -102,16 +100,19 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     function renderEventsForDate(dateStr) {
         const eventsForDay = allEvents.filter(event => getLocalDateString(event.start) === dateStr);
-        const dayEventsContainer = document.getElementById('events-list');
-
+        
         if (eventsForDay.length === 0) {
-            dayEventsContainer.innerHTML = '<div class="empty-state" style="padding: 20px;"><div class="empty-state-icon"><i class="icon-inbox"></i></div><h3>No lessons on this day</h3></div>';
+            eventsListEl.innerHTML = '<div class="empty-state" style="padding: 20px; margin-top: 20px;"><div class="empty-state-icon"><i class="icon-inbox"></i></div><h3>No lessons on this day</h3></div>';
             return;
         }
 
-        dayEventsContainer.innerHTML = `<div class="day-events-list">` + eventsForDay.map(event => {
-            const statusClass = event.backgroundColor === '#2ecc71' ? 'completed' : (event.backgroundColor === '#e74c3c' ? 'cancelled' : 'scheduled');
-            const studentName = event.title.replace('Lesson with ', '');
+        eventsListEl.innerHTML = `<div class="day-events-list">` + eventsForDay.map(event => {
+            const statusClass = event.status || 'scheduled';
+            const studentName = event.student.name || 'N/A';
+            const studentInitial = studentName.charAt(0) || '?';
+            const studentAvatar = event.student.emojiAvatar;
+            const courseName = event.course.name || 'General';
+            const topic = event.topic || 'Lesson';
 
             return `
             <div class="day-event-card">
@@ -120,10 +121,12 @@ document.addEventListener('DOMContentLoaded', async function() {
                     <span class="badge status-${statusClass}">${statusClass.replace(/_/g, ' ')}</span>
                 </div>
                 <div class="event-card-body">
-                    <div class="user-avatar" style="width: 40px; height: 40px;"><span>${studentName.charAt(0)}</span></div>
+                    <div class="user-avatar" style="width: 40px; height: 40px;">
+                        ${studentAvatar ? `<img src="https://emojicdn.elk.sh/${encodeURIComponent(studentAvatar)}?style=apple" alt="Avatar" class="emoji-avatar-img">` : `<span>${studentInitial}</span>`}
+                    </div>
                     <div class="event-info">
                         <div class="event-student-name">${studentName}</div>
-                        <div class="event-course-name">Course Name Here</div>
+                        <div class="event-course-name">${courseName}: ${topic}</div>
                     </div>
                 </div>
                 <div class="event-card-actions">
@@ -140,21 +143,27 @@ document.addEventListener('DOMContentLoaded', async function() {
         dayCellDidMount: function(arg) {
             const dateStr = getLocalDateString(arg.date);
             const eventsOnDay = allEvents.filter(event => getLocalDateString(event.start) === dateStr);
+            
             if (eventsOnDay.length > 0) {
-                let dotsContainer = document.createElement('div');
-                dotsContainer.className = 'fc-day-has-event-dots';
-                const uniqueColors = [...new Set(eventsOnDay.map(e => e.backgroundColor))];
-                uniqueColors.slice(0, 3).forEach(color => {
-                    let dot = document.createElement('div');
-                    dot.className = 'fc-day-has-event-dot';
-                    dot.style.backgroundColor = color;
-                    dotsContainer.appendChild(dot);
-                });
-                arg.el.querySelector('.fc-daygrid-day-frame').appendChild(dotsContainer);
+                let cellClass = '';
+                // Логика приоритетов: scheduled > cancelled > completed
+                if (eventsOnDay.some(e => e.status === 'scheduled')) {
+                    cellClass = 'fc-day-has-scheduled';
+                } else if (eventsOnDay.some(e => e.status.startsWith('cancelled') || e.status === 'no_show')) {
+                    cellClass = 'fc-day-has-cancelled';
+                } else if (eventsOnDay.every(e => e.status === 'completed')) {
+                    cellClass = 'fc-day-has-completed';
+                }
+                
+                if (cellClass) {
+                    arg.el.classList.add(cellClass);
+                }
             }
         },
         dateClick: function(info) {
-            if (selectedDateEl) selectedDateEl.classList.remove('day-selected');
+            if (selectedDateEl) {
+                selectedDateEl.classList.remove('day-selected');
+            }
             info.dayEl.classList.add('day-selected');
             selectedDateEl = info.dayEl;
             renderEventsForDate(info.dateStr);
@@ -164,9 +173,9 @@ document.addEventListener('DOMContentLoaded', async function() {
     const navContainer = document.createElement('div');
     navContainer.id = 'calendar-nav';
     navContainer.innerHTML = `
-        <button id="cal-prev"><i class="icon-prev"></i></button>
+        <button id="cal-prev" title="Previous month"><i class="icon-prev"></i></button>
         <h2 id="calendar-title"></h2>
-        <button id="cal-next"><i class="icon-next"></i></button>
+        <button id="cal-next" title="Next month"><i class="icon-next"></i></button>
     `;
     calendarEl.parentNode.insertBefore(navContainer, calendarEl);
     
@@ -181,5 +190,13 @@ document.addEventListener('DOMContentLoaded', async function() {
     
     calendar.render();
     updateTitle();
+
+    const todayStr = getLocalDateString(new Date());
+    const todayEl = document.querySelector(`.fc-day[data-date="${todayStr}"]`);
+    if (todayEl) {
+        todayEl.classList.add('day-selected');
+        selectedDateEl = todayEl;
+    }
+    renderEventsForDate(todayStr);
 });
 </script>

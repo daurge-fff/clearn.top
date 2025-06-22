@@ -390,22 +390,35 @@ router.post('/users/search', ensureAuth, ensureRole('admin'), async (req, res) =
     }
 });
 
-
 router.get('/lessons', ensureAuth, async (req, res) => {
     try {
         const query = {};
         if (req.user.role === 'student') query.student = req.user.id;
         else if (req.user.role === 'teacher') query.teacher = req.user.id;
-        const lessons = await Lesson.find(query).populate('student', 'name').populate('teacher', 'name');
-        const events = lessons.map(lesson => ({
-            title: req.user.role === 'student' ? `Lesson with ${lesson.teacher.name}` : `Lesson with ${lesson.student.name}`,
-            start: lesson.lessonDate,
-            end: new Date(new Date(lesson.lessonDate).getTime() + lesson.duration * 60000),
-            backgroundColor: lesson.status === 'completed' ? '#2ecc71' : (lesson.status.startsWith('cancelled') ? '#e74c3c' : '#3498db'),
-            borderColor: lesson.status === 'completed' ? '#2ecc71' : (lesson.status.startsWith('cancelled') ? '#e74c3c' : '#3498db'),
-            id: lesson._id,
-            url: req.user.role === 'student' ? `/dashboard/lessons/view/${lesson._id}` : `/dashboard/lessons/manage/${lesson._id}`
-        }));
+
+        const lessons = await Lesson.find(query)
+            .populate('student', 'name emojiAvatar')
+            .populate('teacher', 'name emojiAvatar')
+            .populate('course', 'name');
+
+        const events = lessons.map(lesson => {
+            const isStudentRole = req.user.role === 'student';
+            const otherParty = isStudentRole ? lesson.teacher : lesson.student;
+
+            return {
+                title: otherParty ? `Lesson with ${otherParty.name}` : 'Lesson',
+                start: lesson.lessonDate,
+                end: new Date(new Date(lesson.lessonDate).getTime() + lesson.duration * 60000),
+                backgroundColor: lesson.status === 'completed' ? '#2ecc71' : (lesson.status.startsWith('cancelled') ? '#e74c3c' : '#3498db'),
+                borderColor: lesson.status === 'completed' ? '#2ecc71' : (lesson.status.startsWith('cancelled') ? '#e74c3c' : '#3498db'),
+                id: lesson._id,
+                url: isStudentRole ? `/dashboard/lessons/view/${lesson._id}` : `/dashboard/lessons/manage/${lesson._id}`,
+                status: lesson.status,
+                topic: lesson.topic,
+                student: lesson.student ? { name: lesson.student.name, emojiAvatar: lesson.student.emojiAvatar } : { name: 'N/A' },
+                course: lesson.course ? { name: lesson.course.name } : { name: 'N/A' }
+            };
+        });
         res.json(events);
     } catch (err) {
         console.error(err);
@@ -575,14 +588,16 @@ router.get('/lessons/:id', ensureAuth, ensureRole('admin', 'teacher'), async (re
     }
 });
 
-router.post('/lessons', ensureAuth, ensureRole('admin'), async (req, res) => {
+router.post('/lessons', ensureAuth, ensureRole('admin', 'teacher'), async (req, res) => {
     const { student, teacher, course, lessonDate, duration, topic } = req.body;
     if (!student || !teacher || !course || !lessonDate) {
         return res.status(400).json({ msg: 'Please fill all required fields.' });
     }
     try {
+        const dateWithoutTimezone = new Date(lessonDate);
         const newLesson = await Lesson.create({
-            student, teacher, course, lessonDate,
+            student, teacher, course,
+            lessonDate: dateWithoutTimezone,
             duration: Number(duration),
             topic: topic || 'Scheduled Lesson'
         });

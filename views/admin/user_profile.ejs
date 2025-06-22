@@ -23,7 +23,7 @@
     <div class="card">
         <div class="page-actions" style="justify-content: flex-start; padding: 0; flex-wrap: wrap; gap: 10px;">
             <% if (userProfile.role === 'student') { %>
-                <a href="/dashboard/lessons/add" class="btn btn-primary" data-student-id="<%= userProfile._id %>">
+                <a href="#" id="schedule-lesson-btn" class="btn btn-primary" data-student-id="<%= userProfile._id %>">
                     <i class="icon-add"></i> Schedule Lesson
                 </a>
                 <button id="adjust-balance-btn" class="btn btn-secondary"><i class="icon-edit"></i> Adjust Balance</button>

@@ -161,7 +161,32 @@ router.get('/lessons', ensureAuth, ensureRole('admin'), async (req, res) => {
     }
 });
 router.get('/lessons/add', ensureAuth, ensureRole('admin'), async (req, res) => { try { const students = await User.find({ role: 'student', status: 'active' }).lean(); const teachers = await User.find({ role: 'teacher', status: 'active' }).lean(); const courses = await Course.find().lean(); res.render('admin/lesson_add', { layout: 'layouts/dashboard', user: req.user, students, teachers, courses, page_name: 'lessons' }); } catch (err) { console.error(err); res.status(500).send('Server Error'); } });
-router.post('/lessons/add', ensureAuth, ensureRole('admin'), async (req, res) => { const { student, teacher, course, lessonDate, duration, topic } = req.body; if (!student || !teacher || !course || !lessonDate) return res.status(400).send('Please fill all required fields.'); try { await Lesson.create({ student, teacher, course, lessonDate, duration: Number(duration), topic: topic || 'Scheduled Lesson' }); await User.findByIdAndUpdate(student, { $inc: { lessonsPaid: -1 } }); res.redirect('/dashboard/lessons'); } catch (err) { console.error(err); res.status(500).send('Server Error'); } });
+router.post('/lessons/add', ensureAuth, ensureRole('admin'), async (req, res) => {
+    const { student, teacher, course, lessonDate, duration, topic } = req.body;
+    if (!student || !teacher || !course || !lessonDate) {
+        req.flash('error_msg', 'Please fill all required fields.');
+        return res.redirect('/dashboard/lessons/add');
+    }
+    try {
+        const dateWithoutTimezone = new Date(lessonDate);
+
+        await Lesson.create({
+            student,
+            teacher,
+            course,
+            lessonDate: dateWithoutTimezone,
+            duration: Number(duration),
+            topic: topic || 'Scheduled Lesson'
+        });
+        await User.findByIdAndUpdate(student, { $inc: { lessonsPaid: -1 } });
+        req.flash('success_msg', 'Lesson scheduled successfully.');
+        res.redirect('/dashboard/lessons');
+    } catch (err) {
+        console.error(err);
+        req.flash('error_msg', 'Server Error.');
+        res.redirect('/dashboard/lessons/add');
+    }
+});
 router.get('/schedule', ensureAuth, ensureRole('teacher'), async (req, res) => { try { const lessons = await Lesson.find({ teacher: req.user.id }).populate('student', 'name').populate('course', 'name').sort({ lessonDate: -1 }).lean(); res.render('teacher/schedule', { layout: 'layouts/dashboard', user: req.user, lessons: lessons, page_name: 'schedule' }); } catch (err) { console.error(err); res.status(500).send('Server Error'); } });
 router.get('/my-students', ensureAuth, ensureRole('teacher'), async (req, res) => { try { const teacher = await User.findById(req.user.id).populate('students'); res.render('teacher/my_students', { layout: 'layouts/dashboard', user: req.user, students: teacher.students, page_name: 'students' }); } catch (err) { console.error(err); res.status(500).send('Server Error'); } });
 router.get('/lessons/manage/:id', ensureAuth, async (req, res) => { try { const lesson = await Lesson.findById(req.params.id).populate('student', 'name').populate('course', 'name').lean(); if (!lesson) return res.status(404).send('Lesson not found'); if (req.user.role !== 'admin' && String(lesson.teacher) !== String(req.user.id)) { return res.status(403).send('Forbidden: You are not authorized to manage this lesson.'); } res.render('teacher/lesson_manage', { layout: 'layouts/dashboard', user: req.user, lesson: lesson, page_name: req.user.role === 'admin' ? 'lessons' : 'schedule' }); } catch (err) { console.error(err); res.status(500).send('Server Error'); } });
