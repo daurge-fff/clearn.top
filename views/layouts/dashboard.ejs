@@ -10,7 +10,7 @@
     
     <link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css' rel='stylesheet' />
 </head>
-<body class="dashboard-body">
+<body class="dashboard-body" data-user-role="<%= user.role %>">
     <% if ((locals.success_msg && locals.success_msg.length > 0) || (locals.error_msg && locals.error_msg.length > 0) || (locals.error && locals.error.length > 0)) { %>
         <div class="flash-messages">
             <% if (locals.success_msg && locals.success_msg.length > 0) { %>

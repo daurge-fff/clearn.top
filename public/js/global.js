@@ -350,7 +350,6 @@ function initializeLessonModal() {
 
     window.openLessonModal = populateForm;
 
-    // Обработчики открытия модального окна
     document.body.addEventListener('click', (e) => {
         const createBtn = e.target.closest('a[href="/dashboard/lessons/add"], #schedule-lesson-btn');
         if (createBtn) {
@@ -362,10 +361,15 @@ function initializeLessonModal() {
         
         const editBtn = e.target.closest('a[href*="/dashboard/lessons/manage/"]');
         if (editBtn) {
-            e.preventDefault();
-            const lessonId = editBtn.href.split('/').pop();
-            window.openLessonModal('edit', lessonId);
-            return;
+            // Модальное окно открывается ТОЛЬКО для админа.
+            // Учитель просто перейдет по ссылке.
+            if (document.body.dataset.userRole === 'admin') {
+                e.preventDefault();
+                const lessonId = editBtn.href.split('/').pop();
+                window.openLessonModal('edit', lessonId);
+                return;
+            }
+            // Если роль не админ, ничего не делаем, и браузер переходит по ссылке.
         }
     });
 
