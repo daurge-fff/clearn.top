@@ -28,13 +28,6 @@
                 <span class="stat-label">Lessons Balance</span>
             </div>
         </div>
-        <div class="stat-card">
-            <div class="stat-icon" style="--icon-bg: rgba(82, 215, 123, 0.2); --icon-color: #52d77b;"><i class="icon-email"></i></div>
-            <div class="stat-info">
-                <span class="stat-number small"><%= student.email %></span>
-                <span class="stat-label">Email</span>
-            </div>
-        </div>
         <% if (student.contact) { %>
             <div class="stat-card">
                 <div class="stat-icon" style="--icon-bg: rgba(155, 89, 182, 0.2); --icon-color: #9b59b6;"><i class="icon-contact"></i></div>
@@ -44,6 +37,13 @@
                 </div>
             </div>
         <% } %>
+        <div class="stat-card">
+            <div class="stat-icon" style="--icon-bg: rgba(82, 215, 123, 0.2); --icon-color: #52d77b;"><i class="icon-email"></i></div>
+            <div class="stat-info">
+                <span class="stat-number small"><%= student.email %></span>
+                <span class="stat-label">Email</span>
+            </div>
+        </div>
     </div>
 
     <div class="card">

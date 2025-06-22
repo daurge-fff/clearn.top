@@ -21,7 +21,7 @@
     </div>
 
     <div class="card">
-        <div class="page-actions" style="justify-content: flex-start; padding: 0; flex-wrap: wrap; gap: 10px;">
+        <div class="page-actions" style="padding: 0; flex-wrap: wrap; gap: 10px;">
             <% if (userProfile.role === 'student') { %>
                 <a href="#" id="schedule-lesson-btn" class="btn btn-primary" data-student-id="<%= userProfile._id %>">
                     <i class="icon-add"></i> Schedule Lesson
@@ -33,12 +33,6 @@
     </div>
 
     <div class="stats-grid">
-        <div class="stat-card">
-            <div class="stat-info">
-                <span class="stat-number small"><%= userProfile.email %></span>
-                <span class="stat-label">Email</span>
-            </div>
-        </div>
         <div class="stat-card">
             <div class="stat-info">
                 <span class="stat-number small"><span class="badge status-<%= userProfile.status %>"><%= userProfile.status %></span></span>
@@ -53,6 +47,12 @@
                 </div>
             </div>
         <% } %>
+        <div class="stat-card">
+            <div class="stat-info">
+                <span class="stat-number small"><%= userProfile.email %></span>
+                <span class="stat-label">Email</span>
+            </div>
+        </div>
     </div>
     
     <% if (userProfile.role === 'student') { %>
