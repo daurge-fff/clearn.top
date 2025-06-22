@@ -97,7 +97,7 @@
                                 <td><%= new Date(lesson.lessonDate).toLocaleString('en-GB') %></td>
 
                                 <td class="status-cell" data-lesson-id="<%= lesson._id %>" data-current-status="<%= lesson.status %>">
-                                    <span class="badge status-<%= lesson.status %> current-status-badge">
+                                    <span class="badge status-<%= lesson.status.replace(/ /g, '_') %> current-status-badge">
                                         <%= lesson.status.replace(/_/g, ' ') %>
                                     </span>
                                     <div class="status-dropdown">

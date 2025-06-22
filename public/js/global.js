@@ -9,26 +9,6 @@ const APP_STATE = {
     lessonModalInitialized: false
 };
 
-// Инициализация всех модулей после загрузки DOM
-document.addEventListener('DOMContentLoaded', () => {
-    if (APP_STATE.initialized) return;
-    APP_STATE.initialized = true;
-    
-    // Базовые функции интерфейса
-    initializeThemeSwitcher();
-    initializeSidebar();
-    initializePasswordToggles();
-    initializeFileUploads();
-    initializeMobileFilters();
-    initializeProjectFieldsToggle();
-
-    // Главный обработчик для всей интерактивности CRM
-    initializeDashboardActions();
-    
-    // Инициализация модального окна (логика и обработчики)
-    initializeLessonModal();
-});
-
 // ===================================
 // === ОСНОВНЫЕ МОДУЛИ ИНИЦИАЛИЗАЦИИ ===
 // ===================================
@@ -136,70 +116,102 @@ function initializeProjectFieldsToggle() {
 function initializeDashboardActions() {
     if (APP_STATE.dashboardInitialized) return;
     APP_STATE.dashboardInitialized = true;
-    
+
     let activeDropdown = null;
 
+    // Функция для закрытия всех активных выпадающих списков
+    const closeActiveDropdown = () => {
+        if (activeDropdown) {
+            activeDropdown.classList.remove('show');
+            if (activeDropdown.closest('.status-cell')) {
+                activeDropdown.closest('.status-cell').classList.remove('is-open');
+            }
+            activeDropdown = null;
+        }
+    };
+    
+    // Глобальный клик для закрытия меню
+    document.body.addEventListener('click', (e) => {
+        if (!e.target.closest('.status-cell')) {
+            closeActiveDropdown();
+        }
+    });
+
+    // Делегированный обработчик для всех действий
     document.body.addEventListener('click', async (e) => {
         const target = e.target;
 
-        // 1. Логика для дропдауна статусов
+        // 1. Обработка клика по ячейке статуса (для открытия/закрытия)
         const statusCell = target.closest('.status-cell');
-        if (statusCell) {
+        if (statusCell && !target.closest('.status-dropdown-item')) {
+            e.stopPropagation();
             const dropdown = statusCell.querySelector('.status-dropdown');
-            if (activeDropdown && activeDropdown !== dropdown) {
-                activeDropdown.classList.remove('show');
-                activeDropdown.closest('.status-cell').classList.remove('is-open');
+            if (dropdown) {
+                if (dropdown.classList.contains('show')) {
+                    closeActiveDropdown();
+                } else {
+                    closeActiveDropdown(); // Закрываем предыдущий, если был
+                    dropdown.classList.add('show');
+                    statusCell.classList.add('is-open');
+                    activeDropdown = dropdown;
+                }
             }
-            dropdown.classList.toggle('show');
-            statusCell.classList.toggle('is-open');
-            activeDropdown = dropdown.classList.contains('show') ? dropdown : null;
             return;
-        }
-        
-        if (activeDropdown && !target.closest('.status-dropdown')) {
-            activeDropdown.classList.remove('show');
-            activeDropdown.closest('.status-cell').classList.remove('is-open');
-            activeDropdown = null;
         }
 
-        // 2. Логика для выбора нового статуса
-        const dropdownItem = target.closest('.status-dropdown-item');
-        if (dropdownItem) {
+        // 2. Обработка выбора нового статуса
+        const statusDropdownItem = target.closest('.status-dropdown-item');
+        if (statusDropdownItem) {
             e.stopPropagation();
-            const newStatus = dropdownItem.dataset.status;
-            const cell = dropdownItem.closest('.status-cell');
-            const lessonId = cell.dataset.lessonId;
+            const cell = statusDropdownItem.closest('.status-cell');
+            if (!cell) return;
             
-            if (newStatus === cell.dataset.currentStatus) {
-                cell.querySelector('.status-dropdown').classList.remove('show');
-                cell.classList.remove('is-open');
-                activeDropdown = null;
+            closeActiveDropdown(); // Закрываем меню после выбора
+
+            const newStatus = statusDropdownItem.dataset.status;
+            const currentStatus = cell.dataset.currentStatus;
+            if (newStatus === currentStatus) return;
+
+            const lessonId = cell.dataset.lessonId;
+            const paymentId = cell.dataset.paymentId;
+            let url, body;
+
+            if (lessonId) {
+                url = `/api/lessons/${lessonId}/status`;
+                body = { status: newStatus };
+            } else if (paymentId) {
+                url = `/api/payments/${paymentId}/status`;
+                body = { status: newStatus };
+            } else {
                 return;
             }
-            
+
             try {
-                const response = await fetch(`/api/lessons/${lessonId}/status`, { 
-                    method: 'PUT', 
-                    headers: { 'Content-Type': 'application/json' }, 
-                    body: JSON.stringify({ status: newStatus }) 
-                });
+                const response = await fetch(url, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+                const result = await response.json();
+                if (!response.ok) throw new Error(result.msg || 'Failed to update status');
                 
-                if (!response.ok) throw new Error((await response.json()).msg);
-                const { lesson } = await response.json();
+                const entity = result.lesson || result.payment;
+                
                 const badge = cell.querySelector('.current-status-badge');
-                badge.textContent = lesson.status.replace(/_/g, ' ');
-                badge.className = `badge status-${lesson.status} current-status-badge`;
-                cell.dataset.currentStatus = lesson.status;
-                dropdownItem.closest('.status-dropdown').classList.remove('show');
-                cell.classList.remove('is-open');
-                activeDropdown = null;
-            } catch (error) {
-                alert(`Error: ${error.message}`);
+                if (badge) {
+                    badge.textContent = entity.status.replace(/_/g, ' ');
+                    badge.className = `badge status-${entity.status.replace(/ /g, '_')} current-status-badge`;
+                }
+                cell.dataset.currentStatus = entity.status;
+
+                if (paymentId) { // Если это платеж, обновляем доступные действия
+                    const dropdown = cell.querySelector('.status-dropdown');
+                    if (dropdown) dropdown.innerHTML = `<div class="status-dropdown-item">No actions available</div>`;
+                }
+
+            } catch (error) { 
+                alert(`Error: ${error.message}`); 
             }
             return;
         }
-        
-        // 3. Логика для кнопок, требующих подтверждения
+
+        // 3. Обработка удаления пользователя
         const deleteUserLink = target.closest('a[href*="/users/delete/"]');
         if (deleteUserLink) {
             e.preventDefault();
@@ -209,20 +221,16 @@ function initializeDashboardActions() {
             return;
         }
 
+        // 4. Обработка удаления урока
         const deleteLessonButton = target.closest('.delete-lesson-btn');
         if (deleteLessonButton) {
             e.preventDefault();
             const lessonId = deleteLessonButton.dataset.id;
-            if (confirm('Are you sure you want to permanently delete this lesson?')) {
+            if (confirm('Are you sure you want to PERMANENTLY delete this lesson? This will NOT refund a lesson to the student.')) {
                 try {
                     const response = await fetch(`/api/lessons/${lessonId}`, { method: 'DELETE' });
                     if (!response.ok) throw new Error((await response.json()).msg || 'Failed to delete');
-                    const rowToRemove = document.querySelector(`tr[data-lesson-id="${lessonId}"]`);
-                    if (rowToRemove) {
-                        rowToRemove.style.transition = 'opacity 0.3s ease';
-                        rowToRemove.style.opacity = '0';
-                        setTimeout(() => rowToRemove.remove(), 300);
-                    }
+                    deleteLessonButton.closest('tr').remove();
                 } catch (error) {
                     alert(`Error: ${error.message}`);
                 }
@@ -230,6 +238,24 @@ function initializeDashboardActions() {
             return;
         }
 
+        // 5. Обработка удаления платежа
+        const deletePaymentButton = target.closest('.delete-payment-btn');
+        if (deletePaymentButton) {
+            e.preventDefault();
+            const paymentId = deletePaymentButton.dataset.id;
+            if (confirm('Are you sure you want to PERMANENTLY delete this payment record?')) {
+                try {
+                    const response = await fetch(`/api/payments/${paymentId}`, { method: 'DELETE' });
+                    if (!response.ok) throw new Error((await response.json()).msg || 'Failed to delete');
+                    deletePaymentButton.closest('tr').remove();
+                } catch (error) {
+                    alert(`Error: ${error.message}`);
+                }
+            }
+            return;
+        }
+
+        // 6. Обработка сброса пароля
         const resetPasswordBtn = target.closest('#reset-password-btn');
         if (resetPasswordBtn) {
             e.preventDefault();
@@ -383,3 +409,126 @@ function initializeFlashMessages() {
 if (document.querySelector('.dashboard-layout')) {
     initializeFlashMessages();
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+    if (APP_STATE.initialized) return;
+    APP_STATE.initialized = true;
+    
+    // Базовые функции интерфейса
+    initializeThemeSwitcher();
+    initializeSidebar();
+    initializePasswordToggles();
+    initializeFileUploads();
+    initializeMobileFilters();
+    initializeProjectFieldsToggle();
+
+    // Главный обработчик для всей интерактивности CRM
+    initializeDashboardActions();
+    
+    // Инициализация модального окна (логика и обработчики)
+    initializeLessonModal();
+
+    const adminOverlay = document.getElementById('admin-actions-overlay');
+    
+    function closeAllModals() {
+        if(adminOverlay) adminOverlay.style.display = 'none';
+        document.querySelectorAll('.modal-container').forEach(modal => modal.style.display = 'none');
+    }
+
+    if(adminOverlay) {
+        adminOverlay.addEventListener('click', closeAllModals);
+        document.querySelectorAll('.modal-close-btn').forEach(btn => btn.addEventListener('click', closeAllModals));
+    }
+
+    const adjustBalanceModal = document.getElementById('adjust-balance-modal');
+    if (adjustBalanceModal) {
+        document.body.addEventListener('click', e => {
+            if (e.target.id === 'adjust-balance-btn') {
+                const profileContainer = e.target.closest('.profile-page-container');
+                if (profileContainer) {
+                    const userId = window.location.pathname.split('/').pop();
+                    const userName = profileContainer.querySelector('h1').textContent;
+                    document.getElementById('adjust-balance-username').textContent = userName;
+                    document.getElementById('adjust-balance-userid').value = userId;
+                    adminOverlay.style.display = 'block';
+                    adjustBalanceModal.style.display = 'block';
+                }
+            }
+        });
+
+        document.getElementById('adjust-balance-form').addEventListener('submit', async e => {
+            e.preventDefault();
+            const form = e.target;
+            const userId = form.querySelector('#adjust-balance-userid').value;
+            const response = await fetch(`/dashboard/user-profile/${userId}/adjust-balance`, {
+                method: 'POST',
+                body: new URLSearchParams(new FormData(form))
+            });
+            if(response.ok) location.reload();
+            else alert('Failed to adjust balance.');
+        });
+    } 
+    const linkPaymentModal = document.getElementById('link-payment-modal');
+        if (linkPaymentModal) {
+            const searchInput = document.getElementById('user-search-input');
+            const searchResults = document.getElementById('user-search-results');
+            const paymentIdField = document.getElementById('link-payment-id');
+            const paymentIdentifierField = document.getElementById('link-payment-identifier');
+            
+            document.body.addEventListener('click', e => {
+                if (e.target.classList.contains('link-payment-btn')) {
+                    const paymentId = e.target.dataset.paymentId;
+                    const identifier = e.target.dataset.identifier;
+                    
+                    paymentIdField.value = paymentId;
+                    paymentIdentifierField.textContent = identifier;
+                    searchResults.innerHTML = '';
+                    searchInput.value = '';
+                    
+                    adminOverlay.style.display = 'block';
+                    linkPaymentModal.style.display = 'block';
+                }
+            });
+
+            let searchTimeout;
+            searchInput.addEventListener('input', () => {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(async () => {
+                    const searchTerm = searchInput.value.trim();
+                    if (searchTerm.length < 2) {
+                        searchResults.innerHTML = '';
+                        return;
+                    }
+                    const response = await fetch('/api/users/search', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ searchTerm })
+                    });
+                    const users = await response.json();
+                    searchResults.innerHTML = users.map(user => `
+                        <div class="result-item" data-user-id="${user._id}">
+                            <span>${user.name} (<em>${user.email}</em>)</span>
+                            <span class="badge role-${user.role}">${user.role}</span>
+                        </div>
+                    `).join('');
+                }, 300);
+            });
+
+            searchResults.addEventListener('click', async e => {
+                const resultItem = e.target.closest('.result-item');
+                if (resultItem) {
+                    const userId = resultItem.dataset.userId;
+                    const paymentId = paymentIdField.value;
+                    
+                    const response = await fetch(`/api/payments/${paymentId}/link-user`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ userId })
+                    });
+
+                    if (response.ok) location.reload();
+                    else alert('Failed to link user.');
+                }
+            });
+        }
+});

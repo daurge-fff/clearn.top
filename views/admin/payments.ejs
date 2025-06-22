@@ -1,0 +1,103 @@
+<div class="container">
+    <div class="page-header">
+        <h1>Payment Management</h1>
+        <div class="page-actions">
+            <a href="/api/payments/export?<%= new URLSearchParams(query).toString() %>" class="btn btn-secondary"><i class="icon-export"></i> Export to CSV</a>
+        </div>
+    </div>
+    <div class="card filter-card">
+        <form action="/dashboard/payments" method="GET" class="filter-form">
+            <div class="filter-group">
+                <label for="status">Filter by Status</label>
+                <select name="status" id="status">
+                    <option value="">All Statuses</option>
+                    <option value="completed" <%= (query.status === 'completed') ? 'selected' : '' %>>Completed</option>
+                    <option value="manual_review" <%= (query.status === 'manual_review') ? 'selected' : '' %>>Manual Review</option>
+                    <option value="pending" <%= (query.status === 'pending') ? 'selected' : '' %>>Pending</option>
+                    <option value="failed" <%= (query.status === 'failed') ? 'selected' : '' %>>Failed</option>
+                </select>
+            </div>
+            <div class="filter-actions">
+                <button type="submit" class="btn btn-primary">Apply</button>
+                <a href="/dashboard/payments" class="btn btn-secondary">Clear</a>
+            </div>
+        </form>
+    </div>
+
+    <div class="card">
+        <div class="table-responsive">
+            <table class="data-table">
+                <thead>
+                    <%
+                        const sortableLink = (field, text) => {
+                            const isCurrentSort = query.sort === field;
+                            const order = isCurrentSort && query.order === 'asc' ? 'desc' : 'asc';
+                            const icon = isCurrentSort ? (query.order === 'asc' ? '▲' : '▼') : '';
+                            const params = new URLSearchParams(query);
+                            params.set('sort', field);
+                            params.set('order', order);
+                            return `<a href="?${params.toString()}">${text} ${icon}</a>`;
+                        };
+                    %>
+                    <tr>
+                        <th><%- sortableLink('createdAt', 'Date') %></th>
+                        <th>Client Identifier</th>
+                        <th>User</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% if (payments && payments.length > 0) { %>
+                        <% payments.forEach(payment => { %>
+                            <tr data-payment-id="<%= payment._id %>">
+                                <td><%= new Date(payment.createdAt).toLocaleString('en-GB') %></td>
+                                <td><code><%= payment.pendingIdentifier %></code></td>
+                                <td>
+                                    <% if (payment.userId) { %>
+                                        <a href="/dashboard/user-profile/<%= payment.userId._id %>" class="link-discreet"><%= payment.userId.name %></a>
+                                    <% } else { %>
+                                        <button class="btn btn-secondary link-payment-btn" data-payment-id="<%= payment._id %>" data-identifier="<%= payment.pendingIdentifier %>">
+                                            Link User
+                                        </button>
+                                    <% } %>
+                                </td>
+                                <td><%= payment.amountPaid.toFixed(2) %> <%= payment.currency %></td>
+                                
+                                <td class="status-cell" data-payment-id="<%= payment._id %>" data-current-status="<%= payment.status %>">
+                                    <span class="badge status-<%= payment.status.replace(/ /g, '_') %> current-status-badge">
+                                        <%= payment.status.replace('_', ' ') %>
+                                    </span>
+                                    <div class="status-dropdown">
+                                        <% if (payment.status === 'manual_review') { %>
+                                            <div class="status-dropdown-item" data-status="completed">Approve (Completed)</div>
+                                            <div class="status-dropdown-item" data-status="failed">Decline (Failed)</div>
+                                        <% } else { %>
+                                            <div class="status-dropdown-item" data-status="<%= payment.status %>">No actions available</div>
+                                        <% } %>
+                                    </div>
+                                </td>
+
+                                <td class="actions-cell">
+                                    <button class="btn-icon btn-danger delete-payment-btn" data-id="<%= payment._id %>" data-tooltip="Delete Record">
+                                        <i class="icon-delete"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        <% }); %>
+                    <% } else { %>
+                        <tr>
+                            <td colspan="6">
+                                <div class="empty-state">
+                                    <h3>No Payments Found</h3>
+                                    <p>No payments match your current filters.</p>
+                                </div>
+                            </td>
+                        </tr>
+                    <% } %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

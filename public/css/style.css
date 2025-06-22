@@ -620,29 +620,37 @@ input[type="range"]::-moz-range-thumb { width: 24px; height: 24px; background: v
     color: var(--accent-color-1);
     opacity: 1;
 }
-/* === PAYPAL DEBIT/CREDIT CARD FORM FIX (FINAL V2) === */
-
-#payment-modal .modal-content {
+/* === PAYPAL DONATE BUTTON & MANUAL CONFIRMATION STYLES === */
+.donation-sdk-container {
+    text-align: center;
+    border-top: 1px solid var(--card-border);
+    padding-top: 25px;
+    margin-top: 20px;
+}
+#donate-button-container-sdk {
+    margin-bottom: 25px;
     display: flex;
-    flex-direction: column;
-    max-height: 90vh;
-    overflow: hidden; 
+    justify-content: center;
 }
-
-#payment-modal .modal-body {
-    flex-grow: 1;
-    overflow-y: auto;
+.manual-payment-instructions {
+    text-align: left;
+    background-color: var(--bg-color);
+    padding: 20px;
+    border-radius: 8px;
 }
-
-#payment-modal .modal-footer {
-    flex-shrink: 0;
+.manual-payment-instructions p {
+    margin-bottom: 15px;
+    font-weight: bold;
+    font-size: 0.95rem;
 }
-
-#paypal-button-container {
-    min-height: 150px;
+.manual-payment-instructions ol {
+    margin-bottom: 20px;
+    padding-left: 20px;
 }
-
-#paypal-button-container iframe {
-    min-height: 150px !important;
-    height: auto !important;
+.manual-payment-instructions ol li {
+    margin-bottom: 8px;
+    opacity: 0.9;
+}
+.manual-payment-instructions .form-submit-button {
+    width: 100%;
 }

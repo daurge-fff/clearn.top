@@ -75,6 +75,7 @@
 .icon-search { --icon-url: url(/images/icon-search.svg); }
 .icon-filter { --icon-url: url(/images/icon-filter.svg); }
 .icon-key { --icon-url: url(/images/icon-key.svg); }
+.icon-credit-card { --icon-url: url(/images/icon-credit-card.svg); }
 
 .nav-link i, .header-btn i, .password-toggle i {
     width: 20px;
@@ -1258,4 +1259,31 @@ body.modal-open .modal-container {
     width: 20px;
     height: 20px;
     background-color: #fff;
+}
+
+/* --- Admin Action Modals --- */
+#user-search-results .result-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    border: 1px solid var(--card-border);
+    border-radius: 8px;
+    margin-top: 10px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+#user-search-results .result-item:hover {
+    background-color: var(--bg-color);
+}
+@media (max-width: 600px) {
+    .payment-status {
+        padding: 20px;
+    }
+    .payment-status h1 {
+        font-size: 2rem;
+    }
+    .payment-status p {
+        font-size: 1rem;
+    }
 }

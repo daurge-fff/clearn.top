@@ -368,87 +368,102 @@ document.addEventListener('DOMContentLoaded', () => {
 
         function renderPayPalButtons() {
             const paypalContainer = document.getElementById('paypal-button-container');
-            if (typeof paypal === 'undefined' || !paypalContainer) {
-                console.error("PayPal SDK is not loaded or container not found.");
-                return;
-            }
-            paypalContainer.innerHTML = '';
-            paypal.Buttons({
-                style: { layout: 'vertical', label: 'pay', height: 48 },
+            if (!paypalContainer) return;
 
-                createOrder: function(data, actions) {
-                    const amount = document.getElementById('modal-total-price').textContent.split(' ')[0];
-                    return actions.order.create({
-                        purchase_units: [{
-                            amount: {
-                                value: parseFloat(amount).toFixed(2),
-                                currency_code: paymentConfig.currency
-                            }
-                        }]
-                    });
-                },
-                onApprove: function(data, actions) {
-                    const errorP = document.getElementById('identifier-error');
-                    if (errorP) {
-                        errorP.textContent = 'Processing your payment, please wait...';
-                        errorP.style.display = 'block';
-                        errorP.style.color = 'var(--text-color)';
+            paypalContainer.innerHTML = '';
+
+            const amount = document.getElementById('modal-total-price').textContent.split(' ')[0];
+            const DONATION_BUTTON_ID = 'TBLSPGUQZX45J';
+
+            const manualPaymentHTML = `
+                <div class="donation-sdk-container">
+                    <div id="donate-button-container-sdk">
+                        <div id="donate-button"></div>
+                    </div>
+                    <div class="manual-payment-instructions">
+                        <p>After completing the payment, please follow these steps:</p>
+                        <ol>
+                            <li>Copy the <strong>Transaction ID</strong> from the PayPal confirmation screen.</li>
+                            <li>Paste it into the field below and confirm your payment.</li>
+                        </ol>
+                        <div class="form-group" style="margin-top: 20px;">
+                            <input type="text" id="paypal-transaction-id" placeholder=" " required>
+                            <label for="paypal-transaction-id">Paste Transaction ID here</label>
+                        </div>
+                        <!-- Кнопка теперь изначально выключена -->
+                        <button id="confirm-manual-payment" class="form-submit-button" disabled>I Have Paid</button>
+                        <p class="payment-error" id="paypal-manual-error" style="display: none;"></p>
+                    </div>
+                </div>
+            `;
+            paypalContainer.innerHTML = manualPaymentHTML;
+            const confirmButton = document.getElementById('confirm-manual-payment');
+            const transactionIdInput = document.getElementById('paypal-transaction-id');
+            const termsCheckbox = document.getElementById('terms-checkbox');
+
+            function updateConfirmManualButtonState() {
+                if (!confirmButton || !transactionIdInput || !termsCheckbox) return;
+                const isReady = transactionIdInput.value.trim() !== '' && termsCheckbox.checked;
+                confirmButton.disabled = !isReady;
+            }
+            transactionIdInput.addEventListener('input', updateConfirmManualButtonState);
+            termsCheckbox.addEventListener('change', updateConfirmManualButtonState);
+            const script = document.createElement('script');
+            script.src = "https://www.paypalobjects.com/donate/sdk/donate-sdk.js";
+            script.charset = "UTF-8";
+            script.onload = () => {
+                PayPal.Donation.Button({
+                    env: 'production',
+                    hosted_button_id: DONATION_BUTTON_ID,
+                    image: {
+                        src: 'https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif',
+                        alt: 'Donate with PayPal button',
+                        title: 'PayPal - The safer, easier way to pay online!',
                     }
-                    return actions.order.capture().then(async function(details) {
-                        const identifier = document.getElementById('payment-identifier').value;
-                        const quantity = isDonationMode ? 0 : parseInt(document.getElementById('lesson-quantity').value, 10);
-                        const description = isDonationMode ? "Donation" : `${currentTariffName} x${quantity}`;
-                        const response = await fetch('/api/paypal/record-payment', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                paypalOrderID: details.id,
-                                amount: details.purchase_units[0].amount.value,
-                                currency: details.purchase_units[0].amount.currency_code,
-                                lessonsPurchased: quantity,
-                                description: description,
-                                identifier: identifier
-                            })
-                        });
-                        if (response.ok) {
-                            window.location.href = '/successful-payment';
-                        } else {
-                            const errorData = await response.json();
-                            console.error('Server failed to record payment:', errorData);
-                            if (errorP) {
-                                errorP.textContent = 'Payment successful, but failed to credit your account. Please contact support.';
-                                errorP.style.color = 'var(--accent-color-2)';
-                            }
-                            setTimeout(() => { window.location.href = '/successful-payment'; }, 3000);
-                        }
-                    }).catch(err => {
-                        console.error('Failed to capture PayPal payment:', err);
-                        if (errorP) {
-                            errorP.textContent = 'Failed to process your payment. Please try again.';
-                            errorP.style.color = 'var(--accent-color-2)';
-                        }
-                    });
-                },
-                onInit: (data, actions) => {
-                    const identifierInput = document.getElementById('payment-identifier');
-                    const termsCheckbox = document.getElementById('terms-checkbox');
-                    const checkReadiness = () => {
-                        const isReady = termsCheckbox.checked && identifierInput.value.trim() !== '';
-                        isReady ? actions.enable() : actions.disable();
-                    };
-                    checkReadiness();
-                    termsCheckbox.addEventListener('change', checkReadiness);
-                    identifierInput.addEventListener('input', checkReadiness);
-                },
-                onError: (err) => {
-                    console.error('PayPal Buttons Error:', err);
-                    const errorP = document.getElementById('identifier-error');
-                    if (errorP) {
-                        errorP.textContent = 'An error occurred with PayPal. Please try again.';
-                        errorP.style.color = 'var(--accent-color-2)';
-                    }
+                }).render('#donate-button');
+            };
+            document.body.appendChild(script);
+
+            confirmButton.addEventListener('click', async () => {
+                const transactionId = transactionIdInput.value.trim();
+                const errorP = document.getElementById('paypal-manual-error');
+                
+                if (!transactionId || !termsCheckbox.checked) {
+                    errorP.textContent = 'Please paste the Transaction ID and agree to the terms.';
+                    errorP.style.display = 'block';
+                    return;
                 }
-            }).render(paypalContainer);
+
+                const identifier = document.getElementById('payment-identifier').value;
+                const quantity = isDonationMode ? 0 : parseInt(document.getElementById('lesson-quantity').value, 10);
+                const description = isDonationMode ? "Donation" : `${currentTariffName} x${quantity}`;
+
+                try {
+                    const response = await fetch('/api/paypal/submit-manual-payment', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            transactionId,
+                            amount: parseFloat(amount),
+                            currency: paymentConfig.currency,
+                            lessonsPurchased: quantity,
+                            description,
+                            identifier
+                        })
+                    });
+
+                    if (response.ok) {
+                        window.location.href = '/successful-payment';
+                    } else {
+                        const errorData = await response.json();
+                        errorP.textContent = errorData.msg || 'An error occurred.';
+                        errorP.style.display = 'block';
+                    }
+                } catch (error) {
+                    errorP.textContent = 'Network error. Please try again.';
+                    errorP.style.display = 'block';
+                }
+            });
         }
         
         const closePaymentModal = () => paymentModal.classList.remove('is-open');

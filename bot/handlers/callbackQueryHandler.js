@@ -1,10 +1,12 @@
 const User = require('../../models/User');
+const bot = require('../../bot');
 const Lesson = require('../../models/Lesson');
 const Grade = require('../../models/Grade');
 const { createCalendarKeyboard } = require('../keyboards/calendarKeyboards');
 const { getStatusEmoji, createPaginationKeyboard, escapeHtml } = require('../utils/helpers');
 const stateService = require('../services/stateService');
 const searchService = require('../services/searchService');
+const { approvePayment, declinePayment } = require('../../services/paymentService');
 
 async function handleCancellationRequest(bot, query, user, params, { answer }) {
     const lessonId = query.data.split('_')[2];
@@ -265,6 +267,41 @@ function registerCallbackQueryHandler(botInstance, dependencies) {
                 case 'lesson':  await handleLessonCallback(bot, query, user, params, context); break;
                 case 'grade':   await handleLessonGrade(bot, query, user, params[0], params[1], context); break;
                 case 'refresh': await handleRefreshCallback(bot, query, user, params, context); break;
+                case 'payment':
+                    const [actionType, paymentId] = params;
+                    if (actionType === 'approve') {
+                        const result = await approvePayment(paymentId);
+                        if (result.success) {
+                            await bot.editMessageText(`✅ Payment from \`${result.payment.pendingIdentifier}\` was *approved*.`, { chat_id: chatId, message_id: query.message.message_id, parse_mode: 'Markdown' });
+                            if (result.payment.userId) {
+                                const creditedUser = await User.findById(result.payment.userId).lean();
+                                if (creditedUser && creditedUser.telegramChatId) {
+                                    const successMessage = 
+                                        `🎉 *Payment Confirmed!* 🎉\n\n` +
+                                        `Your payment of *${result.payment.amountPaid.toFixed(2)} ${result.payment.currency}* has been successfully processed.\n\n` +
+                                        `*${result.payment.lessonsPurchased}* lesson(s) have been added to your account.\n\n` +
+                                        `Your new balance is: *${creditedUser.lessonsPaid}* lessons.\n\n` +
+                                        `Thank you!`;
+                                    try {
+                                        await bot.sendMessage(creditedUser.telegramChatId, successMessage, { parse_mode: 'Markdown' });
+                                    } catch (e) {
+                                        console.error(`Failed to send notification to user ${creditedUser._id}`, e);
+                                    }
+                                }
+                            }
+                        } else {
+                            await bot.answerCallbackQuery(query.id, { text: `Error: ${result.error}`, show_alert: true });
+                        }
+                    } else if (actionType === 'decline') {
+                        const result = await declinePayment(paymentId);
+                        if (result.success) {
+                            await bot.editMessageText(`❌ Payment from \`${result.payment.pendingIdentifier}\` was *declined*.`, { chat_id: chatId, message_id: query.message.message_id, parse_mode: 'Markdown' });
+                        } else {
+                            await bot.answerCallbackQuery(query.id, { text: `Error: ${result.error}`, show_alert: true });
+                        }
+                    }
+                    await answer();
+                    break;
                 case 'ignore': break;
                 default: 
                     console.warn(`Unknown action in callback_query: ${action}`);

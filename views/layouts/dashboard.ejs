@@ -56,6 +56,10 @@
                         <a href="/dashboard/users" class="nav-link <%= (typeof page_name !== 'undefined' && page_name === 'users') ? 'active' : '' %>"><i class="icon-users"></i><span>Users</span></a>
                         <a href="/dashboard/lessons" class="nav-link <%= (typeof page_name !== 'undefined' && page_name === 'lessons') ? 'active' : '' %>"><i class="icon-list"></i><span>All Lessons</span></a>
                         <a href="/dashboard/analytics" class="nav-link <%= (typeof page_name !== 'undefined' && page_name === 'analytics') ? 'active' : '' %>"><i class="icon-chart"></i><span>Analytics</span></a>
+                        <a href="/dashboard/payments" class="nav-link <%= page_name === 'payments' ? 'active' : '' %>">
+                            <i class="icon-credit-card"></i>
+                            <span>Payments</span>
+                        </a>
                     <% } %>
 
                      <% if(user.role === 'teacher') { %>
@@ -118,7 +122,49 @@
             </form>
         </div>
     </div>
-    <script src="/js/global.js"></script>
+    <div class="modal-overlay" id="admin-actions-overlay" style="display: none;"></div>
+    <div class="modal-container" id="adjust-balance-modal" style="display: none;">
+        <div class="modal-header">
+            <h2>Adjust Balance for <span id="adjust-balance-username"></span></h2>
+            <button class="modal-close-btn">×</button>
+        </div>
+        <div class="modal-body">
+            <form id="adjust-balance-form">
+                <input type="hidden" id="adjust-balance-userid" name="userId">
+                <div class="form-group">
+                    <label for="adjustment-amount">Amount</label>
+                    <input type="number" id="adjustment-amount" name="adjustment" placeholder="e.g., 5 or -2" required>
+                    <p class="form-hint">Use a positive number to add lessons, negative to subtract.</p>
+                </div>
+                <div class="form-group">
+                    <label for="adjustment-reason">Reason</label>
+                    <input type="text" id="adjustment-reason" name="reason" placeholder="e.g., Gift, Compensation, etc." required>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Save Adjustment</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="modal-container" id="link-payment-modal" style="display: none;">
+        <div class="modal-header">
+            <h2>Link Payment to User</h2>
+            <button class="modal-close-btn">×</button>
+        </div>
+        <div class="modal-body">
+            <form id="link-payment-form">
+                <input type="hidden" id="link-payment-id" name="paymentId">
+                <div class="form-group">
+                    <label>Payment for: <code id="link-payment-identifier"></code></label>
+                </div>
+                <div class="form-group">
+                    <label for="user-search-input">Search for a user (by name or email)</label>
+                    <input type="search" id="user-search-input" placeholder="Start typing...">
+                </div>
+                <div id="user-search-results"></div>
+            </form>
+        </div>
+    </div>
 
     <% if (typeof scripts !== 'undefined' && scripts) { %>
         <% scripts.forEach(script => { %>

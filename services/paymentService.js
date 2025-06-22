@@ -1,21 +1,48 @@
 const User = require('../models/User');
 const Payment = require('../models/Payment');
+const { notifyAdmin } = require('./notificationService');
 
 /**
- * Находит пользователя по email или telegram
- * @param {string} identifier - email или telegram username
+ * Находит пользователя по email, telegram или имени, нечувствительно к регистру.
+ * @param {string} identifier - email, telegram username или имя
  * @returns {Promise<User|null>}
  */
 async function findUserByIdentifier(identifier) {
     if (!identifier) return null;
-    const normalizedIdentifier = identifier.trim().toLowerCase().replace('@', '');
+
+    const trimmedIdentifier = identifier.trim();
+
+    const escapedIdentifier = trimmedIdentifier.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
     
-    return await User.findOne({
+    const searchRegex = new RegExp(`^${escapedIdentifier}$`, 'i');
+
+    let contactIdentifier = trimmedIdentifier.toLowerCase();
+    if (contactIdentifier.startsWith('@')) {
+        contactIdentifier = contactIdentifier.substring(1);
+    }
+    const escapedContact = contactIdentifier.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+    const contactRegex = new RegExp(`^${escapedContact}$`, 'i');
+
+    console.log(`[DEBUG] Исходный идентификатор: "${trimmedIdentifier}"`);
+    console.log(`[DEBUG] Ищем по email/name: ${searchRegex}`);
+    console.log(`[DEBUG] Ищем по contact: ${contactRegex}`);
+
+    const user = await User.findOne({
         $or: [
-            { email: normalizedIdentifier },
-            { contact: normalizedIdentifier }
+            { email: searchRegex },
+            { name: searchRegex },
+            { contact: searchRegex }, // Ищет с @, если так сохранено
+            { contact: contactRegex }  // Ищет без @
         ]
     });
+    
+    if (user) {
+        console.log(`[DEBUG] Пользователь НАЙДЕН: ${user.name} (${user.email})`);
+    } else {
+        console.log(`[DEBUG] Пользователь НЕ НАЙДЕН.`);
+    }
+
+    return user;
 }
 
 /**
@@ -38,7 +65,11 @@ async function creditPaymentToUser(payment) {
     user.balanceHistory.push({
         change: +payment.lessonsPurchased,
         balanceAfter: newBalance,
-        reason: `Payment: +${payment.lessonsPurchased} lessons via ${payment.paymentSystem}`
+        reason: `Payment via ${payment.paymentSystem}`,
+        amountPaid: payment.amountPaid,
+        currency: payment.currency,
+        transactionType: payment.transactionType,
+        paymentId: payment._id
     });
     
     await user.save();
@@ -71,9 +102,71 @@ async function claimPendingPaymentsForUser(user) {
     }
 }
 
+async function approvePayment(paymentId) {
+    const payment = await Payment.findById(paymentId);
+    if (!payment) return { success: false, error: 'Payment not found.' };
+    if (payment.status !== 'manual_review') return { success: false, error: `Payment is already in status: ${payment.status}` };
+    
+    let userWasFound = !!payment.userId;
+
+    if (!userWasFound) {
+        const user = await findUserByIdentifier(payment.pendingIdentifier);
+        if (user) {
+            payment.userId = user._id;
+            userWasFound = true;
+            console.log(`Auto-linked payment ${payment._id} for '${payment.pendingIdentifier}' to user ${user.email}`);
+        } else {
+            console.log(`Could not find a user for identifier '${payment.pendingIdentifier}' during approval.`);
+        }
+    }
+
+    payment.status = 'completed';
+    await payment.save();
+
+    if (userWasFound) {
+        await creditPaymentToUser(payment);
+        const user = await User.findById(payment.userId).lean();
+        await notifyAdmin(
+            `✅ *Payment Approved & Linked*\n\n` +
+            `*Client:* \`${payment.pendingIdentifier}\`\n` +
+            `*User:* ${user.name}\n` +
+            `*Amount:* ${payment.amountPaid} ${payment.currency}\n` +
+            `*Action:* ${payment.lessonsPurchased} lesson(s) credited. New balance: *${user.lessonsPaid}* lessons.`
+        );
+    } else {
+        await notifyAdmin(
+            `⚠️ *Payment Approved, Linking FAILED*\n\n` +
+            `*Client:* \`${payment.pendingIdentifier}\`\n` +
+            `*Amount:* ${payment.amountPaid} ${payment.currency}\n` +
+            `*Action:* Payment status is 'completed', but no user was found. *Please link it manually in the dashboard.*`
+        );
+    }
+
+    return { success: true, payment };
+}
+
+/**
+ * Отклоняет платеж, находящийся на ручной проверке.
+ * @param {string} paymentId - ID платежа для отклонения.
+ * @returns {Promise<{success: boolean, payment?: object, error?: string}>}
+ */
+async function declinePayment(paymentId) {
+    const payment = await Payment.findById(paymentId);
+    if (!payment) return { success: false, error: 'Payment not found.' };
+    if (payment.status !== 'manual_review') return { success: false, error: `Payment is already in status: ${payment.status}` };
+
+    payment.status = 'failed';
+    await payment.save();
+    
+    await notifyAdmin(`❌ *Payment Declined*\n\n*Client:* \`${payment.pendingIdentifier}\`\n*Amount:* ${payment.amountPaid} ${payment.currency}\n*Declined by:* Admin`);
+
+    return { success: true, payment };
+}
 
 module.exports = { 
     findUserByIdentifier,
     creditPaymentToUser,
-    claimPendingPaymentsForUser 
+    claimPendingPaymentsForUser,
+    approvePayment,
+    declinePayment
 };

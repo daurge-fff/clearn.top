@@ -13,10 +13,19 @@ router.get('/login', ensureGuest, (req, res) => {
 
 // Login Handle
 router.post('/login', (req, res, next) => {
-    passport.authenticate('local', {
-        successRedirect: '/dashboard',
-        failureRedirect: '/users/login',
-        failureFlash: true
+    passport.authenticate('local', (err, user, info) => {
+        if (err) { return next(err); }
+        if (!user) {
+            req.flash('error_msg', info.message);
+            return res.redirect('/users/login');
+        }
+        req.logIn(user, async (err) => {
+            if (err) { return next(err); }
+            
+            await claimPendingPaymentsForUser(user);
+            
+            return res.redirect('/dashboard');
+        });
     })(req, res, next);
 });
 

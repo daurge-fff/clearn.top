@@ -9,6 +9,7 @@ const Lesson = require('../models/Lesson');
 const Course = require('../models/Course');
 const Grade = require('../models/Grade');
 const upload = require('../middleware/upload');
+const Payment = require('../models/Payment');
 
 // @desc    Главная страница личного кабинета
 // @route   GET /dashboard
@@ -305,7 +306,24 @@ router.get('/lessons/delete-attachment/:lessonId/:userType', ensureAuth, async (
         res.status(500).send('Server Error');
     }
 });
-router.get('/my-lessons', ensureAuth, ensureRole('student'), async (req, res) => { try { const lessons = await Lesson.find({ student: req.user.id }).populate('teacher', 'name').populate('course', 'name').sort({ lessonDate: -1 }).lean(); res.render('student/my_lessons', { layout: 'layouts/dashboard', user: req.user, lessons: lessons, page_name: 'my-lessons' }); } catch (err) { console.error(err); res.status(500).send('Server Error'); } });
+router.get('/my-lessons', ensureAuth, ensureRole('student'), async (req, res) => {
+    try {
+        const lessons = await Lesson.find({ student: req.user.id }).populate('teacher', 'name').populate('course', 'name').sort({ lessonDate: -1 }).lean();
+        
+        const payments = await Payment.find({ userId: req.user.id, status: 'completed' }).sort({ createdAt: -1 }).lean();
+
+        res.render('student/my_lessons', {
+            layout: 'layouts/dashboard',
+            user: req.user,
+            lessons: lessons,
+            payments: payments,
+            page_name: 'my-lessons'
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Server Error');
+    }
+});
 router.post('/lessons/cancel/:id', ensureAuth, ensureRole('student'), async (req, res) => { try { const lesson = await Lesson.findById(req.params.id); if (!lesson) { return res.status(404).send('Lesson not found.'); } if (String(lesson.student) !== String(req.user.id)) { return res.status(403).send('Forbidden.'); } if (lesson.status !== 'scheduled') { return res.status(400).send('This lesson cannot be cancelled.'); } await Lesson.findByIdAndUpdate(req.params.id, { status: 'cancelled_by_student', cancellationReason: req.body.reason || 'Cancelled by student' }); await User.findByIdAndUpdate(req.user.id, { $inc: { lessonsPaid: 1 } }); res.redirect('/dashboard/my-lessons'); } catch (err) { console.error(err); res.status(500).send('Server Error'); } });
 router.get('/lessons/view/:id', ensureAuth, ensureRole('student'), async (req, res) => {
     try {
@@ -432,7 +450,8 @@ router.post('/user-profile/:id/adjust-balance', ensureAuth, ensureRole('admin'),
         user.balanceHistory.push({
             change: amount,
             balanceAfter: newBalance,
-            reason: `Manual Correction: ${reason}`
+            reason: `Manual Correction: ${reason}`,
+            transactionType: 'Manual Correction'
         });
         await user.save();
 
@@ -553,4 +572,49 @@ router.post('/user-profile/:id/register-payment', ensureAuth, ensureRole('admin'
         res.redirect(`/dashboard/user-profile/${req.params.id}`);
     }
 });
+
+
+router.get('/progress', ensureAuth, ensureRole('student'), async (req, res) => {
+    try {
+        res.render('student/progress', {
+            layout: 'layouts/dashboard',
+            user: req.user,
+            page_name: 'progress'
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Server Error');
+    }
+});
+router.get('/payments', ensureAuth, ensureRole('admin'), async (req, res) => {
+    try {
+        const { status } = req.query;
+        let filter = {};
+        if (status) filter.status = status;
+
+        let sort = {};
+        if (req.query.sort) {
+            sort[req.query.sort] = req.query.order === 'desc' ? -1 : 1;
+        } else {
+            sort.createdAt = -1;
+        }
+
+        const payments = await Payment.find(filter)
+            .populate('userId', 'name email')
+            .sort(sort)
+            .lean();
+
+        res.render('admin/payments', {
+            layout: 'layouts/dashboard',
+            user: req.user,
+            payments: payments,
+            query: req.query,
+            page_name: 'payments'
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Server Error');
+    }
+});
+
 module.exports = router;

@@ -4,8 +4,8 @@ const crypto = require('crypto');
 const axios = require('axios');
 const bcrypt = require('bcryptjs');
 const { Parser } = require('json2csv');
-
-const { findUserByIdentifier, creditPaymentToUser } = require('../services/paymentService');
+const { findUserByIdentifier, creditPaymentToUser, approvePayment, declinePayment } = require('../services/paymentService');
+const bot = require('../bot');
 const { notifyAdmin } = require('../services/notificationService');
 const { ensureAuth, ensureRole } = require('../middleware/auth');
 
@@ -85,39 +85,193 @@ router.post('/create-payment', async (req, res) => {
     }
 });
 
-router.post('/paypal/record-payment', async (req, res) => {
+router.post('/payments/:paymentId/link-user', ensureAuth, ensureRole('admin'), async (req, res) => {
     try {
-        const { paypalOrderID, amount, currency, lessonsPurchased, description, identifier } = req.body;
-        if (!paypalOrderID || !amount || !identifier) return res.status(400).json({ msg: 'Missing required payment details.' });
+        const { userId } = req.body;
+        const payment = await Payment.findById(req.params.paymentId);
 
-        const existingPayment = await Payment.findOne({ 'paypalOrderID': paypalOrderID });
-        if (existingPayment) return res.status(200).json({ msg: 'Payment already recorded.' });
+        if (!userId || !payment) {
+            return res.status(404).json({ msg: 'Payment or User not found' });
+        }
+
+        payment.userId = userId;
+        await payment.save();
+        
+        if (payment.status === 'completed') {
+            await creditPaymentToUser(payment);
+        }
+
+        await notifyAdmin(`🔗 *Payment Linked*\n\nPayment from \`${payment.pendingIdentifier}\` has been manually linked to user ID \`${userId}\`.`);
+
+        res.json({ msg: 'Payment linked successfully.', payment });
+    } catch (error) {
+        res.status(500).json({ msg: 'Server error' });
+    }
+});
+
+router.post('/paypal/submit-manual-payment', async (req, res) => {
+    try {
+        const { transactionId, amount, currency, lessonsPurchased, description, identifier } = req.body;
+
+        if (!transactionId || !amount || !identifier) {
+            return res.status(400).json({ msg: 'Missing required details.' });
+        }
+
+        const existingPayment = await Payment.findOne({ 'paypalOrderID': transactionId });
+        if (existingPayment) {
+            return res.status(400).json({ msg: 'This Transaction ID has already been submitted.' });
+        }
         
         const user = await findUserByIdentifier(identifier);
+        
         const pricePerLesson = lessonsPurchased > 0 ? (parseFloat(amount) / lessonsPurchased) : 0;
         
         const newPayment = await Payment.create({
             userId: user ? user._id : null,
             pendingIdentifier: identifier.trim().toLowerCase(),
-            status: 'completed',
+            status: 'manual_review',
             amountPaid: parseFloat(amount),
             baseAmount: parseFloat(amount),
             currency: currency,
             lessonsPurchased: parseInt(lessonsPurchased, 10),
             pricePerLesson: pricePerLesson,
-            paymentSystem: 'PayPal',
+            paymentSystem: 'PayPal (Manual)',
             transactionType: description.toLowerCase().includes('donation') ? 'Donation' : '50min',
-            paypalOrderID: paypalOrderID
+            paypalOrderID: transactionId
         });
 
-        if (user) {
-            await creditPaymentToUser(newPayment);
-        }
-        await notifyAdmin(`✅ *Successful Payment (PayPal)*\n\n*Amount:* ${amount} ${currency}\n*Client:* \`${identifier}\`\n*Order ID:* \`${paypalOrderID}\``);
-        res.status(200).json({ msg: 'Payment recorded successfully.' });
+        await bot.sendMessage(process.env.TELEGRAM_CHAT_ID,
+            `⚠️ *Manual PayPal Confirmation*\n\n` +
+            `A user claims to have paid. Please verify this transaction in your PayPal account.\n\n` +
+            `💰 *Amount:* ${amount} ${currency}\n` +
+            `👤 *Client:* \`${identifier}\`\n` +
+            `🧾 *Transaction ID:* \`${transactionId}\``,
+            {
+                parse_mode: 'Markdown',
+                reply_markup: {
+                    inline_keyboard: [
+                        [
+                            { text: "✅ Approve", callback_data: `payment_approve_${newPayment._id}` },
+                            { text: "❌ Decline", callback_data: `payment_decline_${newPayment._id}` }
+                        ]
+                    ]
+                }
+            }
+        );
+
+        res.status(200).json({ 
+            msg: 'Your payment confirmation has been received and is awaiting review.',
+            payment: newPayment
+        });
     } catch (error) {
-        await notifyAdmin(`🔥 *PayPal Record Failed*\n\n*Order ID:* \`${req.body.paypalOrderID}\`\n*Error:* ${error.message}`);
-        res.status(500).json({ msg: 'Server error while recording payment.' });
+        console.error('Error recording manual PayPal payment:', error);
+        await notifyAdmin(`🔥 *Error on Manual PayPal Submission*\n\n*ID:* \`${req.body.transactionId}\`\n*Error:* ${error.message}`);
+        res.status(500).json({ msg: 'Server error while submitting your confirmation.' });
+    }
+});
+// @desc    Update the status of a payment by an admin
+// @route   PUT /api/payments/:id/status
+router.put('/payments/:id/status', ensureAuth, ensureRole('admin'), async (req, res) => {
+    try {
+        const { status: newStatus } = req.body;
+        const payment = await Payment.findById(req.params.id);
+        if (!payment) {
+            return res.status(404).json({ msg: 'Payment not found.' });
+        }
+        const oldStatus = payment.status;
+        if (oldStatus === newStatus) {
+            return res.status(200).json({ msg: 'Status is already the same.', payment });
+        }
+        if (oldStatus === 'manual_review' && newStatus === 'completed') {
+            if (payment.userId) {
+                await creditPaymentToUser(payment);
+            }
+        }
+        payment.status = newStatus;
+        await payment.save();
+
+        await notifyAdmin(
+            `🔄 *Payment Status Changed*\n\n` +
+            `*Client:* \`${payment.pendingIdentifier}\`\n` +
+            `*Amount:* ${payment.amountPaid} ${payment.currency}\n` +
+            `*Status changed:* from \`${oldStatus}\` to \`${newStatus}\`\n` +
+            `*Changed by:* Admin`
+        );
+
+        res.json({ msg: 'Payment status updated successfully.', payment });
+
+    } catch (error) {
+        console.error('Error updating payment status:', error);
+        res.status(500).json({ msg: 'Server error' });
+    }
+});
+
+// @desc    Delete a payment record
+// @route   DELETE /api/payments/:id
+router.delete('/payments/:id', ensureAuth, ensureRole('admin'), async (req, res) => {
+    try {
+        const payment = await Payment.findById(req.params.id);
+        if (!payment) {
+            return res.status(404).json({ msg: 'Payment not found' });
+        }
+        await payment.deleteOne();
+        res.json({ msg: 'Payment record deleted successfully' });
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).json({ msg: 'Server Error' });
+    }
+});
+
+// @desc    Export payments to CSV
+// @route   GET /api/payments/export
+router.get('/payments/export', ensureAuth, ensureRole('admin'), async (req, res) => {
+    try {
+        const { status } = req.query;
+        let filter = {};
+        if (status) filter.status = status;
+
+        const payments = await Payment.find(filter)
+            .populate('userId', 'name email')
+            .sort({ createdAt: -1 })
+            .lean();
+
+        const fields = [
+            { label: 'Date', value: 'createdAt' },
+            { label: 'Client Identifier', value: 'pendingIdentifier' },
+            { label: 'User Name', value: 'userId.name' },
+            { label: 'User Email', value: 'userId.email' },
+            { label: 'Amount', value: 'amountPaid' },
+            { label: 'Currency', value: 'currency' },
+            { label: 'Payment System', value: 'paymentSystem' },
+            { label: 'Status', value: 'status' },
+            { label: 'Transaction ID', value: 'paypalOrderID' }
+        ];
+
+        const parser = new Parser({ fields, withBOM: true });
+        const csv = parser.parse(payments);
+
+        res.header('Content-Type', 'text/csv; charset=UTF-8');
+        res.attachment('payments_export.csv');
+        res.send(csv);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ msg: 'Server Error' });
+    }
+});
+
+// @desc    Delete a payment record
+// @route   DELETE /api/payments/:id
+router.delete('/api/payments/:id', ensureAuth, ensureRole('admin'), async (req, res) => {
+    try {
+        const payment = await Payment.findById(req.params.id);
+        if (!payment) {
+            return res.status(404).json({ msg: 'Payment not found' });
+        }
+        await payment.deleteOne();
+        res.json({ msg: 'Payment record deleted successfully' });
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).json({ msg: 'Server Error' });
     }
 });
 
@@ -126,23 +280,47 @@ router.post('/payment/cryptocloud/notification', async (req, res) => {
     try {
         const signature = req.headers['sign'];
         const apiKey = process.env.CRYPTO_CLOUD_API_KEY;
+
+        // Проверяем подпись
         const calculatedSignature = crypto.createHmac('sha256', apiKey).update(req.body).digest('hex');
-        if (signature !== calculatedSignature) return res.status(403).send('Invalid signature');
+        if (signature !== calculatedSignature) {
+            console.error('CryptoCloud: Invalid signature.');
+            return res.status(403).send('Invalid signature');
+        }
         
         const data = JSON.parse(req.body.toString());
         const payment = await Payment.findById(data.order_id);
-        if (!payment) return res.status(404).send('Payment not found');
-        if (payment.status === 'completed') return res.sendStatus(200);
+
+        if (!payment) {
+            console.error(`CryptoCloud: Payment with ID ${data.order_id} not found.`);
+            return res.status(404).send('Payment not found');
+        }
+        
+        if (payment.status === 'completed') {
+            return res.sendStatus(200);
+        }
 
         if (data.status === 'success') {
             payment.status = 'completed';
+            
+            if (!payment.userId) {
+                const user = await findUserByIdentifier(payment.pendingIdentifier);
+                if (user) {
+                    payment.userId = user._id;
+                    console.log(`Auto-linked CryptoCloud payment ${payment._id} to user ${user.email}`);
+                }
+            }
+
             await payment.save();
             if (payment.userId) {
                 await creditPaymentToUser(payment);
             }
+
             await notifyAdmin(`✅ *Successful Payment (CryptoCloud)*\n\n*Amount:* ${data.amount_crypto} ${data.currency}\n*Client:* \`${payment.pendingIdentifier}\`\n*Invoice:* \`${data.invoice_id}\``);
         }
+
         res.sendStatus(200);
+
     } catch (error) {
         console.error('CryptoCloud notification processing error:', error);
         res.status(500).send('Internal Server Error');
@@ -156,27 +334,62 @@ router.post('/payment/robokassa/result', async (req, res) => {
         const pass2 = isTest ? process.env.ROBOKASSA_TEST_PASS_2 : process.env.ROBOKASSA_PASS_2;
         
         const payment = await Payment.findById(InvId);
-        if (!payment) return res.status(404).send('Payment not found');
-        if (payment.status === 'completed') return res.send(`OK${InvId}`);
+        
+        if (!payment) {
+            console.error(`Robokassa: Payment with ID ${InvId} not found.`);
+            return res.status(404).send('Payment not found');
+        }
+
+        if (payment.status === 'completed') {
+            return res.send(`OK${InvId}`);
+        }
 
         const signatureString = `${OutSum}:${InvId}:${pass2}`;
         const mySignature = crypto.createHash('md5').update(signatureString).digest('hex');
         if (mySignature.toLowerCase() !== SignatureValue.toLowerCase()) {
+            console.error(`Robokassa: Invalid signature for order ${InvId}.`);
             return res.status(400).send('Invalid signature');
         }
-
         payment.status = 'completed';
+        if (!payment.userId) {
+            const user = await findUserByIdentifier(payment.pendingIdentifier);
+            if (user) {
+                payment.userId = user._id;
+                console.log(`Auto-linked Robokassa payment ${payment._id} to user ${user.email}`);
+            }
+        }
+        
         await payment.save();
         if (payment.userId) {
             await creditPaymentToUser(payment);
         }
+        
         await notifyAdmin(`✅ *Successful Payment (Robokassa)*\n\n*Amount:* ${OutSum} ${payment.currency}\n*Client:* \`${payment.pendingIdentifier}\`\n*Order:* \`${InvId}\``);
+        
         res.send(`OK${InvId}`);
+
     } catch (error) {
         console.error(`Robokassa result processing error for order ${req.body.InvId}:`, error);
         res.status(500).send('Internal Server Error');
     }
 });
+
+// @desc Search for users by admin
+// @route POST /api/users/search
+router.post('/users/search', ensureAuth, ensureRole('admin'), async (req, res) => {
+    try {
+        const { searchTerm } = req.body;
+        if (!searchTerm) return res.json([]);
+            const searchRegex = new RegExp(searchTerm, 'i');
+            const users = await User.find({
+                $or: [{ name: searchRegex }, { email: searchRegex }]
+            }).select('name email role').limit(5).lean();
+        res.json(users);
+    } catch (error) {
+        res.status(500).json({ msg: 'Server error' });
+    }
+});
+
 
 router.get('/lessons', ensureAuth, async (req, res) => {
     try {
@@ -221,6 +434,38 @@ router.get('/analytics', ensureAuth, ensureRole('admin'), async (req, res) => {
             averageCheck: (totalRevenue / payments.length).toFixed(2),
             chartData: { labels: Object.keys(dailyRevenue), data: Object.values(dailyRevenue) }
         });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ msg: 'Server Error' });
+    }
+});
+
+router.get('/progress/:userId/:type?', ensureAuth, async (req, res) => {
+    try {
+        const { userId, type } = req.params;
+        if (req.user.role === 'student' && req.user.id !== userId) {
+            return res.status(403).json({ msg: 'Forbidden' });
+        }
+        const isProjectQuery = type === 'projects'
+            ? { isProjectGrade: true }
+            : { isProjectGrade: { $ne: true } };
+
+        const grades = await Grade.find({
+            student: userId,
+            ...isProjectQuery
+        })
+        .sort({ createdAt: 'asc' })
+        .lean();
+
+        if (!grades || grades.length === 0) {
+            return res.json({ labels: [], scores: [] });
+        }
+
+        const labels = grades.map(g => new Date(g.createdAt).toLocaleDateString('en-GB'));
+        const scores = grades.map(g => g.score);
+
+        res.json({ labels, scores });
+
     } catch (err) {
         console.error(err);
         res.status(500).json({ msg: 'Server Error' });
@@ -298,7 +543,7 @@ router.get('/analytics', ensureAuth, ensureRole('admin'), async (req, res) => {
     }
 });
 
-router.get('/lessons/form-data', ensureAuth, ensureRole('admin'), async (req, res) => {
+router.get('/lessons/form-data', ensureAuth, ensureRole('admin', 'teacher'), async (req, res) => {
     try {
         const [students, teachers, courses] = await Promise.all([
             User.find({ role: 'student', status: 'active' }).select('name lessonsPaid').sort({ name: 1 }).lean(),
@@ -312,12 +557,17 @@ router.get('/lessons/form-data', ensureAuth, ensureRole('admin'), async (req, re
     }
 });
 
-router.get('/lessons/:id', ensureAuth, ensureRole('admin'), async (req, res) => {
+router.get('/lessons/:id', ensureAuth, ensureRole('admin', 'teacher'), async (req, res) => {
     try {
         const lesson = await Lesson.findById(req.params.id).lean();
         if (!lesson) {
             return res.status(404).json({ msg: 'Lesson not found' });
         }
+
+        if (req.user.role === 'teacher' && String(lesson.teacher) !== String(req.user._id)) {
+            return res.status(403).json({ msg: 'Forbidden: You are not the teacher for this lesson.' });
+        }
+
         res.json(lesson);
     } catch (err) {
         console.error(err);

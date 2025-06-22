@@ -61,7 +61,11 @@ const UserSchema = new mongoose.Schema({
         date: { type: Date, default: Date.now },
         change: Number,
         balanceAfter: Number,
-        reason: String
+        reason: String,
+        amountPaid: Number,
+        currency: String,
+        transactionType: String,
+        paymentId: { type: mongoose.Schema.Types.ObjectId, ref: 'Payment' }
     }],
     date_registered: {
         type: Date,

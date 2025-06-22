@@ -80,12 +80,39 @@
             <div class="form-group"><label for="projectDesc">Project Description</label><textarea name="projectDetails[description]"><%= lesson.projectDetails ? lesson.projectDetails.description : '' %></textarea></div>
             <div class="form-group"><label for="projectRecording">Project Defense Recording URL</label><input type="url" name="projectDefenseRecordingUrl" value="<%= lesson.projectDefenseRecordingUrl || '' %>"></div>
         </div>
+        
+        <div class="form-group">
+            <label for="score" id="score-label">Grade (1-10)</label>
+            <input type="number" id="score" name="score" min="1" max="10" step="1" placeholder="Leave blank if not applicable">
+        </div>
+        <div class="form-group">
+            <label for="comment">Comment on Grade (optional)</label>
+            <input type="text" id="comment" name="comment" placeholder="e.g., 'Excellent work with loops!'">
+        </div>
 
         <script>
         function toggleProjectFields() {
-            document.getElementById('project-fields').style.display = document.getElementById('isProject').checked ? 'block' : 'none';
+            const isProjectCheckbox = document.getElementById('isProject');
+            const projectFields = document.getElementById('project-fields');
+            const scoreInput = document.getElementById('score');
+            const scoreLabel = document.getElementById('score-label');
+
+            if (isProjectCheckbox.checked) {
+                projectFields.style.display = 'block';
+                scoreInput.max = 25;
+                scoreLabel.textContent = 'Grade (1-25)';
+            } else {
+                projectFields.style.display = 'none';
+                scoreInput.max = 10;
+                scoreLabel.textContent = 'Grade (1-10)';
+            }
         }
+        document.addEventListener('DOMContentLoaded', toggleProjectFields);
         </script>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Save Changes</button>
+            <a href="<%= user.role === 'admin' ? '/dashboard/lessons' : '/dashboard/schedule' %>" class="btn btn-secondary">Cancel</a>
+        </div>
         <div class="form-group">
             <label for="score">Grade (1-10)</label>
             <input type="number" id="score" name="score" min="1" max="10" step="1" placeholder="Leave blank if not applicable">
