@@ -1,77 +1,105 @@
-<div class="container">
-<div class="page-header">
-    <div>
-        <h1>Lesson Details</h1>
-        <p class="section-subtitle">
-            <%= new Date(lesson.lessonDate).toLocaleDateString('en-GB', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) %>
-        </p>
+<div class="container lesson-view-container">
+    <div class="page-header lesson-view-header">
+        <div>
+            <h1>Lesson: <%= lesson.course.name %></h1>
+            <p class="section-subtitle">
+                <%= new Date(lesson.lessonDate).toLocaleDateString('en-GB', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) %>
+            </p>
+        </div>
+        <a href="/dashboard/my-lessons" class="btn btn-secondary">Back to My Lessons</a>
     </div>
-    <a href="/dashboard/my-lessons" class="btn btn-secondary">Back to My Lessons</a>
-</div>
 
-<div class="card lesson-view-card">
-    <div class="lesson-view-grid">
-        <div class="detail-item">
-            <span class="detail-label">Course</span>
-            <span class="detail-value"><%= lesson.course.name %></span>
-        </div>
-        <div class="detail-item">
-            <span class="detail-label">Teacher</span>
-            <span class="detail-value"><%= lesson.teacher.name %></span>
-        </div>
-        <div class="detail-item">
-            <span class="detail-label">Status</span>
-            <span class="detail-value"><span class="badge status-<%= lesson.status %>"><%= lesson.status.replace(/_/g, ' ') %></span></span>
-        </div>
-        <% if (grade) { %>
-            <div class="detail-item">
-                <span class="detail-label">Grade for this lesson</span>
-                <span class="detail-value grade-value"><%= grade.score %> / 10</span>
-                <% if (grade.comment) { %>
-                    <p class="detail-text grade-comment"><em>"<%= grade.comment %>"</em></p>
-                <% } %>
-            </div>
-        <% } %>
-        <div class="detail-item full-width">
-            <span class="detail-label">Topic Covered</span>
-            <p class="detail-text"><%= lesson.topic || 'No topic specified.' %></p>
-        </div>
-        <div class="detail-item full-width">
-            <span class="detail-label">Homework Assignment</span>
-            <p class="detail-text"><%= lesson.homework || 'No homework for this lesson.' %></p>
-            <% if (lesson.teacherAttachment && lesson.teacherAttachment.filename) { %>
-                <a href="/download/<%= lesson.teacherAttachment.path.split('\\').pop() %>" class="btn btn-secondary">Download Assignment File</a>
-            <% } %>
-        </div>
-
-        <div class="detail-item full-width">
-            <span class="detail-label">My Submission</span>
-            <% if (lesson.studentAttachment && lesson.studentAttachment.filename) { %>
-                <div class="attachment-info">
-                    <span><i class="icon-file"></i> <%= lesson.studentAttachment.filename %> (Status: <%= lesson.homeworkStatus %>)</span>
-                    <a href="/dashboard/lessons/delete-attachment/<%= lesson._id %>/student" class="btn-icon btn-danger" data-tooltip="Delete Submission" onclick="return confirm('Are you sure?')"><i class="icon-delete"></i></a>
-                </div>
-            <% } else { %>
-                <form action="/dashboard/lessons/submit-hw/<%= lesson._id %>" method="POST" enctype="multipart/form-data" class="file-submit-form">
-                    <div class="file-upload-wrapper">
-                        <input type="file" id="teacherAttachment" name="teacherAttachment" class="file-input">
-                        <div class="upload-icon"><i class="icon-upload"></i></div>
-                        <div class="upload-text">Drag & Drop or Click to Upload</div>
-                        <div class="file-name"></div>
+    <div class="lesson-view-layout">
+        <div class="lesson-main-content">
+            <% if (lesson.isProject) { %>
+                <div class="lesson-card project-highlight">
+                    <div class="card-icon"><i class="icon-star"></i></div>
+                    <div class="card-content">
+                        <h3>Project: <%= lesson.projectDetails.title %></h3>
+                        <p><%= lesson.projectDetails.description %></p>
+                        <% if (lesson.projectDefenseRecordingUrl) { %>
+                            <a href="<%= lesson.projectDefenseRecordingUrl %>" target="_blank" class="btn btn-primary" style="margin-top: 10px;">Watch Project Defense</a>
+                        <% } %>
                     </div>
-                    <button type="submit" class="btn btn-primary">Submit Homework</button>
-                </form>
+                </div>
             <% } %>
-        </div>
-        <% if (lesson.isProject) { %>
-            <div class="detail-item full-width project-details-card">
-                <h3>Project: <%= lesson.projectDetails.title %></h3>
-                <p><%= lesson.projectDetails.description %></p>
-                <% if (lesson.projectDefenseRecordingUrl) { %>
-                    <a href="<%= lesson.projectDefenseRecordingUrl %>" target="_blank" class="btn btn-primary">Watch Project Defense</a>
-                <% } %>
+
+            <div class="lesson-card">
+                <div class="card-content">
+                    <h3>Lesson Details</h3>
+                    <div class="details-grid">
+                        <div class="detail-item">
+                            <span class="detail-label">Topic</span>
+                            <span class="detail-value"><%= lesson.topic || 'No topic specified.' %></span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Teacher</span>
+                            <span class="detail-value"><%= lesson.teacher.name %></span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Status</span>
+                            <span class="detail-value"><span class="badge status-<%= lesson.status %>"><%= lesson.status.replace(/_/g, ' ') %></span></span>
+                        </div>
+                        <% if (lesson.recordingUrl) { %>
+                            <div class="detail-item">
+                                <span class="detail-label">Recording</span>
+                                <a href="<%= lesson.recordingUrl %>" target="_blank" class="btn btn-secondary">Watch Lesson</a>
+                            </div>
+                        <% } %>
+                    </div>
+                </div>
             </div>
-        <% } %>
+
+             <div class="lesson-card">
+                <div class="card-content">
+                    <h3>Homework</h3>
+                    <p class="detail-text"><%= lesson.homework || 'No homework for this lesson.' %></p>
+                    <% if (lesson.teacherAttachment && lesson.teacherAttachment.filename) { %>
+                        <a href="/download/<%= lesson.teacherAttachment.path.split(/[\\/]/).pop() %>" class="btn btn-secondary" style="margin-top: 15px;">
+                           <i class="icon-download"></i> Download Assignment
+                        </a>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+        <div class="lesson-sidebar">
+            <% if (grade) { %>
+                <div class="lesson-card grade-card">
+                    <div class="card-content">
+                        <span class="detail-label">Your Grade</span>
+                        <div class="grade-display">
+                            <span class="grade-score"><%= grade.score %></span>
+                            <span class="grade-max">/ <%= lesson.isProject ? '25' : '10' %></span>
+                        </div>
+                        <% if (grade.comment) { %>
+                            <p class="grade-comment"><em>"<%= grade.comment %>"</em></p>
+                        <% } %>
+                    </div>
+                </div>
+            <% } %>
+
+            <div class="lesson-card submission-card">
+                <div class="card-content">
+                    <h4>My Submission</h4>
+                    <% if (lesson.studentAttachment && lesson.studentAttachment.filename) { %>
+                        <div class="attachment-info">
+                            <span><i class="icon-file"></i> <%= lesson.studentAttachment.filename %></span>
+                            <a href="/dashboard/lessons/delete-attachment/<%= lesson._id %>/student" class="btn-icon btn-danger" data-tooltip="Delete Submission" onclick="return confirm('Are you sure you want to delete your submission?')"><i class="icon-delete"></i></a>
+                        </div>
+                        <div class="submission-status">Status: <strong><%= lesson.homeworkStatus %></strong></div>
+                    <% } else { %>
+                        <form action="/dashboard/lessons/submit-hw/<%= lesson._id %>" method="POST" enctype="multipart/form-data">
+                            <div class="file-upload-wrapper">
+                                <input type="file" name="studentAttachment" class="file-input" required>
+                                <div class="upload-icon"><i class="icon-upload"></i></div>
+                                <div class="upload-text">Drag & Drop or Click to Upload</div>
+                                <div class="file-name"></div>
+                            </div>
+                            <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 15px;">Submit Homework</button>
+                        </form>
+                    <% } %>
+                </div>
+            </div>
+        </div>
     </div>
-</div>
 </div>

@@ -76,6 +76,7 @@
 .icon-filter { --icon-url: url(/images/icon-filter.svg); }
 .icon-key { --icon-url: url(/images/icon-key.svg); }
 .icon-credit-card { --icon-url: url(/images/icon-credit-card.svg); }
+.icon-star { --icon-url: url(/images/icon-star.svg); }
 
 .nav-link i, .header-btn i, .password-toggle i {
     width: 20px;
@@ -805,8 +806,6 @@
     opacity: 1;
     transform: scale(1);
 }
-.grade-value { color: var(--accent-color-1); }
-.grade-comment { margin-top: 5px !important; opacity: 0.8; }
 .attachment-info {
     display: flex;
     justify-content: space-between;
@@ -822,15 +821,6 @@
     align-items: center;
     gap: 10px;
     font-weight: 700;
-}
-.stat-card {
-    text-align: center;
-    flex-direction: column;
-    justify-content: center;
-}
-
-.stat-icon {
-    margin: 0 auto 15px auto;
 }
 
 @media (max-width: 767.98px) {
@@ -1341,3 +1331,147 @@ body.modal-open .modal-container {
     width: 100%;
     justify-content: center;
 }
+/* =================================== */
+/* === STUDENT LESSON VIEW (REDESIGN) === */
+/* =================================== */
+
+.lesson-view-container {
+    max-width: 1100px;
+}
+
+.lesson-view-header {
+    align-items: flex-start; /* Выравнивание по верху */
+    text-align: left;
+}
+
+.lesson-view-layout {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 25px;
+    margin-top: 25px;
+}
+
+@media (min-width: 992px) {
+    .lesson-view-layout {
+        grid-template-columns: 2fr 1fr;
+    }
+}
+
+.lesson-main-content {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+
+.lesson-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+
+.lesson-card {
+    background-color: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 12px;
+    padding: 25px;
+}
+
+.lesson-card.project-highlight {
+    background: linear-gradient(135deg, rgba(255, 185, 43, 0.05), rgba(255, 185, 43, 0.15));
+    border-color: rgba(255, 185, 43, 0.3);
+    display: flex;
+    gap: 20px;
+    align-items: center;
+}
+
+.project-highlight .card-icon {
+    flex-shrink: 0;
+}
+
+.project-highlight .card-icon i {
+    width: 30px;
+    height: 30px;
+    color: #ffb92b;
+    background-color: #ffb92b;
+}
+
+.lesson-card h3 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    font-family: var(--font-headings);
+}
+
+.lesson-card h4 {
+    margin-top: 0;
+    margin-bottom: 15px;
+}
+
+.details-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+}
+
+.detail-item {
+    display: flex;
+    flex-direction: column;
+}
+
+.detail-label {
+    font-size: 0.8rem;
+    font-weight: 700;
+    opacity: 0.7;
+    margin-bottom: 5px;
+    text-transform: uppercase;
+}
+
+.detail-value {
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+.detail-text {
+    margin: 0;
+    line-height: 1.6;
+    opacity: 0.9;
+}
+
+.grade-card {
+    text-align: center;
+}
+
+.grade-display {
+    display: flex;
+    justify-content: center;
+    align-items: baseline;
+    line-height: 1;
+    margin-bottom: 10px;
+}
+
+.grade-score {
+    font-size: 4rem;
+    font-weight: 800;
+    font-family: var(--font-headings);
+    color: var(--accent-color-1);
+}
+
+.grade-max {
+    font-size: 1.5rem;
+    font-weight: 700;
+    opacity: 0.5;
+    margin-left: 5px;
+}
+
+.grade-comment {
+    font-style: italic;
+    opacity: 0.8;
+}
+
+.submission-status {
+    margin-top: 15px;
+    font-size: 0.9rem;
+    opacity: 0.8;
+    text-align: center;
+}
+
+.icon-download { --icon-url: url(/images/icon-download.svg); }

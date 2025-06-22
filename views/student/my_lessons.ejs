@@ -61,6 +61,9 @@
                         <tr>
                             <td>
                                 <a href="/dashboard/lessons/view/<%= lesson._id %>" class="link-discreet">
+                                    <% if (lesson.isProject) { %>
+                                        <i class="icon-star" style="width: 1em; height: 1em; vertical-align: -0.125em; margin-right: 5px; color: #ffb92b;"></i>
+                                    <% } %>
                                     <%= lesson.course.name %>
                                 </a>
                             </td>
