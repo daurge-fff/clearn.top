@@ -15,38 +15,17 @@ const Grade = require('../models/Grade');
 const Course = require('../models/Course');
 const Payment = require('../models/Payment');
 
-async function createPendingPayment(details) {
-    const { amount, currency, description, identifier, paymentSystem } = details;
-    const user = await findUserByIdentifier(identifier);
-    let lessonsPurchased = 0;
-    if (description && !description.toLowerCase().includes('donation')) {
-        const match = description.match(/x(\d+)/);
-        lessonsPurchased = (match && match[1]) ? parseInt(match[1], 10) : 1;
-    }
-    const pricePerLesson = lessonsPurchased > 0 ? (parseFloat(amount) / lessonsPurchased) : 0;
-    return await Payment.create({
-        userId: user ? user._id : null,
-        pendingIdentifier: identifier.trim().toLowerCase(),
-        status: 'pending',
-        amountPaid: amount,
-        baseAmount: amount,
-        currency: currency || 'EUR',
-        lessonsPurchased: lessonsPurchased,
-        pricePerLesson: pricePerLesson,
-        paymentSystem: paymentSystem,
-        transactionType: description.toLowerCase().includes('donation') ? 'Donation' : '50min'
-    });
-}
-
 router.post('/create-payment', async (req, res) => {
     const { amount, currency, description, paymentSystem, identifier } = req.body;
     try {
         if (!amount || !paymentSystem || !identifier) {
             return res.status(400).json({ error: 'Amount, payment system, and identifier are required.' });
         }
-        const pendingPayment = await createPendingPayment(req.body);
-        const orderId = pendingPayment._id;
-        
+        const robokassaInvoiceId = Date.now();
+        const pendingPayment = await createPendingPayment({
+            ...req.body,
+            robokassaInvoiceId: robokassaInvoiceId
+        });
         await notifyAdmin(
             `🧾 *New Invoice Created*\n\n` +
             `💰 *Amount:* ${amount} ${currency || 'EUR'}\n` +
@@ -54,13 +33,21 @@ router.post('/create-payment', async (req, res) => {
             `👤 *Client:* \`${identifier}\`\n` +
             `📝 *Description:* ${description}`
         );
-
         if (paymentSystem === 'robokassa') {
             const merchantLogin = process.env.ROBOKASSA_MERCHANT_LOGIN;
             const isTest = process.env.ROBOKASSA_IS_TEST === '1';
             const pass1 = isTest ? process.env.ROBOKASSA_TEST_PASS_1 : process.env.ROBOKASSA_PASS_1;
-            const signature = crypto.createHash('md5').update(`${merchantLogin}:${amount}:${orderId}:${pass1}`).digest('hex');
-            const paymentUrl = `https://auth.robokassa.ru/Merchant/Index.aspx?MerchantLogin=${merchantLogin}&OutSum=${amount}&InvId=${orderId}&Description=${encodeURIComponent(description)}&SignatureValue=${signature}${isTest ? '&isTest=1' : ''}`;
+            const formattedAmount = Number(amount).toFixed(2);
+            const stringForHashing = `${merchantLogin}:${formattedAmount}:${robokassaInvoiceId}:${pass1}`;
+            const signature = crypto.createHash('md5').update(stringForHashing).digest('hex');
+            const paymentUrl = `https://auth.robokassa.ru/Merchant/Index.aspx?` +
+                `MerchantLogin=${merchantLogin}&` +
+                `OutSum=${formattedAmount}&` +
+                `InvoiceID=${robokassaInvoiceId}&` +
+                `Description=${encodeURIComponent(description)}&` +
+                `SignatureValue=${signature}` +
+                (isTest ? '&IsTest=1' : '');
+            console.log(`[DEBUG] Payment URL: ${paymentUrl}`);
             return res.json({ paymentUrl });
         } else if (paymentSystem === 'cryptocloud') {
             const shopId = process.env.CRYPTO_CLOUD_SHOP_ID;
@@ -82,6 +69,80 @@ router.post('/create-payment', async (req, res) => {
             `❗️ *Error:* \`${error.message}\``
         );
         return res.status(500).json({ error: 'Failed to create payment invoice.' });
+    }
+});
+
+async function createPendingPayment(details) {
+    const { amount, currency, description, identifier, paymentSystem, robokassaInvoiceId } = details;
+    const user = await findUserByIdentifier(identifier);
+    let lessonsPurchased = 0;
+    
+    if (description && !description.toLowerCase().includes('donation')) {
+        const match = description.match(/x(\d+)/);
+        lessonsPurchased = (match && match[1]) ? parseInt(match[1], 10) : 1;
+    }
+    
+    const pricePerLesson = lessonsPurchased > 0 ? (parseFloat(amount) / lessonsPurchased) : 0;
+    
+    return await Payment.create({
+        userId: user ? user._id : null,
+        pendingIdentifier: identifier.trim().toLowerCase(),
+        robokassaInvoiceId: robokassaInvoiceId,
+        status: 'pending',
+        amountPaid: amount,
+        baseAmount: amount,
+        currency: currency || 'EUR',
+        lessonsPurchased: lessonsPurchased,
+        pricePerLesson: pricePerLesson,
+        paymentSystem: paymentSystem,
+        transactionType: description.toLowerCase().includes('donation') ? 'Donation' : '50min'
+    });
+}
+
+router.post('/payment/robokassa/result', async (req, res) => {
+    try {
+        const { OutSum, InvId, SignatureValue } = req.body;
+        const isTest = process.env.ROBOKASSA_IS_TEST === '1';
+        const pass2 = isTest ? process.env.ROBOKASSA_TEST_PASS_2 : process.env.ROBOKASSA_PASS_2;
+        const payment = await Payment.findOne({ robokassaInvoiceId: Number(InvId) });
+        
+        if (!payment) {
+            console.error(`Robokassa: Payment with ID ${InvId} not found.`);
+            return res.status(404).send('Payment not found');
+        }
+
+        if (payment.status === 'completed') {
+            return res.send(`OK${InvId}`);
+        }
+
+        const signatureString = `${OutSum}:${InvId}:${pass2}`;
+        const mySignature = crypto.createHash('md5').update(signatureString).digest('hex');
+        
+        if (mySignature.toLowerCase() !== SignatureValue.toLowerCase()) {
+            console.error(`Robokassa: Invalid signature for order ${InvId}.`);
+            return res.status(400).send('Invalid signature');
+        }
+        
+        payment.status = 'completed';
+        if (!payment.userId) {
+            const user = await findUserByIdentifier(payment.pendingIdentifier);
+            if (user) {
+                payment.userId = user._id;
+                console.log(`Auto-linked Robokassa payment ${payment._id} to user ${user.email}`);
+            }
+        }
+        
+        await payment.save();
+        if (payment.userId) {
+            await creditPaymentToUser(payment);
+        }
+        
+        await notifyAdmin(`✅ *Successful Payment (Robokassa)*\n\n*Amount:* ${OutSum} ${payment.currency}\n*Client:* \`${payment.pendingIdentifier}\`\n*Order:* \`${InvId}\``);
+        
+        res.send(`OK${InvId}`);
+    } catch (error) {
+        console.error(`Robokassa result processing error for order ${req.body.InvId}:`, error);
+        res.status(500).send('Internal Server Error');
     }
 });
 
@@ -323,53 +384,6 @@ router.post('/payment/cryptocloud/notification', async (req, res) => {
 
     } catch (error) {
         console.error('CryptoCloud notification processing error:', error);
-        res.status(500).send('Internal Server Error');
-    }
-});
-
-router.post('/payment/robokassa/result', async (req, res) => {
-    try {
-        const { OutSum, InvId, SignatureValue } = req.body;
-        const isTest = process.env.ROBOKASSA_IS_TEST === '1';
-        const pass2 = isTest ? process.env.ROBOKASSA_TEST_PASS_2 : process.env.ROBOKASSA_PASS_2;
-        
-        const payment = await Payment.findById(InvId);
-        
-        if (!payment) {
-            console.error(`Robokassa: Payment with ID ${InvId} not found.`);
-            return res.status(404).send('Payment not found');
-        }
-
-        if (payment.status === 'completed') {
-            return res.send(`OK${InvId}`);
-        }
-
-        const signatureString = `${OutSum}:${InvId}:${pass2}`;
-        const mySignature = crypto.createHash('md5').update(signatureString).digest('hex');
-        if (mySignature.toLowerCase() !== SignatureValue.toLowerCase()) {
-            console.error(`Robokassa: Invalid signature for order ${InvId}.`);
-            return res.status(400).send('Invalid signature');
-        }
-        payment.status = 'completed';
-        if (!payment.userId) {
-            const user = await findUserByIdentifier(payment.pendingIdentifier);
-            if (user) {
-                payment.userId = user._id;
-                console.log(`Auto-linked Robokassa payment ${payment._id} to user ${user.email}`);
-            }
-        }
-        
-        await payment.save();
-        if (payment.userId) {
-            await creditPaymentToUser(payment);
-        }
-        
-        await notifyAdmin(`✅ *Successful Payment (Robokassa)*\n\n*Amount:* ${OutSum} ${payment.currency}\n*Client:* \`${payment.pendingIdentifier}\`\n*Order:* \`${InvId}\``);
-        
-        res.send(`OK${InvId}`);
-
-    } catch (error) {
-        console.error(`Robokassa result processing error for order ${req.body.InvId}:`, error);
         res.status(500).send('Internal Server Error');
     }
 });

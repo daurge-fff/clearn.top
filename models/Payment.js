@@ -3,6 +3,7 @@ const PaymentSchema = new mongoose.Schema({
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', index: true },
     pendingIdentifier: { type: String, trim: true, lowercase: true, index: true },
     paypalOrderID: { type: String, unique: true, sparse: true },
+    robokassaInvoiceId: { type: Number, required: true, unique: true },
     status: { type: String, enum: ['pending', 'completed', 'failed', 'manual_review'], default: 'pending' },
     amountPaid: { type: Number, required: true },
     baseAmount: { type: Number, required: true },
