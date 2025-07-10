@@ -50,10 +50,16 @@ async function listStudentsForTeacher(bot, chatId, teacher, page = 1, messageId 
         reply_markup: { inline_keyboard: keyboardRows }
     };
 
-    if (messageId) {
-        return bot.editMessageText(response, { ...options, message_id: messageId });
-    } else {
-        return bot.sendMessage(chatId, response, options);
+    try {
+        if (messageId) {
+            return await bot.editMessageText(response, { ...options, message_id: messageId });
+        } else {
+            return await bot.sendMessage(chatId, response, options);
+        }
+    } catch (error) {
+         if (!error.response?.body?.description.includes('message is not modified')) {
+            console.error("Telegram API Error:", error.response.body);
+         }
     }
 }
 
@@ -168,10 +174,16 @@ async function listAllUsers(bot, chatId, page = 1, messageId = null) {
         reply_markup: { inline_keyboard: keyboardRows }
     };
 
-    if (messageId) {
-        return bot.editMessageText(response, { ...options, message_id: messageId });
-    } else {
-        return bot.sendMessage(chatId, response, options);
+    try {
+        if (messageId) {
+            return await bot.editMessageText(response, { ...options, message_id: messageId });
+        } else {
+            return await bot.sendMessage(chatId, response, options);
+        }
+    } catch (error) {
+        if (!error.response?.body?.description.includes('message is not modified')) {
+            console.error("Telegram API Error:", error.response.body);
+        }
     }
 }
 

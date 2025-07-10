@@ -16,7 +16,7 @@ function getRoleEmoji(role) {
     switch (role) {
         case 'student': return '👨‍🎓';
         case 'teacher': return '👨‍🏫';
-        case 'admin':   return '⚙️';
+        case 'admin':   return '👑';
         default:        return '👤';
     }
 }
