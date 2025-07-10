@@ -44,13 +44,13 @@ function createPaginationKeyboard(prefix, currentPage, totalPages, searchTerm) {
 }
 
 function escapeHtml(text) {
-    if (text === null || typeof text === 'undefined') return '';
-    const map = {
-        '&': '&',
-        '<': '<',
-        '>': '>',
-    };
-    return String(text).replace(/[&<>]/g, (s) => map[s]);
+    if (text === null || typeof text === 'undefined') {
+        return '';
+    }
+    return String(text)
+        .replace(/&/g, '&')
+        .replace(/</g, '<')
+        .replace(/>/g, '>');
 }
 
 module.exports = {

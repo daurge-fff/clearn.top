@@ -73,7 +73,8 @@ router.post('/register', (req, res) => {
 
 // Google Auth
 router.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
-router.get('/auth/google/callback', passport.authenticate('google', { failureRedirect: '/users/login' }), (req, res) => {
+router.get('/auth/google/callback', passport.authenticate('google', { failureRedirect: '/users/login' }), async (req, res) => {
+    await claimPendingPaymentsForUser(req.user);
     res.redirect('/dashboard');
 });
 
