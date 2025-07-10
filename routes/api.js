@@ -134,10 +134,19 @@ router.post('/payment/robokassa/result', async (req, res) => {
         
         await payment.save();
         if (payment.userId) {
-            await creditPaymentToUser(payment);
+            const creditResult = await creditPaymentToUser(payment);
+            if(creditResult.success) {
+                 await notifyAdmin(
+                    `✅ *Successful Payment (Robokassa)*\n\n` +
+                    `*Amount:* ${OutSum} ${payment.currency}\n` +
+                    `*Client:* \`${payment.pendingIdentifier}\`\n` +
+                    `*User:* ${creditResult.user.name}\n`+
+                    `*Action:* ${payment.lessonsPurchased} lesson(s) credited. New balance: *${creditResult.user.lessonsPaid}* lessons.`
+                );
+            }
+        } else {
+            await notifyAdmin(`⚠️ *Successful Payment (Robokassa) - Needs Linking*\n\n*Amount:* ${OutSum} ${payment.currency}\n*Client:* \`${payment.pendingIdentifier}\`\n*Order:* \`${InvId}\`\n\nPlease link this payment to a user manually.`);
         }
-        
-        await notifyAdmin(`✅ *Successful Payment (Robokassa)*\n\n*Amount:* ${OutSum} ${payment.currency}\n*Client:* \`${payment.pendingIdentifier}\`\n*Order:* \`${InvId}\``);
         
         res.send(`OK${InvId}`);
     } catch (error) {
@@ -170,19 +179,20 @@ router.post('/payments/:paymentId/link-user', ensureAuth, ensureRole('admin'), a
     }
 });
 
-router.post('/paypal/submit-manual-payment', async (req, res) => {
+router.post('/manual-payment/submit', async (req, res) => {
     try {
-        const { transactionId, amount, currency, lessonsPurchased, description, identifier } = req.body;
+        const { transactionId, paymentSystem, amount, currency, lessonsPurchased, description, identifier } = req.body;
 
-        if (!transactionId || !amount || !identifier) {
+        if (!transactionId || !amount || !identifier || !paymentSystem) {
             return res.status(400).json({ msg: 'Missing required details.' });
         }
 
-        const existingPayment = await Payment.findOne({ 'paypalOrderID': transactionId });
+        const existingPayment = await Payment.findOne({
+             $or: [{ 'paypalOrderID': transactionId }, { 'robokassaInvoiceId': transactionId }] 
+        });
         if (existingPayment) {
             return res.status(400).json({ msg: 'This Transaction ID has already been submitted.' });
         }
-        
         const user = await findUserByIdentifier(identifier);
         
         const pricePerLesson = lessonsPurchased > 0 ? (parseFloat(amount) / lessonsPurchased) : 0;
@@ -196,17 +206,19 @@ router.post('/paypal/submit-manual-payment', async (req, res) => {
             currency: currency,
             lessonsPurchased: parseInt(lessonsPurchased, 10),
             pricePerLesson: pricePerLesson,
-            paymentSystem: 'PayPal (Manual)',
+            paymentSystem: `${paymentSystem} (Manual)`,
             transactionType: description.toLowerCase().includes('donation') ? 'Donation' : '50min',
             paypalOrderID: transactionId
         });
 
+        const systemName = paymentSystem.charAt(0).toUpperCase() + paymentSystem.slice(1);
+
         await bot.sendMessage(process.env.TELEGRAM_CHAT_ID,
-            `⚠️ *Manual PayPal Confirmation*\n\n` +
-            `A user claims to have paid. Please verify this transaction in your PayPal account.\n\n` +
+            `⚠️ *Manual ${systemName} Confirmation*\n\n` +
+            `A user claims to have paid. Please verify this transaction in your ${systemName} account.\n\n` +
             `💰 *Amount:* ${amount} ${currency}\n` +
             `👤 *Client:* \`${identifier}\`\n` +
-            `🧾 *Transaction ID:* \`${transactionId}\``,
+            `🧾 *Transaction Ref:* \`${transactionId}\``,
             {
                 parse_mode: 'Markdown',
                 reply_markup: {
@@ -225,11 +237,12 @@ router.post('/paypal/submit-manual-payment', async (req, res) => {
             payment: newPayment
         });
     } catch (error) {
-        console.error('Error recording manual PayPal payment:', error);
-        await notifyAdmin(`🔥 *Error on Manual PayPal Submission*\n\n*ID:* \`${req.body.transactionId}\`\n*Error:* ${error.message}`);
+        console.error('Error recording manual payment:', error);
+        await notifyAdmin(`🔥 *Error on Manual ${req.body.paymentSystem} Submission*\n\n*Ref:* \`${req.body.transactionId}\`\n*Error:* ${error.message}`);
         res.status(500).json({ msg: 'Server error while submitting your confirmation.' });
     }
 });
+
 // @desc    Update the status of a payment by an admin
 // @route   PUT /api/payments/:id/status
 router.put('/payments/:id/status', ensureAuth, ensureRole('admin'), async (req, res) => {
@@ -316,22 +329,6 @@ router.get('/payments/export', ensureAuth, ensureRole('admin'), async (req, res)
         res.send(csv);
     } catch (err) {
         console.error(err);
-        res.status(500).json({ msg: 'Server Error' });
-    }
-});
-
-// @desc    Delete a payment record
-// @route   DELETE /api/payments/:id
-router.delete('/api/payments/:id', ensureAuth, ensureRole('admin'), async (req, res) => {
-    try {
-        const payment = await Payment.findById(req.params.id);
-        if (!payment) {
-            return res.status(404).json({ msg: 'Payment not found' });
-        }
-        await payment.deleteOne();
-        res.json({ msg: 'Payment record deleted successfully' });
-    } catch (err) {
-        console.error(err.message);
         res.status(500).json({ msg: 'Server Error' });
     }
 });

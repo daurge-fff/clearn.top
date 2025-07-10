@@ -52,7 +52,7 @@ async function findUserByIdentifier(identifier) {
  */
 async function creditPaymentToUser(payment) {
     if (!payment.userId) return;
-
+    
     const user = await User.findById(payment.userId);
     if (!user) {
         console.error(`User with ID ${payment.userId} not found for crediting payment ${payment._id}.`);
@@ -74,6 +74,7 @@ async function creditPaymentToUser(payment) {
     
     await user.save();
     console.log(`Credited ${payment.lessonsPurchased} lessons to user ${user.email}. New balance: ${newBalance}.`);
+    return { success: true, user: user.toObject() };
 }
 
 /**
@@ -124,7 +125,8 @@ async function approvePayment(paymentId) {
     await payment.save();
 
     if (userWasFound) {
-        await creditPaymentToUser(payment);
+        const creditResult = await creditPaymentToUser(payment);
+        if (!creditResult.success) throw new Error("Failed to credit payment to user.");
         const user = await User.findById(payment.userId).lean();
         await notifyAdmin(
             `✅ *Payment Approved & Linked*\n\n` +
