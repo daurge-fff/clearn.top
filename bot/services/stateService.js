@@ -22,6 +22,16 @@ async function setState(telegramChatId, stateName, context = {}) {
 }
 
 /**
+ * Gets the current state for a user.
+ * @param {string} telegramChatId
+ * @returns {Promise<object|null>}
+ */
+async function getState(telegramChatId) {
+    const user = await User.findOne({ telegramChatId: String(telegramChatId) }, { botState: 1 }).lean();
+    return user ? user.botState : null;
+}
+
+/**
  * Clears the state for a user in the database.
  * @param {string} telegramChatId
  */
@@ -41,5 +51,6 @@ async function clearState(telegramChatId) {
 
 module.exports = {
     setState,
+    getState,
     clearState,
 };

@@ -1,5 +1,4 @@
 const User = require('../../models/User');
-const bot = require('../../bot');
 const Lesson = require('../../models/Lesson');
 const Grade = require('../../models/Grade');
 const { createCalendarKeyboard } = require('../keyboards/calendarKeyboards');
@@ -178,7 +177,10 @@ async function handleSettingsCallback(bot, query, user, params, { answer }) {
     if (action === 'toggle' && params[1] === 'notifications') {
         user.notifications.lessonReminders = !user.notifications.lessonReminders;
         await user.save();
-        const newKeyboard = { inline_keyboard: [[{ text: `Notifications: ${user.notifications.lessonReminders ? 'ON' : 'OFF'}`, callback_data: "settings_toggle_notifications" }], [{ text: `Change Emoji Avatar: ${user.emojiAvatar || 'Not set'}`, callback_data: "settings_change_emoji" }]] };
+        const newKeyboard = { inline_keyboard: [[{ text: `Notifications: ${user.notifications.lessonReminders ? 'ON' : 'OFF'}`, callback_data: "settings_toggle_notifications" }], [{ text: `Change My Emoji: ${user.emojiAvatar || 'Not set'}`, callback_data: "settings_change_emoji" }]] };
+        if (user.role === 'admin') {
+            newKeyboard.inline_keyboard.push([{ text: "👤 Set User Emoji", callback_data: "admin_set_user_emoji" }]);
+        }
         try {
             await bot.editMessageReplyMarkup(newKeyboard, { chat_id: chatId, message_id: query.message.message_id });
         } catch (error) {
@@ -192,6 +194,37 @@ async function handleSettingsCallback(bot, query, user, params, { answer }) {
         await stateService.setState(chatId, 'awaiting_new_emoji');
         await bot.sendMessage(chatId, "OK, send me the new emoji you'd like to use as your avatar.");
     }
+    await answer();
+}
+
+async function handleAdminCallback(bot, query, user, params, { answer }) {
+    const chatId = query.message.chat.id;
+    const [action, ...rest] = params;
+
+    if (action === 'set' && rest[0] === 'user' && rest[1] === 'emoji') {
+        await stateService.setState(chatId, 'awaiting_user_for_emoji_change');
+        await bot.editMessageText("Enter the name or email of the user whose emoji you want to change:", {
+            chat_id: chatId,
+            message_id: query.message.message_id
+        });
+    }
+
+    if (action === 'select' && rest[0] === 'user') {
+        const targetUserId = rest[2];
+        if (rest[1] === 'emoji') {
+            await stateService.setState(chatId, 'awaiting_new_emoji_for_user', { targetUserId });
+            await bot.editMessageText(`Send the new emoji for this user.`, {
+                chat_id: chatId, message_id: query.message.message_id
+            });
+        }
+        if (rest[1] === 'adjust') {
+            await stateService.setState(chatId, 'awaiting_adjustment_amount', { userId: targetUserId });
+            await bot.editMessageText(`Enter the adjustment amount for this user (e.g., +5 or -1):`, {
+                 chat_id: chatId, message_id: query.message.message_id
+            });
+        }
+    }
+
     await answer();
 }
 
@@ -262,6 +295,7 @@ function registerCallbackQueryHandler(botInstance, dependencies) {
             switch (action) {
                 case 'cancel':  await handleCancellationRequest(bot, query, user, params, context); break;
                 case 'settings':await handleSettingsCallback(bot, query, user, params, context); break;
+                case 'admin':   await handleAdminCallback(bot, query, user, params, context); break;
                 case 'cal':     await handleCalendarCallback(bot, query, user, params, context); break;
                 case 'page':    await handlePaginationCallback(bot, query, user, params, context); break;
                 case 'lesson':  await handleLessonCallback(bot, query, user, params, context); break;
