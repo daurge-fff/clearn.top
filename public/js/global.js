@@ -1,8 +1,8 @@
 // ===================================
-// === ГЛАВНЫЙ ФАЙЛ ГЛОБАЛЬНЫХ СКРИПТОВ ===
+// === MAIN GLOBAL SCRIPT FILE ===
 // ===================================
 
-// Состояние инициализации приложения
+// Application initialization state
 const APP_STATE = {
     initialized: false,
     dashboardInitialized: false,
@@ -10,7 +10,7 @@ const APP_STATE = {
 };
 
 // ===================================
-// === ОСНОВНЫЕ МОДУЛИ ИНИЦИАЛИЗАЦИИ ===
+// === CORE INITIALIZATION MODULES ===
 // ===================================
 
 function initializeThemeSwitcher() {
@@ -111,7 +111,7 @@ function initializeProjectFieldsToggle() {
 }
 
 // ===================================
-// === ЕДИНЫЙ ОБРАБОТЧИК ДЕЙСТВИЙ CRM ===
+// === UNIFIED CRM ACTION HANDLER ===
 // ===================================
 function initializeDashboardActions() {
     if (APP_STATE.dashboardInitialized) return;
@@ -119,7 +119,7 @@ function initializeDashboardActions() {
 
     let activeDropdown = null;
 
-    // Функция для закрытия всех активных выпадающих списков
+    // Function to close all active dropdowns
     const closeActiveDropdown = () => {
         if (activeDropdown) {
             activeDropdown.classList.remove('show');
@@ -130,18 +130,18 @@ function initializeDashboardActions() {
         }
     };
     
-    // Глобальный клик для закрытия меню
+    // Global click to close menus
     document.body.addEventListener('click', (e) => {
         if (!e.target.closest('.status-cell')) {
             closeActiveDropdown();
         }
     });
 
-    // Делегированный обработчик для всех действий
+    // Delegated handler for all actions
     document.body.addEventListener('click', async (e) => {
         const target = e.target;
 
-        // 1. Обработка клика по ячейке статуса (для открытия/закрытия)
+        // 1. Handle status cell click (to open/close)
         const statusCell = target.closest('.status-cell');
         if (statusCell && !target.closest('.status-dropdown-item')) {
             e.stopPropagation();
@@ -150,7 +150,7 @@ function initializeDashboardActions() {
                 if (dropdown.classList.contains('show')) {
                     closeActiveDropdown();
                 } else {
-                    closeActiveDropdown(); // Закрываем предыдущий, если был
+                    closeActiveDropdown(); // Close the previous one if it exists
                     dropdown.classList.add('show');
                     statusCell.classList.add('is-open');
                     activeDropdown = dropdown;
@@ -159,14 +159,14 @@ function initializeDashboardActions() {
             return;
         }
 
-        // 2. Обработка выбора нового статуса
+        // 2. Handle new status selection
         const statusDropdownItem = target.closest('.status-dropdown-item');
         if (statusDropdownItem) {
             e.stopPropagation();
             const cell = statusDropdownItem.closest('.status-cell');
             if (!cell) return;
             
-            closeActiveDropdown(); // Закрываем меню после выбора
+            closeActiveDropdown(); // Close the menu after selection
 
             const newStatus = statusDropdownItem.dataset.status;
             const currentStatus = cell.dataset.currentStatus;
@@ -200,7 +200,7 @@ function initializeDashboardActions() {
                 }
                 cell.dataset.currentStatus = entity.status;
 
-                if (paymentId) { // Если это платеж, обновляем доступные действия
+                if (paymentId) { // If it's a payment, update the available actions
                     const dropdown = cell.querySelector('.status-dropdown');
                     if (dropdown) dropdown.innerHTML = `<div class="status-dropdown-item">No actions available</div>`;
                 }
@@ -211,7 +211,7 @@ function initializeDashboardActions() {
             return;
         }
 
-        // 3. Обработка удаления пользователя
+        // 3. Handle user deletion
         const deleteUserLink = target.closest('a[href*="/users/delete/"]');
         if (deleteUserLink) {
             e.preventDefault();
@@ -221,7 +221,7 @@ function initializeDashboardActions() {
             return;
         }
 
-        // 4. Обработка удаления урока
+        // 4. Handle lesson deletion
         const deleteLessonButton = target.closest('.delete-lesson-btn');
         if (deleteLessonButton) {
             e.preventDefault();
@@ -238,7 +238,7 @@ function initializeDashboardActions() {
             return;
         }
 
-        // 5. Обработка удаления платежа
+        // 5. Handle payment deletion
         const deletePaymentButton = target.closest('.delete-payment-btn');
         if (deletePaymentButton) {
             e.preventDefault();
@@ -255,7 +255,7 @@ function initializeDashboardActions() {
             return;
         }
 
-        // 6. Обработка сброса пароля
+        // 6. Handle password reset
         const resetPasswordBtn = target.closest('#reset-password-btn');
         if (resetPasswordBtn) {
             e.preventDefault();
@@ -276,7 +276,7 @@ function initializeDashboardActions() {
 }
 
 // ===================================
-// === ЛОГИКА МОДАЛЬНОГО ОКНА УРОКОВ ===
+// === LESSON MODAL LOGIC ===
 // ===================================
 function initializeLessonModal() {
     if (APP_STATE.lessonModalInitialized) return;
@@ -361,19 +361,19 @@ function initializeLessonModal() {
         
         const editBtn = e.target.closest('a[href*="/dashboard/lessons/manage/"]');
         if (editBtn) {
-            // Модальное окно открывается ТОЛЬКО для админа.
-            // Учитель просто перейдет по ссылке.
+            // The modal opens ONLY for the admin.
+            // The teacher will simply follow the link.
             if (document.body.dataset.userRole === 'admin') {
                 e.preventDefault();
                 const lessonId = editBtn.href.split('/').pop();
                 window.openLessonModal('edit', lessonId);
                 return;
             }
-            // Если роль не админ, ничего не делаем, и браузер переходит по ссылке.
+            // If the role is not admin, do nothing, and the browser follows the link.
         }
     });
 
-    // Обработчики закрытия модального окна и отправки формы
+    // Modal close and form submission handlers
     [closeBtn, cancelBtn, modalOverlay].forEach(el => {
         el.addEventListener('click', closeModal);
     });
@@ -418,7 +418,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (APP_STATE.initialized) return;
     APP_STATE.initialized = true;
     
-    // Базовые функции интерфейса
+    // Basic UI functions
     initializeThemeSwitcher();
     initializeSidebar();
     initializePasswordToggles();
@@ -426,10 +426,10 @@ document.addEventListener('DOMContentLoaded', () => {
     initializeMobileFilters();
     initializeProjectFieldsToggle();
 
-    // Главный обработчик для всей интерактивности CRM
+    // Main handler for all CRM interactivity
     initializeDashboardActions();
     
-    // Инициализация модального окна (логика и обработчики)
+    // Modal initialization (logic and handlers)
     initializeLessonModal();
 
     const adminOverlay = document.getElementById('admin-actions-overlay');

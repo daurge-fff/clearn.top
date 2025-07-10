@@ -16,6 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
         discounts: { 1: 0, 5: 5, 10: 10, 15: 15, 20: 20 },
         availableSystems: [
             { id: 'paypal', name: 'PayPal' },
+            { id: 'payoneer', name: 'Payoneer' },
             { id: 'cryptocloud', name: 'CryptoCloud' },
             { id: 'robokassa', name: 'Robokassa' }
         ]
@@ -24,8 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentBasePrice = 0;
     let currentTariffName = '';
     let selectedPaymentSystem = null;
-    let isDonationMode = false;
-    let paypalButtonsRendered = false;
+    let manualPaymentRendered = false;
 
     function setLanguage(lang) {
         if (lang === 'ua') lang = 'uk';
@@ -223,7 +223,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if(errorP) errorP.style.display = 'none';
 
         selectedPaymentSystem = null;
-        paypalButtonsRendered = false;
+        manualPaymentRendered = false;
         const systemsContainer = paymentModal.querySelector('.systems');
         systemsContainer.innerHTML = '';
         paymentConfig.availableSystems.forEach(system => {
@@ -234,12 +234,12 @@ document.addEventListener('DOMContentLoaded', () => {
             systemsContainer.appendChild(card);
         });
         
-        const paypalContainer = document.getElementById('paypal-button-container');
-        if (paypalContainer) paypalContainer.innerHTML = '';
+        const manualPaymentContainer = document.getElementById('paypal-button-container'); // Reusing this container
+        if (manualPaymentContainer) manualPaymentContainer.innerHTML = '';
         
         const finalPayButton = document.getElementById('final-pay-button');
-        if(finalPayButton) finalPayButton.style.display = 'block';
-        if(paypalContainer) paypalContainer.style.display = 'none';
+        if(finalPayButton) finalPayButton.style.display = 'flex';
+        if(manualPaymentContainer) manualPaymentContainer.style.display = 'none';
 
         const currentLang = localStorage.getItem('language') || 'en';
         setLanguage(currentLang);
@@ -309,14 +309,16 @@ document.addEventListener('DOMContentLoaded', () => {
             target.classList.add('active');
             selectedPaymentSystem = target.dataset.system;
 
-            const paypalContainer = document.getElementById('paypal-button-container');
+            const manualPaymentContainer = document.getElementById('paypal-button-container');
             const finalPayButton = document.getElementById('final-pay-button');
-            if(finalPayButton) finalPayButton.style.display = (selectedPaymentSystem === 'paypal') ? 'none' : 'block';
-            if(paypalContainer) paypalContainer.style.display = (selectedPaymentSystem === 'paypal') ? 'block' : 'none';
+            const isManualSystem = ['paypal', 'payoneer'].includes(selectedPaymentSystem);
+            
+            if(finalPayButton) finalPayButton.style.display = isManualSystem ? 'none' : 'flex';
+            if(manualPaymentContainer) manualPaymentContainer.style.display = isManualSystem ? 'block' : 'none';
 
-            if (selectedPaymentSystem === 'paypal' && !paypalButtonsRendered) {
-                renderPayPalButtons();
-                paypalButtonsRendered = true;
+            if (isManualSystem && !manualPaymentRendered) {
+                renderManualPaymentFlow(selectedPaymentSystem);
+                manualPaymentRendered = true;
             }
             updatePayButtonState();
         });
@@ -366,84 +368,78 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        function renderPayPalButtons() {
-            const paypalContainer = document.getElementById('paypal-button-container');
-            if (!paypalContainer) return;
-
-            paypalContainer.innerHTML = '';
-
+        function renderManualPaymentFlow(system) {
+            const manualPaymentContainer = document.getElementById('paypal-button-container');
+            if (!manualPaymentContainer) return;
+        
+            manualPaymentContainer.innerHTML = '';
+        
             const amount = document.getElementById('modal-total-price').textContent.split(' ')[0];
-            const DONATION_BUTTON_ID = 'TBLSPGUQZX45J';
+            
+            const instructions = {
+                paypal: `Please send <strong>${amount} EUR</strong> to our PayPal account: <strong>admin@clearn.top</strong>. After completing the payment, copy the Transaction ID.`,
+                payoneer: `Please send <strong>${amount} EUR</strong> via Payoneer to the email: <strong>admin@clearn.top</strong>. After completing the payment, copy the Transaction ID or reference number.`
+            };
 
+            const systemName = system.charAt(0).toUpperCase() + system.slice(1);
+        
             const manualPaymentHTML = `
-                <div class="donation-sdk-container">
-                    <div id="donate-button-container-sdk">
-                        <div id="donate-button"></div>
-                    </div>
+                <div class="manual-payment-container">
+                    <h4 class="manual-payment-title">Manual Payment via ${systemName}</h4>
                     <div class="manual-payment-instructions">
-                        <p>After completing the payment, please follow these steps:</p>
+                        <p>Please follow these steps:</p>
                         <ol>
-                            <li>Copy the <strong>Transaction ID</strong> from the PayPal confirmation screen.</li>
+                            <li>${instructions[system]}</li>
                             <li>Paste it into the field below and confirm your payment.</li>
+                            <li>Our manager will verify your payment and credit the lessons to your account within a few hours.</li>
                         </ol>
                         <div class="form-group" style="margin-top: 20px;">
                             <input type="text" id="paypal-transaction-id" placeholder=" " required>
                             <label for="paypal-transaction-id">Paste Transaction ID here</label>
                         </div>
-                        <!-- Кнопка теперь изначально выключена -->
                         <button id="confirm-manual-payment" class="form-submit-button" disabled>I Have Paid</button>
                         <p class="payment-error" id="paypal-manual-error" style="display: none;"></p>
                     </div>
                 </div>
             `;
-            paypalContainer.innerHTML = manualPaymentHTML;
+            manualPaymentContainer.innerHTML = manualPaymentHTML;
             const confirmButton = document.getElementById('confirm-manual-payment');
             const transactionIdInput = document.getElementById('paypal-transaction-id');
             const termsCheckbox = document.getElementById('terms-checkbox');
-
+        
             function updateConfirmManualButtonState() {
                 if (!confirmButton || !transactionIdInput || !termsCheckbox) return;
-                const isReady = transactionIdInput.value.trim() !== '' && termsCheckbox.checked;
+                const identifierInput = document.getElementById('payment-identifier');
+                const isReady = transactionIdInput.value.trim() !== '' && termsCheckbox.checked && identifierInput.value.trim() !== '';
                 confirmButton.disabled = !isReady;
             }
             transactionIdInput.addEventListener('input', updateConfirmManualButtonState);
             termsCheckbox.addEventListener('change', updateConfirmManualButtonState);
-            const script = document.createElement('script');
-            script.src = "https://www.paypalobjects.com/donate/sdk/donate-sdk.js";
-            script.charset = "UTF-8";
-            script.onload = () => {
-                PayPal.Donation.Button({
-                    env: 'production',
-                    hosted_button_id: DONATION_BUTTON_ID,
-                    image: {
-                        src: 'https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif',
-                        alt: 'Donate with PayPal button',
-                        title: 'PayPal - The safer, easier way to pay online!',
-                    }
-                }).render('#donate-button');
-            };
-            document.body.appendChild(script);
+            document.getElementById('payment-identifier').addEventListener('input', updateConfirmManualButtonState);
+
+            updateConfirmManualButtonState();
 
             confirmButton.addEventListener('click', async () => {
                 const transactionId = transactionIdInput.value.trim();
+                const identifier = document.getElementById('payment-identifier').value.trim();
                 const errorP = document.getElementById('paypal-manual-error');
                 
-                if (!transactionId || !termsCheckbox.checked) {
-                    errorP.textContent = 'Please paste the Transaction ID and agree to the terms.';
+                if (!transactionId || !identifier || !termsCheckbox.checked) {
+                    errorP.textContent = 'Please fill all fields and agree to the terms.';
                     errorP.style.display = 'block';
                     return;
                 }
 
-                const identifier = document.getElementById('payment-identifier').value;
                 const quantity = isDonationMode ? 0 : parseInt(document.getElementById('lesson-quantity').value, 10);
                 const description = isDonationMode ? "Donation" : `${currentTariffName} x${quantity}`;
 
                 try {
-                    const response = await fetch('/api/paypal/submit-manual-payment', {
+                    const response = await fetch('/api/manual-payment/submit', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
                             transactionId,
+                            paymentSystem: system,
                             amount: parseFloat(amount),
                             currency: paymentConfig.currency,
                             lessonsPurchased: quantity,

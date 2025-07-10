@@ -49,23 +49,22 @@
     </style>
 </head>
 <body dir="ltr">
-    <% if ((locals.success_msg && locals.success_msg.length > 0) || (locals.error_msg && locals.error_msg.length > 0) || (locals.error && locals.error.length > 0)) { %>
-        <div class="flash-messages">
-            <% if (locals.success_msg && locals.success_msg.length > 0) { %>
-                <div class="flash-message flash-success"><%= success_msg %></div>
-            <% } %>
-            <% if (locals.error_msg && locals.error_msg.length > 0) { %>
-                 <div class="flash-message flash-error"><%= error_msg %></div>
-            <% } %>
-            <% if (locals.error && locals.error.length > 0) { %>
-                 <div class="flash-message flash-error"><%= error %></div>
-            <% } %>
-        </div>
-    <% } %>
     <div class="auth-container">
         <div class="auth-form-wrapper">
             <h1>Register</h1>
-             <!-- TODO: Display error messages here -->
+            <% if ((locals.success_msg && locals.success_msg.length > 0) || (locals.error_msg && locals.error_msg.length > 0) || (locals.error && locals.error.length > 0)) { %>
+                <div class="flash-messages-inline">
+                    <% if (locals.success_msg && locals.success_msg.length > 0) { %>
+                        <div class="flash-message flash-success"><%= success_msg %></div>
+                    <% } %>
+                    <% if (locals.error_msg && locals.error_msg.length > 0) { %>
+                        <div class="flash-message flash-error"><%= error_msg %></div>
+                    <% } %>
+                    <% if (locals.error && locals.error.length > 0) { %>
+                        <div class="flash-message flash-error"><%= error %></div>
+                    <% } %>
+                </div>
+            <% } %>
             <form action="/users/register" method="POST" id="feedback-form">
                 <div class="form-group">
                     <input type="text" id="name" name="name" required placeholder=" " value="<%= typeof name != 'undefined' ? name : '' %>">
