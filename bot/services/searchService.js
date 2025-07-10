@@ -31,17 +31,12 @@ async function listStudentsForTeacher(bot, chatId, teacher, page = 1, messageId 
         const studentName = escapeHtml(s.name);
         const emoji = s.emojiAvatar || getRoleEmoji('student');
         const statusIcon = getUserStatusEmoji(s.status);
-        const contact = escapeHtml(s.contact || 'not specified');
-        response += `${emoji} <b>${studentName.split(' ')[0]}</b> ${statusIcon}\n- Balance: ${s.lessonsPaid} lessons\n- Contact: ${contact}\n\n`;
+        response += `${emoji} <b>${studentName}</b> ${statusIcon}\n   Balance: ${s.lessonsPaid} lessons\n\n`;
         return { text: s.name, url: `${BASE_URL}/dashboard/student/${s._id}` };
     });
 
     for (let i = 0; i < buttons.length; i += 2) {
-        if (buttons[i+1]) {
-            keyboardRows.push([buttons[i], buttons[i+1]]);
-        } else {
-            keyboardRows.push([buttons[i]]);
-        }
+        keyboardRows.push(buttons.slice(i, i + 2));
     }
 
     const paginationKeyboard = createPaginationKeyboard('teacher_list_students', result.currentPage, result.totalPages, 'all');
@@ -71,10 +66,10 @@ async function findUserForAdmin(bot, chatId, searchString, page = 1, messageId =
     let response = `<b>Found users (Page ${result.currentPage}/${result.totalPages}):</b>\n\n`;
     const keyboardRows = [];
     result.users.forEach(u => {
-        const emoji = u.emojiAvatar || getRoleEmoji('student');
+        const emoji = u.emojiAvatar || getRoleEmoji(u.role);
         const statusIcon = getUserStatusEmoji(u.status);
-        response += `${emoji} <b>${name}</b> ${statusIcon}\nEmail: ${email}\n\n`;
-        keyboardRows.push([{ text: `${u.name.split(' ')[0]}`, url: `${BASE_URL}/dashboard/user-profile/${u._id}` }]);
+        response += `${emoji} <b>${u.name}</b> (${u.role}) ${statusIcon}\n`;
+        keyboardRows.push([{ text: `${u.name}`, url: `${BASE_URL}/dashboard/user-profile/${u._id}` }]);
     });
     const paginationKeyboard = createPaginationKeyboard('admin_list_users', result.currentPage, result.totalPages, 'all');
     if (paginationKeyboard.inline_keyboard.length > 0) {
@@ -114,8 +109,11 @@ async function findStudentForTeacher(bot, chatId, teacher, studentName, page = 1
     const keyboardRows = [];
 
     result.users.forEach(s => {
-        response += `<b>${s.name}</b>\n- Balance: ${s.lessonsPaid} lessons\n- Contact: ${s.contact || 'not specified'}\n\n`;
-        keyboardRows.push([{ text: `${s.name.split(' ')[0]}`, url: `${BASE_URL}/dashboard/user-profile/${s._id}` }]);
+        const studentName = escapeHtml(s.name);
+        const emoji = s.emojiAvatar || getRoleEmoji('student');
+        const statusIcon = getUserStatusEmoji(s.status);
+        response += `${emoji} <b>${studentName}</b> ${statusIcon}\n   Balance: ${s.lessonsPaid} lessons\n\n`;
+        keyboardRows.push([{ text: `${s.name}`, url: `${BASE_URL}/dashboard/user-profile/${s._id}` }]);
     });
 
     const paginationKeyboard = createPaginationKeyboard('teacher_student_search', result.currentPage, result.totalPages, studentName);
@@ -149,19 +147,14 @@ async function listAllUsers(bot, chatId, page = 1, messageId = null) {
     
     const buttons = result.users.map(u => {
         const name = escapeHtml(u.name);
-        const email = escapeHtml(u.email || 'not provided');
         const roleIcon = getRoleEmoji(u.role);
         const statusIcon = getUserStatusEmoji(u.status);
-        response += `${roleIcon} <b>${name}</b> ${statusIcon}\nEmail: ${email}\n\n`;
-        return { text: u.name.split(' ')[0], url: `${BASE_URL}/dashboard/user-profile/${u._id}` };
+        response += `${roleIcon} <b>${name}</b> (${u.role}) ${statusIcon}\n`;
+        return { text: u.name, url: `${BASE_URL}/dashboard/user-profile/${u._id}` };
     });
 
     for (let i = 0; i < buttons.length; i += 2) {
-        if (buttons[i+1]) {
-            keyboardRows.push([buttons[i], buttons[i+1]]);
-        } else {
-            keyboardRows.push([buttons[i]]);
-        }
+         keyboardRows.push(buttons.slice(i, i + 2));
     }
     
     const paginationKeyboard = createPaginationKeyboard('admin_list_users', result.currentPage, result.totalPages, 'all');
