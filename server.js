@@ -75,6 +75,34 @@ startScheduler(bot);
 console.log('Telegram Bot logic has been initialized by the main server.');
 
 
+// Contact form submission route
+app.post('/submit-form', async (req, res) => {
+    try {
+        const { name, email, message } = req.body;
+        
+        if (!name || !email) {
+            return res.status(400).json({ message: 'Name and email are required.' });
+        }
+        
+        // Import notification service
+        const { notifyAdmin } = require('./services/notificationService');
+        
+        // Create notification message
+        const notificationMessage = `🔔 *New Contact Form Submission*\n\n` +
+            `👤 *Name:* ${name}\n` +
+            `📧 *Email:* ${email}\n` +
+            `💬 *Message:* ${message || 'No message provided'}`;
+        
+        // Send notification to admin
+        await notifyAdmin(notificationMessage);
+        
+        res.json({ success: true, message: 'Your request has been sent successfully!' });
+    } catch (error) {
+        console.error('Error processing contact form:', error);
+        res.status(500).json({ message: 'An error occurred while sending your request.' });
+    }
+});
+
 app.use('/', require('./routes/index'));
 app.use('/users', require('./routes/users'));
 app.use('/dashboard', require('./routes/dashboard'));

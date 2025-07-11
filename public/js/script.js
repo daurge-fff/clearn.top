@@ -1,3 +1,49 @@
+// Глобальная функция для копирования в буфер обмена
+function copyToClipboard(text) {
+    if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(text).then(() => {
+            showCopyNotification('Email copied to clipboard!');
+        }).catch(err => {
+            console.error('Failed to copy email: ', err);
+            fallbackCopyTextToClipboard(text);
+        });
+    } else {
+        fallbackCopyTextToClipboard(text);
+    }
+}
+
+// Fallback для старых браузеров
+function fallbackCopyTextToClipboard(text) {
+    const textArea = document.createElement('textarea');
+    textArea.value = text;
+    textArea.style.position = 'fixed';
+    textArea.style.left = '-999999px';
+    textArea.style.top = '-999999px';
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    try {
+        document.execCommand('copy');
+        showCopyNotification('Email copied to clipboard!');
+    } catch (err) {
+        console.error('Fallback: Oops, unable to copy', err);
+    }
+    document.body.removeChild(textArea);
+}
+
+// Показать уведомление о копировании
+function showCopyNotification(message) {
+    const notification = document.createElement('div');
+    notification.textContent = message;
+    notification.style.cssText = 'position: fixed; top: 20px; right: 20px; background: #28a745; color: white; padding: 10px 15px; border-radius: 5px; z-index: 10000; font-size: 14px;';
+    document.body.appendChild(notification);
+    setTimeout(() => {
+        if (document.body.contains(notification)) {
+            document.body.removeChild(notification);
+        }
+    }, 2000);
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     const html = document.documentElement;
     const body = document.body;
@@ -165,6 +211,31 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const isReadyToPay = selectedPaymentSystem && termsCheckbox.checked && identifierInput.value.trim() !== '';
         finalPayButton.disabled = !isReadyToPay;
+        
+        // Disable/enable payment system cards based on email input
+        const paymentSystemCards = paymentModal.querySelectorAll('.payment-system-card');
+        const hasEmail = identifierInput.value.trim() !== '';
+        
+        paymentSystemCards.forEach(card => {
+            if (hasEmail) {
+                card.classList.remove('disabled');
+                card.style.pointerEvents = 'auto';
+                card.style.opacity = '1';
+            } else {
+                card.classList.add('disabled');
+                card.classList.remove('active');
+                card.style.pointerEvents = 'none';
+                card.style.opacity = '0.5';
+            }
+        });
+        
+        // Reset selected payment system if email is cleared
+        if (!hasEmail && selectedPaymentSystem) {
+            selectedPaymentSystem = null;
+            const manualPaymentContainer = document.getElementById('paypal-button-container');
+            if (manualPaymentContainer) manualPaymentContainer.style.display = 'none';
+            if (finalPayButton) finalPayButton.style.display = 'flex';
+        }
     }
 
     function updatePaymentModalPrice() {
@@ -228,9 +299,11 @@ document.addEventListener('DOMContentLoaded', () => {
         systemsContainer.innerHTML = '';
         paymentConfig.availableSystems.forEach(system => {
             const card = document.createElement('div');
-            card.className = 'payment-system-card';
+            card.className = 'payment-system-card disabled';
             card.dataset.system = system.id;
             card.textContent = system.name;
+            card.style.pointerEvents = 'none';
+            card.style.opacity = '0.5';
             systemsContainer.appendChild(card);
         });
         
@@ -368,7 +441,9 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        function renderManualPaymentFlow(system) {
+
+
+    function renderManualPaymentFlow(system) {
             const manualPaymentContainer = document.getElementById('paypal-button-container');
             if (!manualPaymentContainer) return;
         
@@ -377,8 +452,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const amount = document.getElementById('modal-total-price').textContent.split(' ')[0];
             
             const instructions = {
-                paypal: `Please send <strong>${amount} EUR</strong> to our PayPal account: <strong>admin@clearn.top</strong>. After completing the payment, copy the Transaction ID.`,
-                payoneer: `Please send <strong>${amount} EUR</strong> via Payoneer to the email: <strong>admin@clearn.top</strong>. After completing the payment, copy the Transaction ID or reference number.`
+                paypal: `Please send <strong>${amount} EUR</strong> to our PayPal account: <strong><span class="copyable-email" onclick="copyToClipboard('admin@clearn.top')" style="cursor: pointer; text-decoration: underline; color: #007bff;">admin@clearn.top</span></strong> After completing the payment, copy the Transaction ID`,
+                payoneer: `Please send <strong>${amount} EUR</strong> via Payoneer to the email: <strong><span class="copyable-email" onclick="copyToClipboard('admin@clearn.top')" style="cursor: pointer; text-decoration: underline; color: #007bff;">admin@clearn.top</span></strong> After completing the payment, copy the Transaction ID or reference number`
             };
 
             const systemName = system.charAt(0).toUpperCase() + system.slice(1);
