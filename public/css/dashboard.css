@@ -1861,12 +1861,19 @@ body.auth-layout {
   justify-content: center;
 }
 
-.auth-theme-toggle {
-  position: absolute;
-  top: 20px;
-  right: 20px;
-  z-index: 100;
+.theme-toggle-wrapper {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 1000;
+  background: var(--card-bg);
+  border-radius: 12px;
+  padding: 8px 10px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  backdrop-filter: blur(10px);
+  transition: background 0.3s ease;
 }
+
 
 #theme-toggle {
   font-size: 1.3rem;
@@ -2097,3 +2104,4 @@ body.auth-layout {
     transform: translateY(0);
   }
 }
+

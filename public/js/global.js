@@ -20,19 +20,22 @@ document.addEventListener('DOMContentLoaded', () => {
   function setTheme(theme) {
     html.setAttribute('data-theme', theme);
     localStorage.setItem('theme', theme);
-    themeButton.textContent = theme === 'light' ? '🌙' : '☀️';
+    if (themeButton) {
+      themeButton.textContent = theme === 'light' ? '🌙' : '☀️';
+    }
   }
+
+  const saved = localStorage.getItem('theme') || 'light';
+  setTheme(saved);
 
   if (themeButton) {
     themeButton.addEventListener('click', () => {
       const newTheme = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
       setTheme(newTheme);
     });
-
-    const saved = localStorage.getItem('theme') || 'light';
-    setTheme(saved);
   }
 });
+
 
 
 function initializeSidebar() {
@@ -422,7 +425,6 @@ document.addEventListener('DOMContentLoaded', () => {
     APP_STATE.initialized = true;
     
     // Basic UI functions
-    initializeThemeSwitcher();
     initializeSidebar();
     initializePasswordToggles();
     initializeFileUploads();
