@@ -1,85 +1,83 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="light">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Register - Code & Learn</title>
-    <link rel="stylesheet" href="/css/style.css">
-    <link rel="stylesheet" href="/css/dashboard.css">
-    <link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;800&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Register - Code & Learn</title>
+  <link rel="stylesheet" href="/css/dashboard.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;800&family=Roboto:wght@400;700&display=swap" rel="stylesheet" />
 </head>
-<body dir="ltr" class="auth-page-body">
-    <div class="auth-layout">
-        <div class="auth-form-container">
-            <div class="auth-form-wrapper">
-                <a href="/" class="logo" style="display: block; text-align: center; margin-bottom: 30px; font-size: 2rem;">Code & Learn</a>
-                <h1>Create Your Account</h1>
-                <p class="auth-subtitle">Join our community to start your coding journey.</p>
-                
-                <% if ((locals.success_msg && locals.success_msg.length > 0) || (locals.error_msg && locals.error_msg.length > 0) || (locals.error && locals.error.length > 0)) { %>
-                    <div class="flash-messages-inline">
-                        <% if (locals.success_msg && locals.success_msg.length > 0) { %>
-                            <div class="flash-message flash-success"><%= success_msg %></div>
-                        <% } %>
-                        <% if (locals.error_msg && locals.error_msg.length > 0) { %>
-                             <div class="flash-message flash-error"><%= error_msg %></div>
-                        <% } %>
-                        <% if (locals.error && locals.error.length > 0) { %>
-                             <div class="flash-message flash-error"><%= error %></div>
-                        <% } %>
-                    </div>
-                <% } %>
+<body class="auth-layout">
+    <% if ((locals.success_msg && locals.success_msg.length > 0) || (locals.error_msg && locals.error_msg.length > 0) || (locals.error && locals.error.length > 0)) { %>
+        <div class="flash-messages">
+            <% if (locals.success_msg && locals.success_msg.length > 0) { %>
+                <div class="flash-message flash-success"><%= success_msg %></div>
+            <% } %>
+            <% if (locals.error_msg && locals.error_msg.length > 0) { %>
+                 <div class="flash-message flash-error"><%= error_msg %></div>
+            <% } %>
+            <% if (locals.error && locals.error.length > 0) { %>
+                 <div class="flash-message flash-error"><%= error %></div>
+            <% } %>
+        </div>
+    <% } %>
+  <div class="auth-theme-toggle">
+    <button id="theme-toggle" aria-label="Toggle theme">🌙</button>
+  </div>
 
-                <form action="/users/register" method="POST" id="registration-form">
-                    <div class="form-group">
-                        <label for="name">Name</label>
-                        <input type="text" id="name" name="name" required placeholder="Enter your full name" value="<%= typeof name != 'undefined' ? name : '' %>">
-                    </div>
-                    <div class="form-group">
-                        <label for="email">Email</label>
-                        <input type="email" id="email" name="email" required placeholder="Enter your email" value="<%= typeof email != 'undefined' ? email : '' %>">
-                    </div>
-                     <div class="form-group">
-                        <label for="contact">Phone or Telegram, WA (optional)</label>
-                        <input type="text" id="contact" name="contact" placeholder="e.g., @username" value="<%= typeof contact != 'undefined' ? contact : '' %>">
-                    </div>
-                    <div class="form-group">
-                         <label for="password">Password</label>
-                         <div class="password-wrapper">
-                            <input type="password" id="password" name="password" required placeholder=" ">
-                            <button type="button" class="password-toggle" data-tooltip="Show/Hide Password">
-                                <i class="icon-eye"></i>
-                                <i class="icon-eye-off"></i>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                         <label for="password2">Confirm Password</label>
-                        <div class="password-wrapper">
-                            <input type="password" id="password2" name="password2" required placeholder=" ">
-                        </div>
-                    </div>
-                    <button type="submit" class="form-submit-button">Create Account</button>
-                </form>
-                <div class="auth-divider">
-                    <span>or</span>
-                </div>
-                <a href="/users/auth/google" class="google-signin-button">
-                    <img src="https://developers.google.com/identity/images/g-logo.png" alt="Google logo">
-                    <span>Sign up with Google</span>
-                </a>
-                <p class="switch-auth">
-                    Already have an account? <a href="/users/login">Log in</a>
-                </p>
-            </div>
-        </div>
-        <div class="auth-showcase-container">
-            <div class="showcase-content">
-                <h2>"The best way to predict the future is to create it."</h2>
-                <p>— Abraham Lincoln</p>
-            </div>
-        </div>
+  <div class="auth-box animated">
+    <div class="auth-side">
+      <h2>“Every coder starts somewhere.”</h2>
+      <p>— Start your journey with us today</p>
     </div>
-    <script src="/js/global.js"></script>
+
+    <div class="auth-form">
+      <div class="auth-header">
+        <h1 class="fade">Create Account</h1>
+        <p class="auth-subtitle fade">Start learning and building with code</p>
+      </div>
+
+      <form action="/users/register" method="POST" class="form-fields">
+        <div class="form-group floating fade">
+          <input type="text" name="name" id="name" required placeholder=" " value="<%= typeof name != 'undefined' ? name : '' %>" />
+          <label for="name">Full Name</label>
+        </div>
+
+        <div class="form-group floating fade">
+          <input type="email" name="email" id="email" required placeholder=" " value="<%= typeof email != 'undefined' ? email : '' %>" />
+          <label for="email">Email</label>
+        </div>
+
+        <div class="form-group floating fade">
+          <input type="text" name="contact" id="contact" placeholder=" " value="<%= typeof contact != 'undefined' ? contact : '' %>" />
+          <label for="contact">Telegram / WhatsApp (optional)</label>
+        </div>
+
+        <div class="form-group floating fade">
+          <input type="password" name="password" id="password" required placeholder=" " />
+          <label for="password">Password</label>
+        </div>
+
+        <div class="form-group floating fade">
+          <input type="password" name="password2" id="password2" required placeholder=" " />
+          <label for="password2">Confirm Password</label>
+        </div>
+
+        <button type="submit" class="btn btn-primary fade">Create Account</button>
+      </form>
+
+      <div class="auth-divider fade">or</div>
+
+      <a href="/users/auth/google" class="google-signin-button fade">
+        <img src="/images/google.svg" alt="Google logo" width="18" height="18" />
+        <span>Sign in with Google</span>
+      </a>
+
+
+      <p class="switch-auth fade">Already have an account? <a href="/users/login">Login</a></p>
+    </div>
+  </div>
+
+  <script src="/js/global.js"></script>
 </body>
 </html>

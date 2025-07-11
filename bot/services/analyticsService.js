@@ -1,7 +1,7 @@
-const User = require('../models/User');
-const Lesson = require('../models/Lesson');
-const Payment = require('../models/Payment');
-const Grade = require('../models/Grade');
+const User = require('../../models/User');
+const Lesson = require('../../models/Lesson');
+const Payment = require('../../models/Payment');
+const Grade = require('../../models/Grade');
 
 function init(dependencies) {
     // Placeholder for future dependencies, if any

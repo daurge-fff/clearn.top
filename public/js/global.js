@@ -13,24 +13,27 @@ const APP_STATE = {
 // === CORE INITIALIZATION MODULES ===
 // ===================================
 
-function initializeThemeSwitcher() {
-    const themeSwitcher = document.getElementById('theme-switcher');
-    if (!themeSwitcher) return;
-    
-    const html = document.documentElement;
-    function setTheme(theme) {
-        html.setAttribute('data-theme', theme);
-        localStorage.setItem('theme', theme);
-    }
-    
-    themeSwitcher.addEventListener('click', () => {
-        const currentTheme = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-        setTheme(currentTheme);
+document.addEventListener('DOMContentLoaded', () => {
+  const themeButton = document.getElementById('theme-toggle');
+  const html = document.documentElement;
+
+  function setTheme(theme) {
+    html.setAttribute('data-theme', theme);
+    localStorage.setItem('theme', theme);
+    themeButton.textContent = theme === 'light' ? '🌙' : '☀️';
+  }
+
+  if (themeButton) {
+    themeButton.addEventListener('click', () => {
+      const newTheme = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      setTheme(newTheme);
     });
-    
-    const savedTheme = localStorage.getItem('theme') || 'light';
-    setTheme(savedTheme);
-}
+
+    const saved = localStorage.getItem('theme') || 'light';
+    setTheme(saved);
+  }
+});
+
 
 function initializeSidebar() {
     const sidebarToggle = document.getElementById('sidebar-toggle');
