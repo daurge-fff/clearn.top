@@ -65,4 +65,16 @@ router.get('/failed-payment', (req, res) => {
     });
 });
 
+router.get('/faq', (req, res) => {
+    res.render('faq', {
+        layout: false
+    });
+});
+
+router.get('/cookie-policy', (req, res) => {
+    res.render('cookie-policy', {
+        layout: false
+    });
+});
+
 module.exports = router;
