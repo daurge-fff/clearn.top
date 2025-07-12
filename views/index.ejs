@@ -251,34 +251,39 @@
                         <h3 data-translate="gallery_title">Behind the Scenes</h3>
                         <p data-translate="gallery_subtitle">Take a look at our learning environment and teaching moments</p>
                     </div>
-                    <div class="photo-gallery">
+                    <div class="photo-gallery" id="photoGallery">
                         <div class="gallery-main">
-                            <img src="/images/gallery/main-photo.jpg" alt="Teaching moment" class="gallery-main-image" id="galleryMainImage">
+                            <div class="gallery-image-container">
+                                <img src="/images/gallery/main-photo.jpg" alt="Teaching moment" class="gallery-main-image" id="galleryMainImage">
+                            </div>
                             <div class="gallery-overlay">
-                                <button class="gallery-btn prev-btn" id="galleryPrevBtn">
+                                <button class="gallery-btn prev-btn" id="galleryPrevBtn" aria-label="Previous image">
                                     <svg viewBox="0 0 24 24" fill="currentColor">
                                         <path d="M15.41,16.58L10.83,12L15.41,7.41L14,6L8,12L14,18L15.41,16.58Z" />
                                     </svg>
                                 </button>
-                                <button class="gallery-btn next-btn" id="galleryNextBtn">
+                                <button class="gallery-btn next-btn" id="galleryNextBtn" aria-label="Next image">
                                     <svg viewBox="0 0 24 24" fill="currentColor">
                                         <path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z" />
                                     </svg>
                                 </button>
                             </div>
+                            <div class="gallery-progress">
+                                <div class="progress-bar"></div>
+                            </div>
                         </div>
-                        <div class="gallery-thumbnails">
+                        <div class="gallery-thumbnails" id="galleryThumbnails">
                             <div class="thumbnail active" data-src="/images/gallery/main-photo.jpg" data-alt="Teaching moment">
-                                <img src="/images/gallery/main-photo.jpg" alt="Teaching moment">
+                                <img src="/images/gallery/main-photo.jpg" alt="Teaching moment" loading="lazy">
                             </div>
                             <div class="thumbnail" data-src="/images/gallery/lesson-screenshot.jpg" data-alt="Online lesson screenshot">
-                                <img src="/images/gallery/lesson-screenshot.jpg" alt="Online lesson screenshot">
+                                <img src="/images/gallery/lesson-screenshot.jpg" alt="Online lesson screenshot" loading="lazy">
                             </div>
                             <div class="thumbnail" data-src="/images/gallery/student-project.jpg" data-alt="Student project showcase">
-                                <img src="/images/gallery/student-project.jpg" alt="Student project showcase">
+                                <img src="/images/gallery/student-project.jpg" alt="Student project showcase" loading="lazy">
                             </div>
                             <div class="thumbnail" data-src="/images/gallery/coding-setup.jpg" data-alt="Coding workspace">
-                                <img src="/images/gallery/coding-setup.jpg" alt="Coding workspace">
+                                <img src="/images/gallery/coding-setup.jpg" alt="Coding workspace" loading="lazy">
                             </div>
                         </div>
                     </div>
@@ -286,72 +291,7 @@
             </div>
         </section>
         
-        <!-- Principles Section -->
-        <section class="modern-about-section">
-            <div class="container">
-                <div class="about-content-grid">
-                    <div class="about-principles-grid">
-                        <div class="principle-card animate-on-scroll">
-                            <div class="principle-icon">
-                                <svg viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M12,14C16.42,14 20,15.79 20,18V20H4V18C4,15.79 7.58,14 12,14Z" />
-                                </svg>
-                            </div>
-                            <h4 data-translate="about_principle_1">Individual approach to each student</h4>
-                            <p>Every lesson is tailored to your child's unique learning style and pace.</p>
-                        </div>
-                        
-                        <div class="principle-card animate-on-scroll">
-                            <div class="principle-icon">
-                                <svg viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M16.5,9L13.5,12L16.5,15H22V9M9,16.5V22H15L12,13.5L9,16.5M7.5,9H2V15H7.5L10.5,12L7.5,9Z" />
-                                </svg>
-                            </div>
-                            <h4 data-translate="about_principle_2">Learning through creating games and projects</h4>
-                            <p>We build real projects that kids love - games, animations, and interactive apps.</p>
-                        </div>
-                        
-                        <div class="principle-card animate-on-scroll">
-                            <div class="principle-icon">
-                                <svg viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M5,17.59L15.59,7H9V5H19V15H17V8.41L6.41,19L5,17.59Z" />
-                                </svg>
-                            </div>
-                            <h4 data-translate="about_principle_3">Developing skills for the future</h4>
-                            <p>Teaching not just coding, but problem-solving and creative thinking skills.</p>
-                        </div>
-                        
-                        <div class="principle-card animate-on-scroll">
-                            <div class="principle-icon">
-                                <svg viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M12,2C13.1,2 14,2.9 14,4C14,5.1 13.1,6 12,6C10.9,6 10,5.1 10,4C10,2.9 10.9,2 12,2M21,9V7L15,1L13.5,2.5L16.17,5.33L10.58,10.92L6.5,6.84L2,11.34L3.41,12.75L6.5,9.66L10.58,13.74L17.5,6.81L20.17,9.5L21,9M7.5,12A2.5,2.5 0 0,0 5,14.5A2.5,2.5 0 0,0 7.5,17A2.5,2.5 0 0,0 10,14.5A2.5,2.5 0 0,0 7.5,12M16.5,12A2.5,2.5 0 0,0 14,14.5A2.5,2.5 0 0,0 16.5,17A2.5,2.5 0 0,0 19,14.5A2.5,2.5 0 0,0 16.5,12Z" />
-                                </svg>
-                            </div>
-                            <h4>Fun & Interactive Learning</h4>
-                            <p>Making programming enjoyable with gamification and interactive challenges.</p>
-                        </div>
-                        
-                        <div class="principle-card animate-on-scroll">
-                            <div class="principle-icon">
-                                <svg viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2M12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20A8,8 0 0,0 20,12A8,8 0 0,0 12,4M11,16.5L6.5,12L7.91,10.59L11,13.67L16.59,8.09L18,9.5L11,16.5Z" />
-                                </svg>
-                            </div>
-                            <h4>Proven Results</h4>
-                            <p>Track record of helping students excel in programming competitions and projects.</p>
-                        </div>
-                        
-                        <div class="principle-card animate-on-scroll">
-                            <div class="principle-icon">
-                                <svg viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M17,12C17,14.42 15.28,16.44 13,16.9V21H11V16.9C8.72,16.44 7,14.42 7,12C7,9.58 8.72,7.56 11,7.1V2H13V7.1C15.28,7.56 17,9.58 17,12M12,9A3,3 0 0,0 9,12A3,3 0 0,0 12,15A3,3 0 0,0 15,12A3,3 0 0,0 12,9Z" />
-                                </svg>
-                            </div>
-                            <h4>24/7 Support</h4>
-                            <p>Always available to help with questions and provide guidance between lessons.</p>
-                        </div>
-                    </div>
-                </div>
+
                 
                 <div class="about-cta-section animate-on-scroll">
                     <div class="cta-content">

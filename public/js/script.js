@@ -56,6 +56,133 @@ document.addEventListener('DOMContentLoaded', () => {
     const sunIcon = 'https://emojicdn.elk.sh/☀️';
     const moonIcon = 'https://emojicdn.elk.sh/🌙';
 
+    // Modern Gallery Class
+class ModernGallery {
+    constructor() {
+        this.currentIndex = 0;
+        this.images = [];
+        this.autoplayInterval = null;
+        this.touchStartX = 0;
+        this.touchEndX = 0;
+
+        this.init();
+    }
+
+    init() {
+        // Get all images from thumbnails
+        const thumbnails = document.querySelectorAll('.thumbnail img');
+        this.images = Array.from(thumbnails).map(thumb => thumb.src);
+
+        if (this.images.length === 0) return;
+
+        // Setup main image
+        const mainImage = document.querySelector('.gallery-main-image');
+        if (mainImage) {
+            mainImage.src = this.images[0];
+            mainImage.classList.add('active');
+        }
+
+        // Setup thumbnails
+        thumbnails.forEach((thumb, index) => {
+            thumb.parentElement.addEventListener('click', () => this.showImage(index));
+            if (index === 0) thumb.parentElement.classList.add('active');
+        });
+
+        // Setup navigation buttons
+        const prevBtn = document.querySelector('.gallery-btn.prev');
+        const nextBtn = document.querySelector('.gallery-btn.next');
+        if (prevBtn) prevBtn.addEventListener('click', () => this.prevImage());
+        if (nextBtn) nextBtn.addEventListener('click', () => this.nextImage());
+
+        // Setup touch events for swipe
+        const galleryMain = document.querySelector('.gallery-main');
+        if (galleryMain) {
+            galleryMain.addEventListener('touchstart', (e) => this.handleTouchStart(e));
+            galleryMain.addEventListener('touchend', (e) => this.handleTouchEnd(e));
+        }
+
+        // Start autoplay
+        this.startAutoplay();
+    }
+
+    showImage(index) {
+        if (index < 0 || index >= this.images.length) return;
+
+        const mainImage = document.querySelector('.gallery-main-image');
+        const thumbnails = document.querySelectorAll('.thumbnail');
+
+        // Remove active class from current thumbnail
+        thumbnails[this.currentIndex].classList.remove('active');
+
+        // Add fade class to main image
+        mainImage.classList.remove('active');
+        mainImage.classList.add('fade');
+
+        // Update image after small delay for transition
+        setTimeout(() => {
+            mainImage.src = this.images[index];
+            mainImage.classList.remove('fade');
+            mainImage.classList.add('active');
+        }, 300);
+
+        // Add active class to new thumbnail
+        thumbnails[index].classList.add('active');
+
+        this.currentIndex = index;
+    }
+
+    nextImage() {
+        const nextIndex = (this.currentIndex + 1) % this.images.length;
+        this.showImage(nextIndex);
+    }
+
+    prevImage() {
+        const prevIndex = (this.currentIndex - 1 + this.images.length) % this.images.length;
+        this.showImage(prevIndex);
+    }
+
+    handleTouchStart(e) {
+        this.touchStartX = e.touches[0].clientX;
+    }
+
+    handleTouchEnd(e) {
+        this.touchEndX = e.changedTouches[0].clientX;
+        const diff = this.touchStartX - this.touchEndX;
+
+        // If the swipe is significant enough (more than 50px)
+        if (Math.abs(diff) > 50) {
+            if (diff > 0) {
+                // Swipe left, show next image
+                this.nextImage();
+            } else {
+                // Swipe right, show previous image
+                this.prevImage();
+            }
+        }
+    }
+
+    startAutoplay() {
+        this.autoplayInterval = setInterval(() => this.nextImage(), 5000);
+
+        // Pause autoplay on hover
+        const gallery = document.querySelector('.photo-gallery');
+        if (gallery) {
+            gallery.addEventListener('mouseenter', () => this.stopAutoplay());
+            gallery.addEventListener('mouseleave', () => this.startAutoplay());
+        }
+    }
+
+    stopAutoplay() {
+        if (this.autoplayInterval) {
+            clearInterval(this.autoplayInterval);
+            this.autoplayInterval = null;
+        }
+    }
+}
+
+// Initialize Modern Gallery
+new ModernGallery();
+
     const paymentConfig = {
         currency: 'EUR',
         basePrices: { '25': 10, '50': 20 },
