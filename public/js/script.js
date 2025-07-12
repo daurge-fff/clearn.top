@@ -101,8 +101,8 @@ class ModernGallery {
             galleryMain.addEventListener('touchend', (e) => this.handleTouchEnd(e));
         }
 
-        // Start autoplay
-        this.startAutoplay();
+        // Start autoplay - DISABLED
+        // this.startAutoplay();
     }
 
     showImage(index) {
