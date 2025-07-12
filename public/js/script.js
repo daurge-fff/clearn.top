@@ -89,8 +89,8 @@ class ModernGallery {
         });
 
         // Setup navigation buttons
-        const prevBtn = document.querySelector('.gallery-btn.prev');
-        const nextBtn = document.querySelector('.gallery-btn.next');
+        const prevBtn = document.querySelector('.gallery-btn.prev-btn');
+        const nextBtn = document.querySelector('.gallery-btn.next-btn');
         if (prevBtn) prevBtn.addEventListener('click', () => this.prevImage());
         if (nextBtn) nextBtn.addEventListener('click', () => this.nextImage());
 
