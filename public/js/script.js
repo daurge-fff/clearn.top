@@ -52,7 +52,6 @@ function scrollToContact() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    
     const html = document.documentElement;
     const body = document.body;
     const sunIcon = 'https://emojicdn.elk.sh/☀️';
@@ -520,4 +519,92 @@ document.addEventListener('DOMContentLoaded', () => {
         paymentModal.addEventListener('click', (e) => { if (e.target === paymentModal) closePaymentModal(); });
         window.addEventListener('keydown', (e) => { if (e.key === 'Escape' && paymentModal.classList.contains('is-open')) closePaymentModal(); });
     }
+
+    const gallery = document.getElementById('new-photo-gallery');
+    if (gallery) {
+        const mainImage = document.getElementById('gallery-main-image');
+        const thumbnails = Array.from(gallery.querySelectorAll('.thumbnail-item'));
+        const prevBtn = gallery.querySelector('.gallery-nav-btn.prev');
+        const nextBtn = gallery.querySelector('.gallery-nav-btn.next');
+
+        const lightbox = document.getElementById('gallery-lightbox');
+        const lightboxImage = document.getElementById('lightbox-image');
+        const lightboxCloseBtn = lightbox.querySelector('.lightbox-close');
+        const lightboxPrevBtn = lightbox.querySelector('.lightbox-prev');
+        const lightboxNextBtn = lightbox.querySelector('.lightbox-next');
+        
+        let currentIndex = 0;
+
+        function updateMainImage(index) {
+            if (index < 0 || index >= thumbnails.length) return;
+            mainImage.classList.add('fade-out');
+            setTimeout(() => {
+                mainImage.src = thumbnails[index].href;
+                mainImage.alt = thumbnails[index].querySelector('img').alt;
+                thumbnails.forEach((thumb, i) => thumb.classList.toggle('active', i === index));
+                mainImage.onload = () => mainImage.classList.remove('fade-out');
+            }, 200);
+            currentIndex = index;
+        }
+
+        function openLightbox(index) {
+            currentIndex = index;
+            lightboxImage.src = thumbnails[currentIndex].href;
+            lightbox.classList.add('is-open');
+            body.classList.add('modal-open-scroll-lock');
+        }
+
+        function closeLightbox() {
+            lightbox.classList.remove('is-open');
+            body.classList.remove('modal-open-scroll-lock');
+        }
+
+        function showNextImage() {
+            const newIndex = (currentIndex + 1) % thumbnails.length;
+            updateMainImage(newIndex);
+            if (lightbox.classList.contains('is-open')) {
+                lightboxImage.src = thumbnails[newIndex].href;
+            }
+        }
+        
+        function showPrevImage() {
+            const newIndex = (currentIndex - 1 + thumbnails.length) % thumbnails.length;
+            updateMainImage(newIndex);
+            if (lightbox.classList.contains('is-open')) {
+                lightboxImage.src = thumbnails[newIndex].href;
+            }
+        }
+
+        thumbnails.forEach((thumbnail, index) => {
+            thumbnail.addEventListener('click', (e) => {
+                e.preventDefault();
+                updateMainImage(index);
+            });
+        });
+
+        prevBtn.addEventListener('click', showPrevImage);
+        nextBtn.addEventListener('click', showNextImage);
+        
+        mainImage.addEventListener('click', () => {
+            openLightbox(currentIndex);
+        });
+
+        lightboxCloseBtn.addEventListener('click', closeLightbox);
+        lightbox.addEventListener('click', (e) => {
+            if (e.target === lightbox) closeLightbox();
+        });
+        lightboxPrevBtn.addEventListener('click', showPrevImage);
+        lightboxNextBtn.addEventListener('click', showNextImage);
+
+        document.addEventListener('keydown', (e) => {
+            if (!lightbox.classList.contains('is-open')) return;
+            if (e.key === 'Escape') closeLightbox();
+            if (e.key === 'ArrowLeft') showPrevImage();
+            if (e.key === 'ArrowRight') showNextImage();
+        });
+
+        updateMainImage(0);
+    }
 });
+
+

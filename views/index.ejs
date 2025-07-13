@@ -235,26 +235,27 @@
                             <h2 class="section-title" data-translate="gallery_title">Behind the Scenes</h2>
                             <p class="section-subtitle" data-translate="gallery_subtitle">Glimpses from our coding adventures</p>
                         </div>
-                        <div class="photo-gallery animate-on-scroll" id="photoGallery">
-                            <div class="gallery-main">
-                                <div class="gallery-image-container">
-                                    <img src="/images/gallery/main-photo.jpg" alt="Teaching moment" class="gallery-main-image" id="galleryMainImage">
-                                </div>
-                                <div class="gallery-overlay">
-                                    <button class="gallery-btn prev-btn" id="galleryPrevBtn" aria-label="Previous image" data-translate-aria="gallery_prev_alt">
-                                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M15.41,16.58L10.83,12L15.41,7.41L14,6L8,12L14,18L15.41,16.58Z" /></svg>
-                                    </button>
-                                    <button class="gallery-btn next-btn" id="galleryNextBtn" aria-label="Next image" data-translate-aria="gallery_next_alt">
-                                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z" /></svg>
-                                    </button>
-                                </div>
-                                <div class="gallery-progress"><div class="progress-bar"></div></div>
+                        <div class="gallery-container animate-on-scroll" id="new-photo-gallery">
+                            <div class="gallery-main-view">
+                                <img src="/images/gallery/main-photo.jpg" alt="Gallery image 1" id="gallery-main-image">
+                                <button class="gallery-nav-btn prev" aria-label="Previous image"><</button>
+                                <button class="gallery-nav-btn next" aria-label="Next image">></button>
                             </div>
-                            <div class="gallery-thumbnails" id="galleryThumbnails">
-                                <div class="thumbnail active" data-src="/images/gallery/main-photo.jpg"><img src="/images/gallery/main-photo.jpg" alt="Teaching moment" loading="lazy"></div>
-                                <div class="thumbnail" data-src="/images/gallery/lesson-screenshot.jpg"><img src="/images/gallery/lesson-screenshot.jpg" alt="Online lesson screenshot" loading="lazy"></div>
-                                <div class="thumbnail" data-src="/images/gallery/student-project.jpg"><img src="/images/gallery/student-project.jpg" alt="Student project showcase" loading="lazy"></div>
-                                <div class="thumbnail" data-src="/images/gallery/coding-setup.jpg"><img src="/images/gallery/coding-setup.jpg" alt="Coding workspace" loading="lazy"></div>
+                            <div class="gallery-thumbnails-wrapper">
+                                <div class="gallery-thumbnails">
+                                    <a href="/images/gallery/main-photo.jpg" class="thumbnail-item active" data-index="0">
+                                        <img src="/images/gallery/main-photo.jpg" alt="Thumbnail 1">
+                                    </a>
+                                    <a href="/images/gallery/lesson-screenshot.jpg" class="thumbnail-item" data-index="1">
+                                        <img src="/images/gallery/lesson-screenshot.jpg" alt="Thumbnail 2">
+                                    </a>
+                                    <a href="/images/gallery/student-project.jpg" class="thumbnail-item" data-index="2">
+                                        <img src="/images/gallery/student-project.jpg" alt="Thumbnail 3">
+                                    </a>
+                                    <a href="/images/gallery/coding-setup.jpg" class="thumbnail-item" data-index="3">
+                                        <img src="/images/gallery/coding-setup.jpg" alt="Thumbnail 4">
+                                    </a>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -470,5 +471,16 @@
     
     <script src="/js/translations.js?v=<%= Date.now() %>"></script>
     <script src="/js/script.js?v=<%= Date.now() %>"></script>
+
+    <!-- === GALLERY LIGHTBOX MODAL === -->
+    <div id="gallery-lightbox" class="modal">
+        <div class="lightbox-content">
+            <img src="" alt="Full size gallery image" id="lightbox-image">
+            <button class="lightbox-btn lightbox-close">×</button>
+            <button class="lightbox-btn lightbox-prev"><</button>
+            <button class="lightbox-btn lightbox-next">></button>
+        </div>
+    </div>
+
 </body>
 </html>
