@@ -24,7 +24,7 @@
     <link rel="manifest" href="/images/favicon/site.webmanifest">
     <link rel="icon" href="/images/favicon/favicon.ico" type="image/x-icon">
     <link rel="shortcut icon" href="/images/favicon/favicon.ico" type="image/x-icon">
-    <link rel="stylesheet" href="/css/style.css?v=1.12"> 
+    <link rel="stylesheet" href="/css/style.css?v=1.13"> 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;800&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
@@ -76,9 +76,9 @@
             <div class="container">
                 <h2 class="section-title animate-on-scroll" data-translate="why_us_title">Why Us</h2>
                 <div class="why-us-grid">
-                    <div class="why-us-card animate-on-scroll"><h3 data-translate="why_us_1_h">Individual Approach</h3><p data-translate="why_us_1_p">Each lesson is tailored to the student's pace, interests, and level.</p></div>
-                    <div class="why-us-card animate-on-scroll"><h3 data-translate="why_us_2_h">Game-Based Learning</h3><p data-translate="why_us_2_p">We learn through creating games, animations, and real projects.</p></div>
-                    <div class="why-us-card animate-on-scroll"><h3 data-translate="why_us_3_h">Future-Ready Skills</h3><p data-translate="why_us_3_p">We teach not just coding, but also problem-solving.</p></div>
+                    <div class="why-us-card animate-on-scroll" data-modal-index="0"><h3 data-translate="why_us_1_h">Individual Approach</h3><p data-translate="why_us_1_p">Each lesson is tailored to the student's pace, interests, and level.</p></div>
+                    <div class="why-us-card animate-on-scroll" data-modal-index="1"><h3 data-translate="why_us_2_h">Game-Based Learning</h3><p data-translate="why_us_2_p">We learn through creating games, animations, and real projects.</p></div>
+                    <div class="why-us-card animate-on-scroll" data-modal-index="2"><h3 data-translate="why_us_3_h">Future-Ready Skills</h3><p data-translate="why_us_3_p">We teach not just coding, but also problem-solving.</p></div>
                 </div>
             </div>
         </section>
@@ -105,13 +105,13 @@
                 <div class="tariffs-grid">
                     <div class="tariff-card animate-on-scroll">
                         <h3 data-translate="tariff_25_h">25 Minute Lesson</h3>
-                        <p class="tariff-price">10 EUR</p>
+                        <p class="tariff-price" data-translate="tariff_price_1">10 EUR</p>
                         <p class="tariff-description" data-translate="tariff_25_p">Ideal for the youngest (5-7 years) and for maintaining concentration.</p>
                         <button class="buy-button" data-duration="25" data-translate="tariff_button">Select</button>
                     </div>
                     <div class="tariff-card animate-on-scroll">
                         <h3 data-translate="tariff_50_h">50 Minute Lesson</h3>
-                        <p class="tariff-price">20 EUR</p>
+                        <p class="tariff-price" data-translate="tariff_price_2">20 EUR</p>
                         <p class="tariff-description" data-translate="tariff_50_p">Standard format for a deep dive into topics for children aged 8 and up.</p>
                         <button class="buy-button" data-duration="50" data-translate="tariff_button">Select</button>
                     </div>
@@ -141,26 +141,26 @@
                 </div>
                 
                 <div class="about-profile-section">
-                    <div class="about-profile-card animate-on-scroll">
+                    <div class="about-profile-card animate-on-scroll profile-badge">
                         <div class="profile-image-wrapper">
                             <img src="/images/german_photo.jpg" alt="German Vitiaz" class="profile-image">
                         </div>
                         
                         <div class="profile-info">
-                            <h3>Programming Mentor</h3>
-                            <p>5+ years of teaching experience</p>
+                            <h3 data-translate="about_mentor_title">Programming Mentor</h3>
+                            <p data-translate="about_mentor_experience">5+ years of teaching experience</p>
                             <div class="profile-stats">
                                 <div class="stat-item">
                                     <div class="stat-number">200+</div>
-                                    <div class="stat-label">Students Taught</div>
+                                    <div class="stat-label" data-translate="about_stat_students">Students Taught</div>
                                 </div>
                                 <div class="stat-item">
                                     <div class="stat-number">15+</div>
-                                    <div class="stat-label">Programming Languages</div>
+                                    <div class="stat-label" data-translate="about_stat_languages">Programming Languages</div>
                                 </div>
                                 <div class="stat-item">
                                     <div class="stat-number">98%</div>
-                                    <div class="stat-label">Success Rate</div>
+                                    <div class="stat-label" data-translate="about_stat_rate">Success Rate</div>
                                 </div>
                             </div>
                         </div>
@@ -172,8 +172,8 @@
         <section class="principles-section">
         <div class="container">
             <div class="section-header">
-                <h2 class="section-title animate-on-scroll">Why Choose Our Approach</h2>
-                <p class="section-subtitle animate-on-scroll">Our proven methodology ensures effective learning</p>
+                <h2 class="section-title animate-on-scroll" data-translate="principles_title">Why Choose Our Approach</h2>
+                <p class="section-subtitle animate-on-scroll" data-translate="principles_subtitle">Our proven methodology ensures effective learning</p>
             </div>
             <div class="principles-grid">
                     <div class="principle-card animate-on-scroll">
@@ -181,7 +181,7 @@
                             <img src="/images/principle-individual.svg" alt="Individual Approach">
                         </div>
                         <h4 data-translate="about_principle_1">Individual approach to each student</h4>
-                        <p>Every lesson is tailored to your child's unique learning style and pace.</p>
+                        <p data-translate="principle_1_desc">Every lesson is tailored to your child's unique learning style and pace.</p>
                     </div>
                     
                     <div class="principle-card animate-on-scroll">
@@ -189,7 +189,7 @@
                             <img src="/images/principle-gaming.svg" alt="Game-based learning">
                         </div>
                         <h4 data-translate="about_principle_2">Learning through creating games and projects</h4>
-                        <p>We build real projects that kids love - games, animations, and interactive apps.</p>
+                        <p data-translate="principle_2_desc">We build real projects that kids love - games, animations, and interactive apps.</p>
                     </div>
                     
                     <div class="principle-card animate-on-scroll">
@@ -197,31 +197,31 @@
                            <img src="/images/principle-skills.svg" alt="Skills for the future">
                         </div>
                         <h4 data-translate="about_principle_3">Developing skills for the future</h4>
-                        <p>Teaching not just coding, but problem-solving and creative thinking skills.</p>
+                        <p data-translate="principle_3_desc">Teaching not just coding, but problem-solving and creative thinking skills.</p>
                     </div>
                     
                     <div class="principle-card animate-on-scroll">
                         <div class="principle-icon">
                             <img src="/images/principle-fun.svg" alt="Fun & Interactive Learning">
                         </div>
-                        <h4>Fun & Interactive Learning</h4>
-                        <p>Making programming enjoyable with gamification and interactive challenges.</p>
+                        <h4 data-translate="principle_4_title">Fun & Interactive Learning</h4>
+                        <p data-translate="principle_4_desc">Making programming enjoyable with gamification and interactive challenges.</p>
                     </div>
                     
                     <div class="principle-card animate-on-scroll">
                         <div class="principle-icon">
                             <img src="/images/principle-results.svg" alt="Proven Results">
                         </div>
-                        <h4>Proven Results</h4>
-                        <p>Track record of helping students excel in programming competitions and projects.</p>
+                        <h4 data-translate="principle_5_title">Proven Results</h4>
+                        <p data-translate="principle_5_desc">Track record of helping students excel in programming competitions and projects.</p>
                     </div>
                     
                     <div class="principle-card animate-on-scroll">
                         <div class="principle-icon">
                             <img src="/images/principle-support.svg" alt="24/7 Support">
                         </div>
-                        <h4>24/7 Support</h4>
-                        <p>Always available to help with questions and provide guidance between lessons.</p>
+                        <h4 data-translate="principle_6_title">24/7 Support</h4>
+                        <p data-translate="principle_6_desc">Always available to help with questions and provide guidance between lessons.</p>
                     </div>
                 </div>
             </div>
@@ -230,58 +230,40 @@
         <section class="modern-about-section">
             <div class="container">
                 <section class="photo-gallery-section">
-                <div class="container">
-                    <div class="section-header animate-on-scroll">
-                        <h2 class="section-title" data-translate="gallery_title">Behind the Scenes</h2>
-                        <p class="section-subtitle" data-translate="gallery_subtitle">Glimpses from our coding adventures</p>
-                    </div>
-                    <div class="photo-gallery animate-on-scroll" id="photoGallery">
-                    <div class="photo-gallery" id="photoGallery">
-                        <div class="gallery-main">
-                            <div class="gallery-image-container">
-                                <img src="/images/gallery/main-photo.jpg" alt="Teaching moment" class="gallery-main-image" id="galleryMainImage">
-                            </div>
-                            <div class="gallery-overlay">
-                                <button class="gallery-btn prev-btn" id="galleryPrevBtn" aria-label="Previous image">
-                                    <svg viewBox="0 0 24 24" fill="currentColor">
-                                        <path d="M15.41,16.58L10.83,12L15.41,7.41L14,6L8,12L14,18L15.41,16.58Z" />
-                                    </svg>
-                                </button>
-                                <button class="gallery-btn next-btn" id="galleryNextBtn" aria-label="Next image">
-                                    <svg viewBox="0 0 24 24" fill="currentColor">
-                                        <path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z" />
-                                    </svg>
-                                </button>
-                            </div>
-                            <div class="gallery-progress">
-                                <div class="progress-bar"></div>
-                            </div>
+                    <div class="container">
+                        <div class="section-header animate-on-scroll">
+                            <h2 class="section-title" data-translate="gallery_title">Behind the Scenes</h2>
+                            <p class="section-subtitle" data-translate="gallery_subtitle">Glimpses from our coding adventures</p>
                         </div>
-                        <div class="gallery-thumbnails" id="galleryThumbnails">
-                            <div class="thumbnail active" data-src="/images/gallery/main-photo.jpg" data-alt="Teaching moment">
-                                <img src="/images/gallery/main-photo.jpg" alt="Teaching moment" loading="lazy">
+                        <div class="photo-gallery animate-on-scroll" id="photoGallery">
+                            <div class="gallery-main">
+                                <div class="gallery-image-container">
+                                    <img src="/images/gallery/main-photo.jpg" alt="Teaching moment" class="gallery-main-image" id="galleryMainImage">
+                                </div>
+                                <div class="gallery-overlay">
+                                    <button class="gallery-btn prev-btn" id="galleryPrevBtn" aria-label="Previous image" data-translate-aria="gallery_prev_alt">
+                                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M15.41,16.58L10.83,12L15.41,7.41L14,6L8,12L14,18L15.41,16.58Z" /></svg>
+                                    </button>
+                                    <button class="gallery-btn next-btn" id="galleryNextBtn" aria-label="Next image" data-translate-aria="gallery_next_alt">
+                                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z" /></svg>
+                                    </button>
+                                </div>
+                                <div class="gallery-progress"><div class="progress-bar"></div></div>
                             </div>
-                            <div class="thumbnail" data-src="/images/gallery/lesson-screenshot.jpg" data-alt="Online lesson screenshot">
-                                <img src="/images/gallery/lesson-screenshot.jpg" alt="Online lesson screenshot" loading="lazy">
-                            </div>
-                            <div class="thumbnail" data-src="/images/gallery/student-project.jpg" data-alt="Student project showcase">
-                                <img src="/images/gallery/student-project.jpg" alt="Student project showcase" loading="lazy">
-                            </div>
-                            <div class="thumbnail" data-src="/images/gallery/coding-setup.jpg" data-alt="Coding workspace">
-                                <img src="/images/gallery/coding-setup.jpg" alt="Coding workspace" loading="lazy">
+                            <div class="gallery-thumbnails" id="galleryThumbnails">
+                                <div class="thumbnail active" data-src="/images/gallery/main-photo.jpg"><img src="/images/gallery/main-photo.jpg" alt="Teaching moment" loading="lazy"></div>
+                                <div class="thumbnail" data-src="/images/gallery/lesson-screenshot.jpg"><img src="/images/gallery/lesson-screenshot.jpg" alt="Online lesson screenshot" loading="lazy"></div>
+                                <div class="thumbnail" data-src="/images/gallery/student-project.jpg"><img src="/images/gallery/student-project.jpg" alt="Student project showcase" loading="lazy"></div>
+                                <div class="thumbnail" data-src="/images/gallery/coding-setup.jpg"><img src="/images/gallery/coding-setup.jpg" alt="Coding workspace" loading="lazy"></div>
                             </div>
                         </div>
                     </div>
-                </div>
-            </div>
-        </section>
-        
-
+                </section>
                 
                 <div class="about-cta-section animate-on-scroll">
                     <div class="section-header">
-                        <h2 class="section-title">Ready to Start Your Coding Journey?</h2>
-                        <p class="section-subtitle">Let's discuss how we can help your child discover the amazing world of programming!</p>
+                        <h2 class="section-title" data-translate="cta_title">Ready to Start Your Coding Journey?</h2>
+                        <p class="section-subtitle" data-translate="cta_subtitle">Let's discuss how we can help your child discover the amazing world of programming!</p>
                     </div>
                     <div class="cta-buttons">
                         <a href="https://t.me/daurge" target="_blank" class="modern-cta-btn primary">
@@ -291,7 +273,7 @@
                             </div>
                         </a>
                         <a href="mailto:admin@clearn.top" class="modern-cta-btn secondary">
-                            <span class="btn-text">Send Email</span>
+                            <span class="btn-text" data-translate="cta_email">Send Email</span>
                             <div class="btn-icon">
                                 <svg class="svg-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M20,4H4A2,2,0,0,0,2,6V18a2,2,0,0,0,2,2H20a2,2,0,0,0,2-2V6A2,2,0,0,0,20,4Zm0,2-8,5-8-5Z"/><path d="M4,18V7.25l8,5,8-5V18Z"/></svg>
                             </div>
@@ -305,7 +287,7 @@
             <div class="container">
                 <div class="section-header">
                     <h2 class="section-title" data-translate="form_title">Have Questions?</h2>
-                    <p class="section-subtitle" data-translate="form_p">Ready to start your coding journey? Let's connect and discuss how we can help you achieve your goals.</p>
+                    <p class="section-subtitle" data-translate="form_subtitle">Ready to start your coding journey? Let's connect and discuss how we can help you achieve your goals.</p>
                 </div>
                 
                 <div class="contact-grid">
@@ -314,7 +296,7 @@
                             <div class="card-icon">
                                 <img src="/images/icon-send-request.svg" alt="Send Request">
                             </div>
-                            <h3 data-translate="form_button">Send Message</h3>
+                            <h3 data-translate="form_send_message">Send Message</h3>
                         </div>
                         <form id="feedback-form" class="modern-form">
                             <div class="input-group">
@@ -338,13 +320,8 @@
                                     <div class="input-highlight"></div>
                                 </div>
                             </div>
-                            <button type="submit" class="modern-submit-btn">
-                                <span class="btn-text" data-translate="form_button">Send Message</span>
-                                <div class="btn-icon">
-                                    <svg viewBox="0 0 24 24" fill="currentColor">
-                                        <path d="M2,21L23,12L2,3V10L17,12L2,14V21Z" />
-                                    </svg>
-                                </div>
+                            <button type="submit" class="modern-submit-btn" data-translate="form_button">
+                                Send Message
                             </button>
                             <p id="form-status" class="form-status"></p>
                         </form>
@@ -352,30 +329,24 @@
                     
                     <div class="contact-info-cards">
                         <a href="mailto:admin@clearn.top" class="info-card email-card">
-                            <div class="card-icon">
-                                <img src="/images/icon-email.svg" alt="Email">
-                            </div>
-                            <h4>Email</h4>
+                            <div class="card-icon"><img src="/images/icon-email.svg" alt="Email"></div>
+                            <h4 data-translate="contact_email_title">Email</h4>
                             <p>admin@clearn.top</p>
-                            <span class="card-action">Send Email →</span>
+                            <span class="card-action" data-translate="contact_email_action">Send Email →</span>
                         </a>
                         
                         <a href="https://t.me/daurge" target="_blank" class="info-card telegram-card">
-                            <div class="card-icon">
-                                 <img src="/images/icon-telegram.svg" alt="Telegram">
-                            </div>
-                            <h4>Telegram</h4>
+                            <div class="card-icon"><img src="/images/icon-telegram.svg" alt="Telegram"></div>
+                            <h4 data-translate="contact_telegram_title">Telegram</h4>
                             <p>@daurge</p>
-                            <span class="card-action">Open Chat →</span>
+                            <span class="card-action" data-translate="contact_telegram_action">Open Chat →</span>
                         </a>
                         
                         <a href="tel:+447597730403" class="info-card phone-card">
-                            <div class="card-icon">
-                                <img src="/images/icon-phone.svg" alt="Phone">
-                            </div>
-                            <h4>Phone</h4>
+                            <div class="card-icon"><img src="/images/icon-phone.svg" alt="Phone"></div>
+                            <h4 data-translate="contact_phone_title">Phone</h4>
                             <p>+44 7597 730 403</p>
-                            <span class="card-action">Call Now →</span>
+                            <span class="card-action" data-translate="contact_phone_action">Call Now →</span>
                         </a>
                     </div>
                 </div>
@@ -390,89 +361,42 @@
                 <div class="footer-main">
                     <div class="footer-brand">
                         <div class="footer-logo">Code & Learn</div>
-                        <p class="footer-tagline">Unlock Your Coding Potential</p>
-                        <p class="footer-description">Personalized online programming lessons designed specifically for children and teens. Learn to code with expert instructors in a fun, interactive environment.</p>
-                        
+                        <p class="footer-tagline" data-translate="footer_tagline">Unlock Your Coding Potential</p>
+                        <p class="footer-description" data-translate="footer_description">Personalized online programming lessons designed specifically for children and teens. Learn to code with expert instructors in a fun, interactive environment.</p>
                         <div class="social-section">
-                            <h5 class="social-title">Connect With Us</h5>
+                            <h5 class="social-title" data-translate="social_title">Connect With Us</h5>
                             <div class="social-links">
-                                <a href="https://t.me/daurge" target="_blank" class="social-link" title="Telegram">
-                                    <svg viewBox="0 0 24 24" fill="currentColor">
-                                        <path d="M9.78,18.65L10.06,18.65L10.15,18.64C13.64,17.33 15.64,13.69 14.33,10.2C13.02,6.71 9.38,4.71 5.89,6.02C2.4,7.33 0.4,10.97 1.71,14.46C2.54,16.5 4.42,17.97 6.61,18.5L7.21,19.29C7.48,19.67 7.81,19.99 8.19,20.22C8.86,20.66 9.6,20.84 10.33,20.79L9.78,18.65M7.79,17.15A8.16,8.16 0 0,1 6.5,16.87C4.85,16.5 3.5,15.27 2.84,13.65C1.79,10.89 3.39,7.91 6.15,6.86C8.91,5.81 11.89,7.41 12.94,10.17C13.99,12.93 12.39,15.91 9.63,16.96L9.78,18.65Z" />
-                                    </svg>
-                                </a>
-                                <a href="mailto:admin@clearn.top" class="social-link" title="Email">
-                                    <svg viewBox="0 0 24 24" fill="currentColor">
-                                        <path d="M20,8L12,13L4,8V6L12,11L20,6M20,4H4C2.89,4 2,4.89 2,6V18A2,2 0 0,0 4,20H20A2,2 0 0,0 22,18V6C22,4.89 21.1,4 20,4Z" />
-                                    </svg>
-                                </a>
-                                <a href="tel:+447597730403" class="social-link" title="Phone">
-                                    <svg viewBox="0 0 24 24" fill="currentColor">
-                                        <path d="M6.62,10.79C8.06,13.62 10.38,15.94 13.21,17.38L15.41,15.18C15.69,14.9 16.08,14.82 16.43,14.93C17.55,15.3 18.75,15.5 20,15.5A1,1 0 0,1 21,16.5V20A1,1 0 0,1 20,21A17,17 0 0,1 3,4A1,1 0 0,1 4,3H7.5A1,1 0 0,1 8.5,4C8.5,5.25 8.7,6.45 9.07,7.57C9.18,7.92 9.1,8.31 8.82,8.59L6.62,10.79Z" />
-                                    </svg>
-                                </a>
-                                <a href="https://github.com" target="_blank" class="social-link" title="GitHub">
-                                    <svg viewBox="0 0 24 24" fill="currentColor">
-                                        <path d="M12,2A10,10 0 0,0 2,12C2,16.42 4.87,20.17 8.84,21.5C9.34,21.58 9.5,21.27 9.5,21C9.5,20.77 9.5,20.14 9.5,19.31C6.73,19.91 6.14,17.97 6.14,17.97C5.68,16.81 5.03,16.5 5.03,16.5C4.12,15.88 5.1,15.9 5.1,15.9C6.1,15.97 6.63,16.93 6.63,16.93C7.5,18.45 8.97,18 9.54,17.76C9.63,17.11 9.89,16.67 10.17,16.42C7.95,16.17 5.62,15.31 5.62,11.5C5.62,10.39 6,9.5 6.65,8.79C6.55,8.54 6.2,7.5 6.75,6.15C6.75,6.15 7.59,5.88 9.5,7.17C10.29,6.95 11.15,6.84 12,6.84C12.85,6.84 13.71,6.95 14.5,7.17C16.41,5.88 17.25,6.15 17.25,6.15C17.8,7.5 17.45,8.54 17.35,8.79C18,9.5 18.38,10.39 18.38,11.5C18.38,15.32 16.04,16.16 13.81,16.41C14.17,16.72 14.5,17.33 14.5,18.26C14.5,19.6 14.5,20.68 14.5,21C14.5,21.27 14.66,21.59 15.17,21.5C19.14,20.16 22,16.42 22,12A10,10 0 0,0 12,2Z" />
-                                    </svg>
-                                </a>
+                                <a href="https://t.me/daurge" target="_blank" class="social-link" title="Telegram"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M9.78,18.65L10.06,18.65L10.15,18.64C13.64,17.33 15.64,13.69 14.33,10.2C13.02,6.71 9.38,4.71 5.89,6.02C2.4,7.33 0.4,10.97 1.71,14.46C2.54,16.5 4.42,17.97 6.61,18.5L7.21,19.29C7.48,19.67 7.81,19.99 8.19,20.22C8.86,20.66 9.6,20.84 10.33,20.79L9.78,18.65M7.79,17.15A8.16,8.16 0 0,1 6.5,16.87C4.85,16.5 3.5,15.27 2.84,13.65C1.79,10.89 3.39,7.91 6.15,6.86C8.91,5.81 11.89,7.41 12.94,10.17C13.99,12.93 12.39,15.91 9.63,16.96L9.78,18.65Z" /></svg></a>
+                                <a href="mailto:admin@clearn.top" class="social-link" title="Email"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M20,8L12,13L4,8V6L12,11L20,6M20,4H4C2.89,4 2,4.89 2,6V18A2,2 0 0,0 4,20H20A2,2 0 0,0 22,18V6C22,4.89 21.1,4 20,4Z" /></svg></a>
+                                <a href="tel:+447597730403" class="social-link" title="Phone"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6.62,10.79C8.06,13.62 10.38,15.94 13.21,17.38L15.41,15.18C15.69,14.9 16.08,14.82 16.43,14.93C17.55,15.3 18.75,15.5 20,15.5A1,1 0 0,1 21,16.5V20A1,1 0 0,1 20,21A17,17 0 0,1 3,4A1,1 0 0,1 4,3H7.5A1,1 0 0,1 8.5,4C8.5,5.25 8.7,6.45 9.07,7.57C9.18,7.92 9.1,8.31 8.82,8.59L6.62,10.79Z" /></svg></a>
+                                <a href="https://github.com" target="_blank" class="social-link" title="GitHub"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12,2A10,10 0 0,0 2,12C2,16.42 4.87,20.17 8.84,21.5C9.34,21.58 9.5,21.27 9.5,21C9.5,20.77 9.5,20.14 9.5,19.31C6.73,19.91 6.14,17.97 6.14,17.97C5.68,16.81 5.03,16.5 5.03,16.5C4.12,15.88 5.1,15.9 5.1,15.9C6.1,15.97 6.63,16.93 6.63,16.93C7.5,18.45 8.97,18 9.54,17.76C9.63,17.11 9.89,16.67 10.17,16.42C7.95,16.17 5.62,15.31 5.62,11.5C5.62,10.39 6,9.5 6.65,8.79C6.55,8.54 6.2,7.5 6.75,6.15C6.75,6.15 7.59,5.88 9.5,7.17C10.29,6.95 11.15,6.84 12,6.84C12.85,6.84 13.71,6.95 14.5,7.17C16.41,5.88 17.25,6.15 17.25,6.15C17.8,7.5 17.45,8.54 17.35,8.79C18,9.5 18.38,10.39 18.38,11.5C18.38,15.32 16.04,16.16 13.81,16.41C14.17,16.72 14.5,17.33 14.5,18.26C14.5,19.6 14.5,20.68 14.5,21C14.5,21.27 14.66,21.59 15.17,21.5C19.14,20.16 22,16.42 22,12A10,10 0 0,0 12,2Z" /></svg></a>
                             </div>
                         </div>
                     </div>
                     
-                    <div class="footer-column">
-                        <h4>Courses</h4>
-                        <ul class="footer-links">
-                            <li><a href="#courses">Python Programming</a></li>
-                            <li><a href="#courses">Web Development</a></li>
-                            <li><a href="#courses">Game Development</a></li>
-                            <li><a href="#courses">Mobile Apps</a></li>
-                            <li><a href="#courses">AI & Machine Learning</a></li>
-                        </ul>
-                    </div>
-                    
-                    <div class="footer-column">
-                        <h4>Support</h4>
-                        <ul class="footer-links">
-                            <li><a href="mailto:admin@clearn.top">Contact Support</a></li>
-                            <li><a href="#faq">FAQ</a></li>
-                            <li><a href="#help">Help Center</a></li>
-                            <li><a href="#community">Community</a></li>
-                            <li><a href="#resources">Learning Resources</a></li>
-                        </ul>
-                    </div>
-                    
-                    <div class="footer-column">
-                        <h4>Company</h4>
-                        <ul class="footer-links">
-                            <li><a href="#about">About Us</a></li>
-                            <li><a href="#careers">Careers</a></li>
-                            <li><a href="#blog">Blog</a></li>
-                            <li><a href="#press">Press Kit</a></li>
-                            <li><a href="#partners">Partners</a></li>
-                        </ul>
-                    </div>
+                    <div class="footer-column"><h4 data-translate="footer_courses_title">Courses</h4><ul class="footer-links"><li><a href="#courses" data-translate="footer_courses_python">Python Programming</a></li><li><a href="#courses" data-translate="footer_courses_web">Web Development</a></li><li><a href="#courses" data-translate="footer_courses_game">Game Development</a></li><li><a href="#courses" data-translate="footer_courses_mobile">Mobile Apps</a></li><li><a href="#courses" data-translate="footer_courses_ai">AI & Machine Learning</a></li></ul></div>
+                    <div class="footer-column"><h4 data-translate="footer_support_title">Support</h4><ul class="footer-links"><li><a href="mailto:admin@clearn.top" data-translate="footer_support_contact">Contact Support</a></li><li><a href="/faq" data-translate="footer_support_faq">FAQ</a></li><li><a href="/help" data-translate="footer_support_help">Help Center</a></li><li><a href="#community" data-translate="footer_support_community">Community</a></li><li><a href="#resources" data-translate="footer_support_resources">Learning Resources</a></li></ul></div>
+                    <div class="footer-column"><h4 data-translate="footer_company_title">Company</h4><ul class="footer-links"><li><a href="#about" data-translate="footer_company_about">About Us</a></li><li><a href="#careers" data-translate="footer_company_careers">Careers</a></li><li><a href="#blog" data-translate="footer_company_blog">Blog</a></li><li><a href="#press" data-translate="footer_company_press">Press Kit</a></li><li><a href="#partners" data-translate="footer_company_partners">Partners</a></li></ul></div>
                 </div>
                 
                 <div class="footer-divider"></div>
                 
                 <div class="footer-bottom">
                     <div class="footer-bottom-content">
-                        <p class="footer-copyright">© 2025 Code & Learn. All rights reserved.</p>
+                        <p class="footer-copyright" data-translate="footer_copyright">© 2025 Code & Learn. All rights reserved.</p>
                         <div class="footer-legal">
-                            <a href="/terms">Terms of Service</a>
-                            <a href="/privacy">Privacy Policy</a>
-                            <a href="/cookie-policy">Cookie Policy</a>
+                            <a href="/terms" data-translate="footer_terms">Terms of Service</a>
+                            <a href="/privacy" data-translate="footer_privacy">Privacy Policy</a>
+                            <a href="/cookie-policy" data-translate="footer_cookie">Cookie Policy</a>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
         
-        <button class="back-to-top" id="back-to-top" title="Back to top">
-            <svg viewBox="0 0 24 24" fill="currentColor">
-                <path d="M7.41,15.41L12,10.83L16.59,15.41L18,14L12,8L6,14L7.41,15.41Z" />
-            </svg>
+        <button class="back-to-top" id="back-to-top" title="Back to top" data-translate="back_to_top">
+            Back to top
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M7.41,15.41L12,10.83L16.59,15.41L18,14L12,8L6,14L7.41,15.41Z" /></svg>
         </button>
     </footer>
 
@@ -484,35 +408,17 @@
                     <p id="details-modal-short-desc">Short course description goes here.</p>
                     <div class="details-image" id="details-modal-image"></div>
                     <div class="details-stats">
-                        <div class="stat-item">
-                            <svg viewBox="0 0 24 24"><path d="M9,10V12H7V10H9M13,10V12H11V10H13M17,10V12H15V10H17M19,3A2,2 0 0,1 21,5V19A2,2 0 0,1 19,21H5A2,2 0 0,1 3,19V5A2,2 0 0,1 5,3H6V1H8V3H16V1H18V3H19M19,19V8H5V19H19Z" /></svg>
-                            <span id="details-modal-age"></span>
-                        </div>
-                        <div class="stat-item">
-                            <svg viewBox="0 0 24 24"><path d="M12,20A8,8 0 0,0 20,12A8,8 0 0,0 12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2M12.5,7V12.25L17,14.92L16.25,16.15L11,13V7H12.5Z" /></svg>
-                            <span id="details-modal-duration"></span>
-                        </div>
-                        <div class="stat-item">
-                            <svg viewBox="0 0 24 24"><path d="M12,3L1,9L12,15L23,9L12,3M5,13.18V17.18L12,21L19,17.18V13.18L12,17L5,13.18Z" /></svg>
-                            <span id="details-modal-format"></span>
-                        </div>
+                        <div class="stat-item"><svg viewBox="0 0 24 24"><path d="M9,10V12H7V10H9M13,10V12H11V10H13M17,10V12H15V10H17M19,3A2,2 0 0,1 21,5V19A2,2 0 0,1 19,21H5A2,2 0 0,1 3,19V5A2,2 0 0,1 5,3H6V1H8V3H16V1H18V3H19M19,19V8H5V19H19Z" /></svg><span id="details-modal-age"></span></div>
+                        <div class="stat-item"><svg viewBox="0 0 24 24"><path d="M12,20A8,8 0 0,0 20,12A8,8 0 0,0 12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2M12.5,7V12.25L17,14.92L16.25,16.15L11,13V7H12.5Z" /></svg><span id="details-modal-duration"></span></div>
+                        <div class="stat-item"><svg viewBox="0 0 24 24"><path d="M12,3L1,9L12,15L23,9L12,3M5,13.18V17.18L12,21L19,17.18V13.18L12,17L5,13.18Z" /></svg><span id="details-modal-format"></span></div>
                     </div>
                     <button class="buy-button" id="details-modal-buy-button" data-translate="modal_enroll_button">Enroll Now</button>
                 </div>
                 <div class="details-right">
                     <span class="close-button">×</span>
-                    <div class="details-section">
-                        <h3 data-translate="modal_what_you_learn">What the student will learn</h3>
-                        <ul id="details-modal-learning"></ul>
-                    </div>
-                    <div class="details-section">
-                        <h3 data-translate="modal_tools">Tools</h3>
-                        <ul class="tools-list" id="details-modal-tools"></ul>
-                    </div>
-                    <div class="details-section">
-                        <h3 data-translate="modal_program">Course Program</h3>
-                        <ul class="program-accordion" id="details-modal-program"></ul>
-                    </div>
+                    <div class="details-section"><h3 data-translate="modal_what_you_learn">What the student will learn</h3><ul id="details-modal-learning"></ul></div>
+                    <div class="details-section"><h3 data-translate="modal_tools">Tools</h3><ul class="tools-list" id="details-modal-tools"></ul></div>
+                    <div class="details-section"><h3 data-translate="modal_program">Course Program</h3><ul class="program-accordion" id="details-modal-program"></ul></div>
                 </div>
             </div>
         </div>
@@ -520,26 +426,17 @@
     
     <div id="payment-modal" class="modal">
         <div class="modal-content">
-            <div class="modal-header">
-                <h2 data-translate="payment_modal_title">Payment</h2>
-                <span class="close-button">×</span>
-            </div>
+            <div class="modal-header"><h2 data-translate="payment_modal_title">Payment</h2><span class="close-button">×</span></div>
             <div class="modal-body">
                 <div class="payment-details">
                     <p><strong><span data-translate="payment_modal_tariff">Your tariff:</span></strong> <span id="modal-tariff-name"></span></p>
                     <div class="quantity-selector" id="lesson-quantity-selector">
                         <label for="lesson-quantity" data-translate="payment_modal_quantity">Lessons quantity:</label>
-                        <div class="slider-container">
-                            <input type="range" id="lesson-quantity" min="1" max="20" value="1" step="1">
-                            <span id="quantity-value">1</span>
-                        </div>
+                        <div class="slider-container"><input type="range" id="lesson-quantity" min="1" max="20" value="1" step="1"><span id="quantity-value">1</span></div>
                     </div>
                     <div class="quantity-selector" id="donation-amount-selector" style="display: none;">
                          <label for="donation-amount" data-translate="payment_modal_donation_amount">Donation amount:</label>
-                         <div class="donation-input-container">
-                            <input type="number" id="donation-amount" min="1" max="1000" value="10" step="1">
-                            <span>EUR</span>
-                         </div>
+                         <div class="donation-input-container"><input type="number" id="donation-amount" min="1" max="1000" value="10" step="1"><span>EUR</span></div>
                     </div>
                     <div class="price-breakdown">
                         <p><span data-translate="payment_modal_price_per_lesson">Cost per lesson:</span> <span id="modal-price-per-lesson"></span></p>
@@ -552,10 +449,7 @@
                         <p class="form-hint" data-translate="payment_modal_identifier_hint">We'll use this to credit lessons to your account.</p>
                         <p class="payment-error" id="identifier-error" style="display: none;"></p>
                     </div>
-                    <div class="payment-system-chooser">
-                        <h4 data-translate="payment_modal_choose_system">Choose payment system</h4>
-                        <div class="systems"></div>
-                    </div>
+                    <div class="payment-system-chooser"><h4 data-translate="payment_modal_choose_system">Choose payment system</h4><div class="systems"></div></div>
                 </div>
             </div>
             <div class="modal-footer">

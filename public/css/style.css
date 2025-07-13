@@ -323,21 +323,25 @@ section { padding: 100px 0; }
     box-shadow: 0 0 20px rgba(0, 242, 254, 0.5);
 }
 .section-subtitle { max-width: 600px; font-size: 1.1rem; opacity: 0.8; }
-.details-button, .buy-button { 
-    display: inline-block; 
-    padding: 15px 30px; 
-    margin: 8px; 
-    border: none; 
-    border-radius: 12px; 
-    font-family: var(--font-headings); 
-    font-size: 1rem; 
-    font-weight: 600; 
-    text-decoration: none; 
-    transition: all 0.3s ease; 
-    cursor: pointer; 
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+.details-button, .buy-button {
+    display: inline-block;
+    padding: 15px 30px;
+    border: none;
+    border-radius: 12px;
+    font-family: var(--font-headings);
+    font-size: 1rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.4s ease; /* Немного замедлим для плавности */
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
     margin-top: auto;
+    background: linear-gradient(135deg, var(--accent-color-1), var(--accent-color-2));
+    background-size: 200% auto; /* FIX: Увеличиваем размер фона градиента */
+    color: white;
+}
+.buy-button:hover {
+    background-position: right center; /* Плавное смещение градиента при наведении */
 }
 .details-button { 
     background: rgba(255, 255, 255, 0.1); 
@@ -349,43 +353,25 @@ section { padding: 100px 0; }
     transform: translateY(-2px); 
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
 }
-.buy-button { 
-    background: linear-gradient(135deg, var(--accent-color-1), var(--accent-color-2)); 
-    color: white; 
-    border: 1px solid rgba(255, 255, 255, 0.2);
-}
-.buy-button:hover { 
-    transform: translateY(-2px); 
-    box-shadow: 0 10px 25px rgba(0, 242, 254, 0.3); 
-}
+
 [data-theme="light"] .buy-button { color: white; }
 
 /* === HERO === */
-.hero { 
-    height: 100vh; 
-    display: flex; 
-    align-items: center; 
-    justify-content: center; 
-    text-align: center; 
-    position: relative; 
-    overflow: hidden; 
-    padding-top: 140px;
-    margin-top: 80px;
-    background: transparent;
-}
-.hero::before { 
-    content: ''; 
-    position: absolute; 
-    top: 0; 
-    left: 0; 
-    right: 0; 
-    bottom: 0; 
-    background: transparent;
-}
-.hero-content { 
-    padding: 0 20px; 
+/* === FIX: Hero Section Layout === */
+.hero {
+    min-height: 100vh; /* Более гибко, чем height */
+    display: flex;
+    flex-direction: column; /* Располагает элементы друг под другом */
+    align-items: center;
+    justify-content: center;
+    text-align: center;
     position: relative;
-    z-index: 1;
+    padding: 120px 20px 40px; /* Отступ для хедера и снизу */
+    box-sizing: border-box;
+}
+.hero-content {
+    max-width: 900px;
+    width: 100%;
 }
 
 .hero-content h1 { 
@@ -414,45 +400,31 @@ section { padding: 100px 0; }
     font-weight: 300;
 }
 
-.cta-button {
+/* === Hero CTA Button === */
+.hero-cta-button {
     display: inline-block;
-    margin-top: 20px;
-    background: none;
-    padding: 0;
-    box-shadow: none;
+    padding: 18px 40px;
+    font-family: var(--font-headings);
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: white;
+    background: linear-gradient(135deg, var(--accent-color-1), var(--accent-color-2));
+    border: none;
+    border-radius: 50px;
+    text-decoration: none;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 10px 30px rgba(0, 242, 254, 0.2);
 }
-
-.cta-button svg {
-    display: block;
-    width: 240px;
-    height: auto;
-    transition: transform 0.3s ease, filter 0.3s ease; 
+.hero-cta-button:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 15px 40px rgba(0, 242, 254, 0.3);
 }
-
-.cta-button:hover svg {
-    transform: scale(1.05); 
-    filter: drop-shadow(0 0 15px var(--shadow-color));
+[data-theme="light"] .hero-cta-button {
+    box-shadow: 0 10px 30px rgba(55, 66, 250, 0.25);
+    color: white;
 }
-
-.cta-button {
-    overflow: visible;
-    margin-bottom: 20px;
-}
-
-.cta-button .stop1,
-.cta-button .stop2 {
-    transition: stop-color 0.3s ease;
-}
-
-.cta-button .stop1 { stop-color: var(--accent-color-1); }
-.cta-button .stop2 { stop-color: var(--accent-color-2); }
-
-
-[data-theme="light"] .cta-button .stop1 {
-    stop-color: #3742fa;
-}
-[data-theme="light"] .cta-button .stop2 {
-    stop-color: #ff4757;
+[data-theme="light"] .hero-cta-button:hover {
+    box-shadow: 0 15px 40px rgba(55, 66, 250, 0.35);
 }
 
 /* === WHY US === */
@@ -531,11 +503,42 @@ section { padding: 100px 0; }
     box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15); 
     background: rgba(255, 255, 255, 0.15);
 }
-.course-icon-wrapper { width: 300px; height: 240px; margin: 0 auto 0px auto; border-radius: 5px; display: flex; align-items: center; justify-content: center; }
+/* === FIX: Course Card Icons (FINAL) === */
+.course-icon-wrapper {
+    width: 100%;
+    max-width: 240px; /* Ограничим максимальную ширину */
+    aspect-ratio: 4 / 3; /* Сохраняем исходные пропорции 4:3 */
+    margin: 0 auto 25px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative; /* Необходимо для псевдоэлемента */
+    border-radius: 12px;
+}
+
+/* Возвращаем градиентное свечение */
+.course-icon-wrapper::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at center, rgba(196, 58, 214, 0.15) 0%, transparent 70%);
+    border-radius: inherit;
+    z-index: 0;
+    transition: opacity 0.3s ease;
+}
+[data-theme="light"] .course-icon-wrapper::before {
+    background: radial-gradient(circle at center, rgba(55, 66, 250, 0.1) 0%, transparent 70%);
+}
+.course-card:hover .course-icon-wrapper::before {
+    opacity: 0.5;
+}
+
 .course-icon-wrapper svg {
-    width: 300px; 
-    height: 240px;
-    object-fit: contain; 
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    position: relative; /* Чтобы иконка была над свечением */
+    z-index: 1;
 }
 .course-age { align-self: center; display: inline-block; background-color: var(--accent-color-2); color: #fff; padding: 3px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: 700; margin-bottom: 15px; }
 .course-card h3 {
@@ -1169,7 +1172,7 @@ section { padding: 100px 0; }
     font-size: 0.75rem;
     color: var(--accent-color-1);
     opacity: 1;
-    background-color: var(--card-bg); /* Match the card background */
+    background-color: var(--card-bg);
     padding: 0 5px;
 }
 .modern-submit-btn {
@@ -1178,17 +1181,24 @@ section { padding: 100px 0; }
     font-weight: 700;
     border-radius: 12px;
     background: linear-gradient(135deg, var(--accent-color-1), var(--accent-color-2));
+    background-size: 200% auto;
     color: white;
     border: none;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 10px;
-    transition: all 0.3s ease;
+    transition: all 0.4s ease;
 }
-.modern-submit-btn:hover {
+
+#confirm-manual-payment {
+    width: 100%;
+}
+
+.modern-submit-btn:hover:not(:disabled) {
     transform: translateY(-3px);
     box-shadow: 0 10px 25px var(--shadow-color);
+    background-position: right center;
 }
 .modern-submit-btn .btn-icon {
     transition: transform 0.3s ease;
@@ -1665,16 +1675,56 @@ section { padding: 100px 0; }
 [data-theme="light"] .modal-body::-webkit-scrollbar-thumb, [data-theme="light"] .details-right::-webkit-scrollbar-thumb { border-color: var(--popup-bg); }
 
 #course-details-modal .modal-content-details {
-    background-color: var(--popup-bg); border: 1px solid var(--card-border);
-    width: 95%; max-width: 1100px; height: 90vh; border-radius: 16px;
-    position: relative; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
-    transform: scale(0.95); transition: transform 0.3s ease;
-    display: flex; overflow: hidden; padding: 0;
+    background-color: var(--popup-bg);
+    border: 1px solid var(--card-border);
+    width: 95%;
+    max-width: 1100px;
+    height: 90vh; /* Ограничиваем высоту, чтобы было что скроллить */
+    border-radius: 16px;
+    position: relative;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+    transform: scale(0.95);
+    transition: transform 0.3s ease;
+    display: flex;
+    overflow: hidden; /* Важно оставить, чтобы обрезались углы */
+    padding: 0;
 }
 #course-details-modal.is-open .modal-content-details { transform: scale(1); }
 #course-details-modal .close-button { right: 40px; }
-.details-grid { display: grid; grid-template-columns: 380px 1fr; gap: 40px; width: 100%; height: 100%; overflow: hidden; }
-.details-left { display: flex; flex-direction: column; padding: 40px; background-color: rgba(0,0,0,0.1); height: 100%; }
+/* === FIX: Course Modal Scrolling & Button Alignment === */
+.details-grid {
+    display: grid;
+    grid-template-columns: 380px 1fr;
+    gap: 0; /* Убираем gap, т.к. padding будет внутри колонок */
+    width: 100%;
+    height: 100%;
+}
+
+.details-left, .details-right {
+    height: 100%;
+    overflow-y: auto; /* Включаем скролл для КАЖДОЙ колонки */
+    padding: 40px;
+}
+
+.details-left {
+    display: flex;
+    flex-direction: column;
+    background-color: rgba(0,0,0,0.1);
+    border-right: 1px solid var(--card-border);
+}
+
+[data-theme="light"] .details-left {
+    background-color: rgba(0,0,0,0.03);
+}
+
+/* FIX: Стилизация кнопки "Enroll Now" для правильного размера */
+.details-left .buy-button {
+    width: 100%; /* Занимает всю ширину колонки */
+    padding: 15px;
+    margin-top: auto; /* Прижимает кнопку к низу */
+    flex-shrink: 0; /* Предотвращает сжатие кнопки */
+    box-sizing: border-box; /* Учитывает padding и border в ширине */
+}
 [data-theme="light"] .details-left { background-color: rgba(0,0,0,0.05); }
 .details-left h2 { font-size: 2.2rem; color: var(--accent-color-1); line-height: 1.2; }
 .details-left p { opacity: 0.8; }
@@ -1694,7 +1744,6 @@ section { padding: 100px 0; }
 .stat-item { display: flex; align-items: center; gap: 12px; }
 .stat-item svg { width: 24px; height: 24px; color: var(--accent-color-2); flex-shrink: 0; fill: currentColor; }
 .details-left .buy-button { width: 100%; padding: 15px; margin-top: 40px; flex-shrink: 0; }
-.details-right { overflow-y: auto; padding: 40px 40px 40px 0; }
 .details-section { margin-bottom: 40px; }
 .details-section h3 { font-size: 1.5rem; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid var(--card-border); }
 #details-modal-learning { list-style: none; padding-left: 0; }
@@ -1733,7 +1782,11 @@ section { padding: 100px 0; }
 }
 #payment-modal .modal-header { padding: 30px 40px 20px; position: relative; flex-shrink: 0; }
 #payment-modal .modal-header h2 { margin: 0; font-size: 1.8rem; font-family: var(--font-headings); }
-#payment-modal .modal-body { padding: 0 40px; overflow-y: auto; flex-grow: 1; }
+#payment-modal .modal-body { 
+    padding: 0 40px 20px 40px;
+    overflow-y: auto; 
+    flex-grow: 1; 
+}
 #payment-modal .modal-footer { padding: 25px 40px 30px; flex-shrink: 0; border-top: 1px solid var(--card-border); margin-top: auto; }
 .payment-details p:first-of-type { font-size: 1.1rem; margin-bottom: 10px; }
 .payment-details strong { color: var(--accent-color-1); }
@@ -2283,6 +2336,42 @@ input[type="range"]::-moz-range-thumb { width: 24px; height: 24px; background: v
     padding: 20px;
     border-radius: 8px;
 }
+
+.manual-payment-container {
+    border: 1px solid var(--card-border);
+    border-radius: 16px;
+    background: var(--bg-color); /* Фон, чтобы скрыть контент под ним */
+    margin-top: 20px;
+    overflow: hidden;
+}
+
+.manual-payment-title {
+    font-size: 1.1rem;
+    padding: 15px 20px;
+    background: rgba(0,0,0,0.1);
+    border-bottom: 1px solid var(--card-border);
+}
+[data-theme="light"] .manual-payment-title {
+    background: rgba(0,0,0,0.03);
+}
+
+.manual-payment-instructions {
+    padding: 20px;
+    background: none;
+}
+
+.manual-payment-instructions ol {
+    padding-left: 20px;
+    margin-bottom: 20px;
+}
+
+.manual-payment-instructions li {
+    font-size: 0.9rem;
+    margin-bottom: 12px;
+    line-height: 1.5;
+    opacity: 0.9;
+}
+
 .manual-payment-instructions p {
     margin-bottom: 15px;
     font-weight: bold;
@@ -2514,7 +2603,6 @@ input[type="range"]::-moz-range-thumb { width: 24px; height: 24px; background: v
     border-top: 1px solid var(--card-border);
 }
 
-/* Light theme for modal */
 [data-theme="light"] .card-modal .modal-content {
     background: #ffffff;
     border: 1px solid rgba(0, 0, 0, 0.1);
@@ -2525,7 +2613,6 @@ input[type="range"]::-moz-range-thumb { width: 24px; height: 24px; background: v
     background: rgba(0, 0, 0, 0.05);
 }
 
-/* Mobile styles for modal */
 @media (max-width: 768px) {
     .card-modal {
         padding: 10px;
@@ -2551,7 +2638,6 @@ input[type="range"]::-moz-range-thumb { width: 24px; height: 24px; background: v
         padding: 15px 20px 20px;
     }
     
-    /* Mobile Gallery Styles */
     .photo-gallery-section {
         margin: 40px 0;
     }
@@ -2573,7 +2659,6 @@ input[type="range"]::-moz-range-thumb { width: 24px; height: 24px; background: v
         height: 60px;
     }
     
-    /* Mobile Expert Modal */
     .expert-modal {
         padding: 10px;
     }
@@ -2604,8 +2689,7 @@ input[type="range"]::-moz-range-thumb { width: 24px; height: 24px; background: v
     }
 }
 
-/* === FIX: SECTION & CTA STYLING (FINAL) === */
-
+/* === SECTION & CTA STYLING === */
 .section-header,
 .gallery-header {
     text-align: center;
@@ -3029,4 +3113,129 @@ input[type="range"]::-moz-range-thumb { width: 24px; height: 24px; background: v
 .about-hero-content, .contact-hero, .contact-hero-content, .cta-content {
     margin-bottom: 0;
     padding: 0;
+}
+
+/* === Mobile Layouts & Spacing === */
+.terms-agreement {
+    margin-top: 25px; 
+}
+
+@media (max-width: 768px) {
+    header nav { display: none; } 
+    .hero-content p { font-size: 1.1rem; } 
+    .hero-cta-button { padding: 15px 35px; font-size: 1.1rem; }
+
+    .about-profile-card {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    .profile-image-wrapper {
+        margin-bottom: 25px;
+        width: 180px;
+        height: 180px
+    }
+    .profile-image {
+        width: 100%;
+        height: 100%;
+    }
+    
+    .contact-grid { grid-template-columns: 1fr; }
+    .footer-main { grid-template-columns: 1fr; text-align: center; }
+    .footer-column h4::after { left: 50%; transform: translateX(-50%); }
+    .social-links { justify-content: center; }
+    .footer-bottom-content { flex-direction: column; text-align: center; }
+}
+
+@media (max-width: 480px) {
+    .payment-system-chooser .systems {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+    }
+    .payment-system-card {
+        padding: 15px 10px;
+        font-size: 0.9rem;
+    }
+    .manual-payment-title {
+        font-size: 1rem;
+        padding: 12px 15px;
+    }
+    .manual-payment-instructions {
+        padding: 15px;
+        background: rgba(0,0,0,0.03);
+    }
+    .manual-payment-instructions li {
+        font-size: 0.85rem;
+    }
+    #confirm-manual-payment {
+        padding: 14px;
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 992px) {
+    #course-details-modal .modal-content-details {
+        height: 95vh;
+        max-height: 700px;
+        flex-direction: column;
+        overflow-y: auto;
+    }
+
+    .details-grid {
+        display: flex;
+        flex-direction: column;
+        height: auto;
+    }
+
+    .details-left, .details-right {
+        overflow-y: visible;
+        height: auto;
+        border-right: none;
+        padding: 30px;
+    }
+
+    .details-left {
+        border-bottom: 1px solid var(--card-border); 
+    }
+
+    #course-details-modal .close-button {
+        top: 15px;
+        right: 15px;
+        background: rgba(0,0,0,0.1);
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+}
+/* === SVG CTA Button Sizing === */
+.cta-button {
+    display: inline-block;
+    margin-top: 30px;
+    width: 100%;
+    max-width: 240px;
+    position: relative;
+}
+.cta-button svg {
+    width: 100%;
+    height: auto;
+    display: block;
+    transition: transform 0.3s ease, filter 0.3s ease;
+}
+.cta-button:hover svg {
+    transform: scale(1.05);
+    filter: drop-shadow(0 0 15px var(--shadow-color));
+}
+.cta-button .stop1 { stop-color: var(--accent-color-1); transition: stop-color 0.3s; }
+.cta-button .stop2 { stop-color: var(--accent-color-2); transition: stop-color 0.3s; }
+
+[data-theme="light"] .cta-button .stop1 { stop-color: #3742fa; }
+[data-theme="light"] .cta-button .stop2 { stop-color: #ff4757; }
+
+/* === Body scroll lock when modal is open === */
+body.modal-open-scroll-lock {
+    overflow: hidden;
 }

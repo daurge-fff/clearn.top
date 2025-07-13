@@ -38,31 +38,6 @@ function initializeBackToTop() {
 // === CORE INITIALIZATION MODULES ===
 // ===================================
 
-document.addEventListener('DOMContentLoaded', () => {
-  const themeButton = document.getElementById('theme-toggle');
-  const html = document.documentElement;
-
-  function setTheme(theme) {
-    html.setAttribute('data-theme', theme);
-    localStorage.setItem('theme', theme);
-    if (themeButton) {
-      themeButton.textContent = theme === 'light' ? '🌙' : '☀️';
-    }
-  }
-
-  const saved = localStorage.getItem('theme') || 'light';
-  setTheme(saved);
-
-  if (themeButton) {
-    themeButton.addEventListener('click', () => {
-      const newTheme = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-      setTheme(newTheme);
-    });
-  }
-});
-
-
-
 function initializeSidebar() {
     const sidebarToggle = document.getElementById('sidebar-toggle');
     const sidebarOverlay = document.querySelector('.sidebar-overlay');

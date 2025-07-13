@@ -1,204 +1,87 @@
-// Глобальная функция для копирования в буфер обмена
 function copyToClipboard(text) {
+    const lang = localStorage.getItem('language') || 'en';
+    const t = (typeof translations !== 'undefined' && translations[lang]) ? translations[lang] : { notification_copy_success: 'Copied to clipboard!' };
+    const message = t.notification_copy_success;
     if (navigator.clipboard && window.isSecureContext) {
-        navigator.clipboard.writeText(text).then(() => {
-            showCopyNotification('Email copied to clipboard!');
-        }).catch(err => {
-            console.error('Failed to copy email: ', err);
-            fallbackCopyTextToClipboard(text);
-        });
+        navigator.clipboard.writeText(text).then(() => showCopyNotification(message)).catch(err => console.error('Failed to copy: ', err));
     } else {
-        fallbackCopyTextToClipboard(text);
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+        Object.assign(textArea.style, { position: 'fixed', left: '-999999px', top: '-999999px' });
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        try {
+            document.execCommand('copy');
+            showCopyNotification(message);
+        } catch (err) {
+            console.error('Fallback: Oops, unable to copy', err);
+        }
+        document.body.removeChild(textArea);
     }
 }
 
-// Fallback для старых браузеров
-function fallbackCopyTextToClipboard(text) {
-    const textArea = document.createElement('textarea');
-    textArea.value = text;
-    textArea.style.position = 'fixed';
-    textArea.style.left = '-999999px';
-    textArea.style.top = '-999999px';
-    document.body.appendChild(textArea);
-    textArea.focus();
-    textArea.select();
-    try {
-        document.execCommand('copy');
-        showCopyNotification('Email copied to clipboard!');
-    } catch (err) {
-        console.error('Fallback: Oops, unable to copy', err);
-    }
-    document.body.removeChild(textArea);
-}
-
-// Показать уведомление о копировании
 function showCopyNotification(message) {
     const notification = document.createElement('div');
     notification.textContent = message;
-    notification.style.cssText = 'position: fixed; top: 20px; right: 20px; background: #28a745; color: white; padding: 10px 15px; border-radius: 5px; z-index: 10000; font-size: 14px;';
+    notification.style.cssText = 'position: fixed; top: 20px; right: 20px; background: #28a745; color: white; padding: 10px 15px; border-radius: 5px; z-index: 10000; font-size: 14px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); transition: opacity 0.3s, transform 0.3s;';
     document.body.appendChild(notification);
     setTimeout(() => {
-        if (document.body.contains(notification)) {
-            document.body.removeChild(notification);
-        }
+        notification.style.opacity = '0';
+        notification.style.transform = 'translateY(-20px)';
+        setTimeout(() => {
+            if (document.body.contains(notification)) {
+                document.body.removeChild(notification);
+            }
+        }, 300);
     }, 2000);
 }
 
+function closeCardModal() {
+    const modal = document.querySelector('.card-modal');
+    if (modal) {
+        document.body.classList.remove('modal-open-scroll-lock');
+        modal.classList.remove('show');
+        setTimeout(() => modal.remove(), 300);
+    }
+}
+
+function scrollToContact() {
+    closeCardModal();
+    document.querySelector('#contact-form')?.scrollIntoView({ behavior: 'smooth' });
+}
+
 document.addEventListener('DOMContentLoaded', () => {
+    
     const html = document.documentElement;
     const body = document.body;
+    const sunIcon = 'https://emojicdn.elk.sh/☀️';
+    const moonIcon = 'https://emojicdn.elk.sh/🌙';
+
     const themeSwitcher = document.getElementById('theme-switcher');
     const languageSwitcher = document.querySelector('.language-switcher');
     const feedbackForm = document.getElementById('feedback-form');
     const paymentModal = document.getElementById('payment-modal');
-    const donateCard = document.getElementById('donate-card');
     const courseDetailsModal = document.getElementById('course-details-modal');
-    const sunIcon = 'https://emojicdn.elk.sh/☀️';
-    const moonIcon = 'https://emojicdn.elk.sh/🌙';
-
-    // Modern Gallery Class
-class ModernGallery {
-    constructor() {
-        this.currentIndex = 0;
-        this.images = [];
-        this.autoplayInterval = null;
-        this.touchStartX = 0;
-        this.touchEndX = 0;
-
-        this.init();
-    }
-
-    init() {
-        // Get all images from thumbnails
-        const thumbnails = document.querySelectorAll('.thumbnail img');
-        this.images = Array.from(thumbnails).map(thumb => thumb.src);
-
-        if (this.images.length === 0) return;
-
-        // Setup main image
-        const mainImage = document.querySelector('.gallery-main-image');
-        if (mainImage) {
-            mainImage.src = this.images[0];
-            mainImage.classList.add('active');
-        }
-
-        // Setup thumbnails
-        thumbnails.forEach((thumb, index) => {
-            thumb.parentElement.addEventListener('click', () => this.showImage(index));
-            if (index === 0) thumb.parentElement.classList.add('active');
-        });
-
-        // Setup navigation buttons
-        const prevBtn = document.querySelector('.gallery-btn.prev-btn');
-        const nextBtn = document.querySelector('.gallery-btn.next-btn');
-        if (prevBtn) prevBtn.addEventListener('click', () => this.prevImage());
-        if (nextBtn) nextBtn.addEventListener('click', () => this.nextImage());
-
-        // Setup touch events for swipe
-        const galleryMain = document.querySelector('.gallery-main');
-        if (galleryMain) {
-            galleryMain.addEventListener('touchstart', (e) => this.handleTouchStart(e));
-            galleryMain.addEventListener('touchend', (e) => this.handleTouchEnd(e));
-        }
-
-        // Start autoplay - DISABLED
-        // this.startAutoplay();
-    }
-
-    showImage(index) {
-        if (index < 0 || index >= this.images.length) return;
-
-        const mainImage = document.querySelector('.gallery-main-image');
-        const thumbnails = document.querySelectorAll('.thumbnail');
-
-        // Remove active class from current thumbnail
-        thumbnails[this.currentIndex].classList.remove('active');
-
-        // Add fade class to main image
-        mainImage.classList.remove('active');
-        mainImage.classList.add('fade');
-
-        // Update image after small delay for transition
-        setTimeout(() => {
-            mainImage.src = this.images[index];
-            mainImage.classList.remove('fade');
-            mainImage.classList.add('active');
-        }, 300);
-
-        // Add active class to new thumbnail
-        thumbnails[index].classList.add('active');
-
-        this.currentIndex = index;
-    }
-
-    nextImage() {
-        const nextIndex = (this.currentIndex + 1) % this.images.length;
-        this.showImage(nextIndex);
-    }
-
-    prevImage() {
-        const prevIndex = (this.currentIndex - 1 + this.images.length) % this.images.length;
-        this.showImage(prevIndex);
-    }
-
-    handleTouchStart(e) {
-        this.touchStartX = e.touches[0].clientX;
-    }
-
-    handleTouchEnd(e) {
-        this.touchEndX = e.changedTouches[0].clientX;
-        const diff = this.touchStartX - this.touchEndX;
-
-        // If the swipe is significant enough (more than 50px)
-        if (Math.abs(diff) > 50) {
-            if (diff > 0) {
-                // Swipe left, show next image
-                this.nextImage();
-            } else {
-                // Swipe right, show previous image
-                this.prevImage();
-            }
-        }
-    }
-
-    startAutoplay() {
-        this.autoplayInterval = setInterval(() => this.nextImage(), 5000);
-
-        // Pause autoplay on hover
-        const gallery = document.querySelector('.photo-gallery');
-        if (gallery) {
-            gallery.addEventListener('mouseenter', () => this.stopAutoplay());
-            gallery.addEventListener('mouseleave', () => this.startAutoplay());
-        }
-    }
-
-    stopAutoplay() {
-        if (this.autoplayInterval) {
-            clearInterval(this.autoplayInterval);
-            this.autoplayInterval = null;
-        }
-    }
-}
-
-// Initialize Modern Gallery
-new ModernGallery();
 
     const paymentConfig = {
         currency: 'EUR',
         basePrices: { '25': 10, '50': 20 },
         discounts: { 1: 0, 5: 5, 10: 10, 15: 15, 20: 20 },
         availableSystems: [
-            { id: 'paypal', name: 'PayPal' },
-            { id: 'payoneer', name: 'Payoneer' },
-            { id: 'cryptocloud', name: 'CryptoCloud' },
-            { id: 'robokassa', name: 'Robokassa' }
+            { id: 'paypal', name: 'PayPal' }, { id: 'payoneer', name: 'Payoneer' },
+            { id: 'cryptocloud', name: 'CryptoCloud' }, { id: 'robokassa', name: 'Robokassa' }
         ]
     };
-    
-    let currentBasePrice = 0;
-    let currentTariffName = '';
-    let selectedPaymentSystem = null;
-    let manualPaymentRendered = false;
+    let currentBasePrice = 0, currentTariffName = '', selectedPaymentSystem = null, manualPaymentRendered = false, isDonationMode = false;
+
+    function setTheme(theme) {
+        html.setAttribute('data-theme', theme);
+        if (themeSwitcher) {
+            themeSwitcher.innerHTML = `<img src="${theme === 'dark' ? sunIcon : moonIcon}" alt="theme icon">`;
+        }
+        localStorage.setItem('theme', theme);
+    }
 
     function setLanguage(lang) {
         if (lang === 'ua') lang = 'uk';
@@ -212,472 +95,429 @@ new ModernGallery();
             const key = el.dataset.translate;
             if (langData[key] !== undefined) el.innerHTML = langData[key];
         });
-
+        
         document.querySelectorAll('.course-card').forEach(card => {
             const courseKey = card.dataset.courseKey;
-            if (courseKey) {
-                const titleEl = card.querySelector('h3');
-                const ageEl = card.querySelector('.course-age');
-                const descEl = card.querySelector('p');
-                if (titleEl) titleEl.innerHTML = langData[`course_${courseKey}_title`] || '';
-                if (ageEl) ageEl.innerHTML = langData[`course_${courseKey}_age`] || '';
-                if (descEl) descEl.innerHTML = langData[`course_${courseKey}_desc`] || '';
+            if (courseKey && langData[`course_${courseKey}_title`]) {
+                card.querySelector('h3').innerHTML = langData[`course_${courseKey}_title`];
+                card.querySelector('.course-age').innerHTML = langData[`course_${courseKey}_age`];
+                card.querySelector('p').innerHTML = langData[`course_${courseKey}_desc`];
             }
         });
         
         if (languageSwitcher) {
-            const currentLangDisplay = languageSwitcher.querySelector('.current-lang');
-            const selectedLangElement = languageSwitcher.querySelector(`.lang-dropdown [data-lang="${lang}"]`);
-            if (selectedLangElement && currentLangDisplay) {
-                currentLangDisplay.innerHTML = selectedLangElement.innerHTML;
+            const currentLangSpan = languageSwitcher.querySelector('.current-lang span');
+            const currentLangImg = languageSwitcher.querySelector('.current-lang img');
+            const selectedLangLi = languageSwitcher.querySelector(`.lang-dropdown [data-lang="${lang}"]`);
+            if (selectedLangLi && currentLangSpan && currentLangImg) {
+                currentLangSpan.textContent = selectedLangLi.textContent.trim();
+                currentLangImg.src = selectedLangLi.querySelector('img').src;
+                currentLangImg.alt = selectedLangLi.querySelector('img').alt;
             }
         }
         localStorage.setItem('language', lang);
     }
 
-    function setTheme(theme) {
-        html.setAttribute('data-theme', theme);
-        if (themeSwitcher) themeSwitcher.innerHTML = `<img src="${theme === 'dark' ? sunIcon : moonIcon}" alt="theme icon">`;
-        localStorage.setItem('theme', theme);
+    if (themeSwitcher) {
+        themeSwitcher.addEventListener('click', () => {
+            const newTheme = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+            setTheme(newTheme);
+        });
+    }
+
+    if (languageSwitcher) {
+        const langButton = languageSwitcher.querySelector('.current-lang');
+        langButton.addEventListener('click', (e) => { 
+            e.stopPropagation();
+            languageSwitcher.classList.toggle('is-active');
+        });
+        languageSwitcher.querySelector('.lang-dropdown').addEventListener('click', (e) => {
+            const lang = e.target.closest('li')?.dataset.lang;
+            if (lang) {
+                setLanguage(lang);
+                languageSwitcher.classList.remove('is-active');
+            }
+        });
+        window.addEventListener('click', () => languageSwitcher.classList.remove('is-active'));
     }
     
-    async function handleFormSubmit(e) {
-        e.preventDefault();
-        const formStatus = document.getElementById('form-status');
-        const submitButton = feedbackForm.querySelector('button[type="submit"]');
-        if (!formStatus || !submitButton) return;
-        const formData = new FormData(feedbackForm);
-        const data = Object.fromEntries(formData.entries());
-        const currentLang = localStorage.getItem('language') || 'en';
-        submitButton.disabled = true;
-        submitButton.textContent = (translations[currentLang]?.form_sending || 'Sending...');
-        try {
-            const response = await fetch('/submit-form', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
-            const result = await response.json();
-            if (response.ok) {
-                formStatus.textContent = (translations[currentLang]?.form_success || "Your request has been sent!");
-                formStatus.style.color = 'var(--accent-color-1)';
-                feedbackForm.reset();
-            } else {
-                formStatus.textContent = result.message || 'An error occurred.';
-                formStatus.style.color = 'var(--accent-color-2)';
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    let savedLang = localStorage.getItem('language') || navigator.language.split('-')[0];
+    if (savedLang === 'ua') { savedLang = 'uk'; }
+    setTheme(savedTheme);
+    setLanguage(savedLang);
+
+    document.querySelectorAll('a[href^="#"]').forEach(link => {
+        link.addEventListener('click', function(e) {
+            const href = this.getAttribute('href');
+            if (href.length > 1) {
+                const targetElement = document.querySelector(href);
+                if (targetElement) {
+                    e.preventDefault();
+                    targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
             }
-        } catch (error) {
-            formStatus.textContent = 'Network error. Please try again.';
-            formStatus.style.color = 'var(--accent-color-2)';
-        } finally {
-            setTimeout(() => {
-                submitButton.textContent = (translations[currentLang]?.form_button || "Send Request");
-                submitButton.disabled = false;
-                formStatus.textContent = '';
-            }, 5000);
-        }
+        });
+    });
+
+    document.querySelectorAll('.floating-input input, .floating-input textarea').forEach(input => {
+        if (input.value) input.classList.add('has-value');
+        input.addEventListener('input', function() { this.classList.toggle('has-value', !!this.value); });
+        input.addEventListener('focus', function() { this.parentElement.classList.add('focused'); });
+        input.addEventListener('blur', function() { this.parentElement.classList.remove('focused'); });
+    });
+
+    const backToTopBtn = document.querySelector('.back-to-top');
+    if (backToTopBtn) {
+        window.addEventListener('scroll', () => backToTopBtn.classList.toggle('show', window.pageYOffset > 300));
+        backToTopBtn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
     }
+    
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) entry.target.classList.add('visible');
+        });
+    }, { threshold: 0.1 });
+    document.querySelectorAll('.animate-on-scroll').forEach(el => observer.observe(el));
+
+    function initWhyUsCards() {
+        document.querySelectorAll('.why-us-card').forEach(card => {
+            card.addEventListener('click', function() {
+                const modalIndex = parseInt(this.dataset.modalIndex, 10);
+                showCardModal(modalIndex);
+            });
+        });
+        document.querySelector('.profile-badge')?.addEventListener('click', showExpertTeacherModal);
+    }
+    
+    function showCardModal(cardIndex) {
+        const lang = localStorage.getItem('language') || 'en';
+        const t = (typeof translations !== 'undefined' && translations[lang]) ? translations[lang] : {};
+        const cardData = [
+            { title: t.why_us_modal_1_title, description: t.why_us_modal_1_desc, benefits: t.why_us_modal_1_benefits || [] },
+            { title: t.why_us_modal_2_title, description: t.why_us_modal_2_desc, benefits: t.why_us_modal_2_benefits || [] },
+            { title: t.why_us_modal_3_title, description: t.why_us_modal_3_desc, benefits: t.why_us_modal_3_benefits || [] }
+        ];
+        const card = cardData[cardIndex];
+        if (!card) return;
+        const modal = document.createElement('div');
+        modal.className = 'card-modal';
+        modal.innerHTML = `
+            <div class="modal-content">
+                <div class="modal-header"><h3>${card.title || ''}</h3><button class="modal-close"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button></div>
+                <div class="modal-body"><p>${card.description || ''}</p><h4>${t.modal_what_you_learn || 'Advantages'}:</h4><ul>${(card.benefits).map(b => `<li>${b}</li>`).join('')}</ul></div>
+                <div class="modal-footer"><button class="modern-cta-btn" onclick="scrollToContact()">${t.modal_enroll_button || 'Learn More'}</button></div>
+            </div>`;
+        document.body.appendChild(modal);
+        body.classList.add('modal-open-scroll-lock');
+        setTimeout(() => modal.classList.add('show'), 10);
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal || e.target.closest('.modal-close')) closeCardModal();
+        });
+    }
+
+    function showExpertTeacherModal() {
+        const lang = localStorage.getItem('language') || 'en';
+        const t = (typeof translations !== 'undefined' && translations[lang]) ? translations[lang] : {};
+        const modal = document.createElement('div');
+        modal.className = 'expert-modal';
+        modal.innerHTML = `
+            <div class="expert-modal-content">
+                <div class="expert-modal-header"><div class="expert-avatar"><img src="/images/german_photo.jpg" alt="German Vitiaz"></div><h3>${t.expert_modal_title || ''}</h3><button class="expert-modal-close">×</button></div>
+                <div class="expert-modal-body">
+                    <div class="expert-message">
+                        <p>${t.expert_modal_greeting || ''}</p><p>${t.expert_modal_message || ''}</p><p>${t.expert_modal_approach || ''}</p>
+                        <div class="expert-achievements">
+                            <div class="achievement"><span>🏆</span><span>${t.expert_achievement_1 || ''}</span></div>
+                            <div class="achievement"><span>💻</span><span>${t.expert_achievement_2 || ''}</span></div>
+                            <div class="achievement"><span>⭐</span><span>${t.expert_achievement_3 || ''}</span></div>
+                        </div>
+                        <p>${t.expert_modal_cta || ''}</p>
+                    </div>
+                    <div class="expert-modal-actions">
+                        <a href="https://t.me/daurge" target="_blank" class="expert-action-btn primary"><span>${t.expert_contact_telegram || ''}</span></a>
+                        <a href="mailto:admin@clearn.top" class="expert-action-btn secondary"><span>${t.expert_contact_email || ''}</span></a>
+                    </div>
+                </div>
+            </div>`;
+        document.body.appendChild(modal);
+        body.classList.add('modal-open-scroll-lock');
+        const closeAction = () => {
+            body.classList.remove('modal-open-scroll-lock');
+            modal.remove();
+        };
+        modal.querySelector('.expert-modal-close').addEventListener('click', closeAction);
+        modal.addEventListener('click', (e) => { if (e.target === modal) closeAction(); });
+        setTimeout(() => modal.classList.add('show'), 10);
+    }
+    
+    initWhyUsCards();
 
     async function openCourseDetailsModal(courseKey) {
         if (!courseDetailsModal) return;
         const lang = localStorage.getItem('language') || 'en';
-        const t = translations[lang];
-        if (!t) return;
+        const t = (typeof translations !== 'undefined' && translations[lang]) ? translations[lang] : {};
+        document.getElementById('details-modal-title').textContent = t[`course_${courseKey}_title`] || "";
+        document.getElementById('details-modal-short-desc').textContent = t[`course_${courseKey}_desc`] || "";
         const detailsImageContainer = document.getElementById('details-modal-image');
         detailsImageContainer.innerHTML = '';
-        
-        courseDetailsModal.querySelector('[data-translate="modal_what_you_learn"]').textContent = t.modal_what_you_learn || "What the student will learn";
-        courseDetailsModal.querySelector('[data-translate="modal_tools"]').textContent = t.modal_tools || "Tools";
-        courseDetailsModal.querySelector('[data-translate="modal_program"]').textContent = t.modal_program || "Course Program";
-        
-        document.getElementById('details-modal-title').textContent = t[`course_${courseKey}_title`] || "Course Details";
-        document.getElementById('details-modal-short-desc').textContent = t[`course_${courseKey}_desc`] || "";
         try {
             const response = await fetch(`/images/${courseKey}.svg`);
-            if (response.ok) {
-                detailsImageContainer.innerHTML = await response.text();
-            } else {
-                detailsImageContainer.innerHTML = 'Icon not found';
-            }
-        } catch (error) {
-            console.error('Error fetching course icon SVG:', error);
-            detailsImageContainer.innerHTML = 'Error loading icon';
-        }
+            if (response.ok) detailsImageContainer.innerHTML = await response.text();
+        } catch (error) { console.error('Error fetching SVG:', error); }
         document.getElementById('details-modal-age').textContent = t[`course_${courseKey}_age`] || "";
         document.getElementById('details-modal-duration').textContent = t[`course_${courseKey}_duration`] || "";
         document.getElementById('details-modal-format').textContent = t[`course_${courseKey}_format`] || "";
-        
         const buyButton = document.getElementById('details-modal-buy-button');
-        buyButton.textContent = t.modal_enroll_button || "Enroll Now";
         const defaultDuration = t[`course_${courseKey}_default_duration`];
         buyButton.onclick = () => {
             closeCourseDetailsModal();
             openPaymentModal(defaultDuration, false);
         };
-        const learningList = document.getElementById('details-modal-learning');
-        learningList.innerHTML = (t[`course_${courseKey}_what_you_learn`] || []).map(item => `<li>${item}</li>`).join('');
-        const toolsList = document.getElementById('details-modal-tools');
-        toolsList.innerHTML = (t[`course_${courseKey}_tools`] || []).map(item => `<li>${item}</li>`).join('');
-        const programList = document.getElementById('details-modal-program');
-        programList.innerHTML = (t[`course_${courseKey}_modules`] || []).map(module => `
-            <li class="module-item">
-                <div class="module-title">${module.title}</div>
-                <div class="module-content"><p>${module.description}</p></div>
-            </li>`).join('');
+        document.getElementById('details-modal-learning').innerHTML = (t[`course_${courseKey}_what_you_learn`] || []).map(item => `<li>${item}</li>`).join('');
+        document.getElementById('details-modal-tools').innerHTML = (t[`course_${courseKey}_tools`] || []).map(item => `<li>${item}</li>`).join('');
+        document.getElementById('details-modal-program').innerHTML = (t[`course_${courseKey}_modules`] || []).map(module => `<li class="module-item"><div class="module-title">${module.title}</div><div class="module-content"><p>${module.description}</p></div></li>`).join('');
         courseDetailsModal.classList.add('is-open');
+        body.classList.add('modal-open-scroll-lock');
     }
 
     function closeCourseDetailsModal() {
-        if (courseDetailsModal) courseDetailsModal.classList.remove('is-open');
-    }
-    
-    function updatePayButtonState() {
-        if (!paymentModal) return;
-
-        const finalPayButton = document.getElementById('final-pay-button');
-        const termsCheckbox = document.getElementById('terms-checkbox');
-        const identifierInput = document.getElementById('payment-identifier');
-        
-        if (!finalPayButton || !termsCheckbox || !identifierInput) return;
-
-        const isReadyToPay = selectedPaymentSystem && termsCheckbox.checked && identifierInput.value.trim() !== '';
-        finalPayButton.disabled = !isReadyToPay;
-        
-        // Disable/enable payment system cards based on email input
-        const paymentSystemCards = paymentModal.querySelectorAll('.payment-system-card');
-        const hasEmail = identifierInput.value.trim() !== '';
-        
-        paymentSystemCards.forEach(card => {
-            if (hasEmail) {
-                card.classList.remove('disabled');
-                card.style.pointerEvents = 'auto';
-                card.style.opacity = '1';
-            } else {
-                card.classList.add('disabled');
-                card.classList.remove('active');
-                card.style.pointerEvents = 'none';
-                card.style.opacity = '0.5';
-            }
-        });
-        
-        // Reset selected payment system if email is cleared
-        if (!hasEmail && selectedPaymentSystem) {
-            selectedPaymentSystem = null;
-            const manualPaymentContainer = document.getElementById('paypal-button-container');
-            if (manualPaymentContainer) manualPaymentContainer.style.display = 'none';
-            if (finalPayButton) finalPayButton.style.display = 'flex';
+        if (courseDetailsModal) {
+            courseDetailsModal.classList.remove('is-open');
+            body.classList.remove('modal-open-scroll-lock');
         }
     }
 
+    if (courseDetailsModal) {
+        document.querySelector('.courses-grid')?.addEventListener('click', (e) => {
+            const card = e.target.closest('.course-card');
+            if (card) openCourseDetailsModal(card.dataset.courseKey);
+        });
+        courseDetailsModal.querySelector('.close-button').addEventListener('click', closeCourseDetailsModal);
+        courseDetailsModal.addEventListener('click', (e) => { if (e.target === courseDetailsModal) closeCourseDetailsModal(); });
+        window.addEventListener('keydown', (e) => { if (e.key === 'Escape' && courseDetailsModal.classList.contains('is-open')) closeCourseDetailsModal(); });
+        document.getElementById('details-modal-program')?.addEventListener('click', (e) => {
+            const title = e.target.closest('.module-title');
+            if (title) title.parentElement.classList.toggle('active');
+        });
+    }
+
+    function updatePayButtonState() {
+        const finalPayButton = document.getElementById('final-pay-button');
+        const confirmManualButton = document.getElementById('confirm-manual-payment');
+        const termsCheckbox = document.getElementById('terms-checkbox');
+        const identifierInput = document.getElementById('payment-identifier');
+        const transactionIdInput = document.getElementById('paypal-transaction-id');
+        
+        const hasIdentifier = identifierInput && identifierInput.value.trim() !== '';
+        const hasTerms = termsCheckbox && termsCheckbox.checked;
+
+        if (finalPayButton) {
+            finalPayButton.disabled = !(selectedPaymentSystem && hasIdentifier && hasTerms);
+        }
+        if (confirmManualButton) {
+            const hasTransactionId = transactionIdInput && transactionIdInput.value.trim() !== '';
+            confirmManualButton.disabled = !(hasTransactionId && hasIdentifier && hasTerms);
+        }
+        
+        paymentModal?.querySelectorAll('.payment-system-card').forEach(card => card.classList.toggle('disabled', !hasIdentifier));
+    }
+
     function updatePaymentModalPrice() {
-        if (!paymentModal) return;
-        let quantity = 1;
-        let finalTotal;
+        let quantity, finalTotal;
         if (isDonationMode) {
             const donationInput = document.getElementById('donation-amount');
-            quantity = parseFloat(donationInput.value) || 1;
-            if (quantity < 1) quantity = 1;
+            quantity = Math.max(1, parseFloat(donationInput.value) || 1);
             donationInput.value = quantity;
             finalTotal = quantity;
         } else {
             const lessonSlider = document.getElementById('lesson-quantity');
             quantity = parseInt(lessonSlider.value, 10);
             document.getElementById('quantity-value').textContent = quantity;
-            const discountBreakpoints = Object.keys(paymentConfig.discounts).map(Number).sort((a,b) => b-a);
-            let applicableDiscount = 0;
-            for (const bp of discountBreakpoints) { if (quantity >= bp) { applicableDiscount = paymentConfig.discounts[bp]; break; } }
-            finalTotal = (currentBasePrice * quantity) * (1 - applicableDiscount / 100);
-            const pricePerLesson = quantity > 0 ? (finalTotal / quantity) : 0;
-            document.getElementById('modal-price-per-lesson').textContent = `${pricePerLesson.toFixed(2)} ${paymentConfig.currency}`;
-            document.getElementById('modal-discount').textContent = `${applicableDiscount}%`;
+            const discount = paymentConfig.discounts[Object.keys(paymentConfig.discounts).sort((a,b)=>b-a).find(bp => quantity >= bp)] || 0;
+            finalTotal = (currentBasePrice * quantity) * (1 - discount / 100);
+            document.getElementById('modal-price-per-lesson').textContent = `${(finalTotal / quantity || 0).toFixed(2)} ${paymentConfig.currency}`;
+            document.getElementById('modal-discount').textContent = `${discount}%`;
         }
         document.getElementById('modal-total-price').textContent = `${finalTotal.toFixed(2)} ${paymentConfig.currency}`;
         updatePayButtonState();
     }
     
-    function openPaymentModal(tariffDuration, donationMode = false) {
+    function openPaymentModal(tariffDuration, donationMode) {
         if (!paymentModal) return;
         isDonationMode = donationMode;
-        const lessonSelector = document.getElementById('lesson-quantity-selector');
-        const donationSelector = document.getElementById('donation-amount-selector');
-        const priceBreakdown = document.querySelector('.price-breakdown');
+        
+        document.getElementById('lesson-quantity-selector').style.display = donationMode ? 'none' : 'block';
+        document.getElementById('donation-amount-selector').style.display = donationMode ? 'block' : 'none';
+        document.querySelector('.price-breakdown').style.display = donationMode ? 'none' : 'block';
 
-        if (isDonationMode) {
-            currentBasePrice = 1;
-            currentTariffName = 'Donation';
-            lessonSelector.style.display = 'none';
-            donationSelector.style.display = 'block';
-            priceBreakdown.style.display = 'none';
-        } else {
-            currentBasePrice = paymentConfig.basePrices[tariffDuration];
-            currentTariffName = `Lesson ${tariffDuration} min`;
-            lessonSelector.style.display = 'block';
-            donationSelector.style.display = 'none';
-            priceBreakdown.style.display = 'block';
-        }
+        currentBasePrice = donationMode ? 1 : paymentConfig.basePrices[tariffDuration];
+        currentTariffName = donationMode ? 'Donation' : `Lesson ${tariffDuration} min`;
 
         document.getElementById('modal-tariff-name').textContent = currentTariffName;
         document.getElementById('lesson-quantity').value = 1;
         document.getElementById('donation-amount').value = 10;
         document.getElementById('terms-checkbox').checked = false;
         document.getElementById('payment-identifier').value = '';
-        const errorP = document.getElementById('identifier-error');
-        if(errorP) errorP.style.display = 'none';
-
+        document.getElementById('identifier-error').style.display = 'none';
+        
         selectedPaymentSystem = null;
         manualPaymentRendered = false;
-        const systemsContainer = paymentModal.querySelector('.systems');
-        systemsContainer.innerHTML = '';
-        paymentConfig.availableSystems.forEach(system => {
-            const card = document.createElement('div');
-            card.className = 'payment-system-card disabled';
-            card.dataset.system = system.id;
-            card.textContent = system.name;
-            card.style.pointerEvents = 'none';
-            card.style.opacity = '0.5';
-            systemsContainer.appendChild(card);
-        });
+        paymentModal.querySelector('.systems').innerHTML = paymentConfig.availableSystems.map(sys => `<div class="payment-system-card disabled" data-system="${sys.id}">${sys.name}</div>`).join('');
+        document.getElementById('paypal-button-container').innerHTML = '';
+        document.getElementById('final-pay-button').style.display = 'flex';
         
-        const manualPaymentContainer = document.getElementById('paypal-button-container'); // Reusing this container
-        if (manualPaymentContainer) manualPaymentContainer.innerHTML = '';
-        
-        const finalPayButton = document.getElementById('final-pay-button');
-        if(finalPayButton) finalPayButton.style.display = 'flex';
-        if(manualPaymentContainer) manualPaymentContainer.style.display = 'none';
-
-        const currentLang = localStorage.getItem('language') || 'en';
-        setLanguage(currentLang);
         updatePaymentModalPrice();
         paymentModal.classList.add('is-open');
+        body.classList.add('modal-open-scroll-lock');
     }
-
-    if (languageSwitcher) {
-        const langButton = languageSwitcher.querySelector('.current-lang');
-        const langDropdown = languageSwitcher.querySelector('.lang-dropdown');
-        langButton.addEventListener('click', (e) => { e.stopPropagation(); languageSwitcher.classList.toggle('is-active'); });
-        langDropdown.addEventListener('click', (e) => {
-            const lang = e.target.closest('li')?.dataset.lang;
-            if (lang) { setLanguage(lang); languageSwitcher.classList.remove('is-active'); }
-        });
-        window.addEventListener('click', () => { if (languageSwitcher.classList.contains('is-active')) languageSwitcher.classList.remove('is-active'); });
-    }
-
-    if (themeSwitcher) themeSwitcher.addEventListener('click', () => setTheme(html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'));
-    if (feedbackForm) feedbackForm.addEventListener('submit', handleFormSubmit);
-    if (donateCard) donateCard.addEventListener('click', () => openPaymentModal(null, true));
-
-    document.querySelectorAll('.buy-button').forEach(button => {
-        if (button.id !== 'donate-card' && button.id !== 'details-modal-buy-button') {
-            button.addEventListener('click', () => openPaymentModal(button.dataset.duration, false));
-        }
-    });
     
-    const coursesGrid = document.querySelector('.courses-grid');
-    if (coursesGrid) {
-        coursesGrid.addEventListener('click', (e) => {
-            const card = e.target.closest('.course-card');
-            if (card) openCourseDetailsModal(card.dataset.courseKey);
-        });
-    }
-
-    if (courseDetailsModal) {
-        courseDetailsModal.querySelector('.close-button').addEventListener('click', closeCourseDetailsModal);
-        courseDetailsModal.addEventListener('click', (event) => { if (event.target === courseDetailsModal) closeCourseDetailsModal(); });
-        window.addEventListener('keydown', (event) => { if (event.key === 'Escape' && courseDetailsModal.classList.contains('is-open')) closeCourseDetailsModal(); });
+    function renderManualPaymentFlow(system) {
+        const lang = localStorage.getItem('language') || 'en';
+        const t = (typeof translations !== 'undefined' && translations[lang]) ? translations[lang] : {};
+        const manualPaymentContainer = document.getElementById('paypal-button-container');
+        if (!manualPaymentContainer) return;
+    
+        const amount = document.getElementById('modal-total-price').textContent.split(' ')[0];
+        const systemName = system.charAt(0).toUpperCase() + system.slice(1);
+    
+        manualPaymentContainer.innerHTML = `
+            <div class="manual-payment-container">
+                <h4 class="manual-payment-title">${t.manual_payment_title || 'Manual Payment via'} ${systemName}</h4>
+                <div class="manual-payment-instructions">
+                    <ol>
+                        <li>${t.manual_payment_instruction_1 || 'Please send'} <strong>${amount} ${paymentConfig.currency}</strong> ${t.manual_payment_instruction_2 || 'to our account:'} <strong><span class="copyable-email" onclick="copyToClipboard('admin@clearn.top')">admin@clearn.top</span></strong>. ${t.manual_payment_instruction_3 || 'After paying, copy the Transaction ID'}.</li>
+                        <li>${t.manual_payment_instruction_4 || 'Paste it below and confirm.'}</li>
+                        <li>${t.manual_payment_instruction_5 || 'Our manager will verify and credit the lessons.'}</li>
+                    </ol>
+                    <div class="form-group" style="margin-top: 20px;">
+                        <input type="text" id="paypal-transaction-id" placeholder=" " required>
+                        <label for="paypal-transaction-id">${t.manual_payment_placeholder || 'Paste Transaction ID here'}</label>
+                    </div>
+                    <button id="confirm-manual-payment" class="modern-submit-btn" disabled>${t.manual_payment_button || 'I Have Paid'}</button>
+                    <p class="payment-error" id="paypal-manual-error" style="display: none;"></p>
+                </div>
+            </div>`;
         
-        const programContainer = document.getElementById('details-modal-program');
-        if(programContainer) {
-            programContainer.addEventListener('click', (e) => {
-                const title = e.target.closest('.module-title');
-                if (title) {
-                    title.parentElement.classList.toggle('active');
+        const confirmButton = document.getElementById('confirm-manual-payment');
+        const transactionIdInput = document.getElementById('paypal-transaction-id');
+        
+        [transactionIdInput, document.getElementById('terms-checkbox'), document.getElementById('payment-identifier')].forEach(el => {
+            el.addEventListener('input', updatePayButtonState);
+            el.addEventListener('change', updatePayButtonState);
+        });
+
+        updatePayButtonState();
+
+        confirmButton.addEventListener('click', async () => {
+            const transactionId = transactionIdInput.value.trim();
+            const identifier = document.getElementById('payment-identifier').value.trim();
+            const errorP = document.getElementById('paypal-manual-error');
+            
+            if (!transactionId || !identifier || !document.getElementById('terms-checkbox').checked) {
+                errorP.textContent = t.manual_payment_error_fields || 'Please fill all fields and agree to the terms.';
+                errorP.style.display = 'block';
+                return;
+            }
+
+            const quantity = isDonationMode ? 0 : parseInt(document.getElementById('lesson-quantity').value, 10);
+            const description = isDonationMode ? "Donation" : `${currentTariffName} x${quantity}`;
+
+            try {
+                const response = await fetch('/api/manual-payment/submit', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        transactionId, paymentSystem: system, amount: parseFloat(amount),
+                        currency: paymentConfig.currency, lessonsPurchased: quantity, description, identifier
+                    })
+                });
+                if (response.ok) {
+                    window.location.href = '/successful-payment';
+                } else {
+                    const errorData = await response.json();
+                    errorP.textContent = errorData.msg || 'An error occurred.';
+                    errorP.style.display = 'block';
                 }
-            });
-        }
+            } catch (error) {
+                errorP.textContent = 'Network error. Please try again.';
+                errorP.style.display = 'block';
+            }
+        });
     }
 
     if (paymentModal) {
-        const finalPayButton = document.getElementById('final-pay-button');
-        const errorP = document.getElementById('identifier-error');
+        document.getElementById('donate-card')?.addEventListener('click', () => openPaymentModal(null, true));
+        document.querySelectorAll('.buy-button:not(#details-modal-buy-button)').forEach(button => {
+            button.addEventListener('click', () => openPaymentModal(button.dataset.duration, false));
+        });
 
-        document.getElementById('lesson-quantity').addEventListener('input', updatePaymentModalPrice);
-        document.getElementById('donation-amount').addEventListener('input', updatePaymentModalPrice);
-        document.getElementById('terms-checkbox').addEventListener('change', updatePayButtonState);
-        document.getElementById('payment-identifier').addEventListener('input', updatePayButtonState);
+        ['input', 'change'].forEach(evt => {
+            document.getElementById('lesson-quantity').addEventListener(evt, updatePaymentModalPrice);
+            document.getElementById('donation-amount').addEventListener(evt, updatePaymentModalPrice);
+            document.getElementById('terms-checkbox').addEventListener(evt, updatePayButtonState);
+            document.getElementById('payment-identifier').addEventListener(evt, updatePayButtonState);
+        });
+        
+        const closePaymentModal = () => {
+            paymentModal.classList.remove('is-open');
+            body.classList.remove('modal-open-scroll-lock');
+        };
 
         paymentModal.querySelector('.systems').addEventListener('click', (e) => {
             const target = e.target.closest('.payment-system-card');
-            if (!target) return;
-            
-            paymentModal.querySelectorAll('.payment-system-card').forEach(card => card.classList.remove('active'));
+            if (!target || target.classList.contains('disabled')) return;
+            paymentModal.querySelectorAll('.payment-system-card.active').forEach(c => c.classList.remove('active'));
             target.classList.add('active');
             selectedPaymentSystem = target.dataset.system;
-
-            const manualPaymentContainer = document.getElementById('paypal-button-container');
-            const finalPayButton = document.getElementById('final-pay-button');
-            const isManualSystem = ['paypal', 'payoneer'].includes(selectedPaymentSystem);
-            
-            if(finalPayButton) finalPayButton.style.display = isManualSystem ? 'none' : 'flex';
-            if(manualPaymentContainer) manualPaymentContainer.style.display = isManualSystem ? 'block' : 'none';
-
-            if (isManualSystem && !manualPaymentRendered) {
+            const isManual = ['paypal', 'payoneer'].includes(selectedPaymentSystem);
+            document.getElementById('final-pay-button').style.display = isManual ? 'none' : 'flex';
+            document.getElementById('paypal-button-container').style.display = isManual ? 'block' : 'none';
+            if (isManual && !manualPaymentRendered) {
                 renderManualPaymentFlow(selectedPaymentSystem);
                 manualPaymentRendered = true;
+            } else if (!isManual) {
+                document.getElementById('paypal-button-container').innerHTML = '';
+                manualPaymentRendered = false;
             }
             updatePayButtonState();
         });
-
-        finalPayButton.addEventListener('click', async () => {
-            const button = finalPayButton;
+        
+        document.getElementById('final-pay-button').addEventListener('click', async () => {
+            const button = document.getElementById('final-pay-button');
             const originalText = button.textContent;
-            
             button.disabled = true;
             button.textContent = 'Creating invoice...';
-            
             const amount = document.getElementById('modal-total-price').textContent.split(' ')[0];
             const quantity = isDonationMode ? 1 : document.getElementById('lesson-quantity').value;
             const description = isDonationMode ? "Donation" : `${currentTariffName} x${quantity}`;
             const identifier = document.getElementById('payment-identifier').value;
-
+            const errorP = document.getElementById('identifier-error');
             try {
                 const response = await fetch('/api/create-payment', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        amount: parseFloat(amount),
-                        currency: paymentConfig.currency,
-                        description,
-                        paymentSystem: selectedPaymentSystem,
-                        identifier
-                    })
+                    body: JSON.stringify({ amount: parseFloat(amount), currency: paymentConfig.currency, description, paymentSystem: selectedPaymentSystem, identifier })
                 });
                 const data = await response.json();
                 if (response.ok && data.paymentUrl) {
                     window.location.href = data.paymentUrl;
                 } else {
-                    if (errorP) {
-                        errorP.textContent = 'Error: ' + (data.error || 'Failed to create payment invoice.');
-                        errorP.style.display = 'block';
-                    }
+                    errorP.textContent = 'Error: ' + (data.error || 'Failed to create payment invoice.');
+                    errorP.style.display = 'block';
                     button.textContent = originalText;
                     button.disabled = false;
                 }
             } catch (error) {
-                if (errorP) {
-                    errorP.textContent = 'Network error. Please try again.';
-                    errorP.style.display = 'block';
-                }
+                errorP.textContent = 'Network error. Please try again.';
+                errorP.style.display = 'block';
                 button.textContent = originalText;
                 button.disabled = false;
             }
         });
 
-
-
-    function renderManualPaymentFlow(system) {
-            const manualPaymentContainer = document.getElementById('paypal-button-container');
-            if (!manualPaymentContainer) return;
-        
-            manualPaymentContainer.innerHTML = '';
-        
-            const amount = document.getElementById('modal-total-price').textContent.split(' ')[0];
-            
-            const instructions = {
-                paypal: `Please send <strong>${amount} EUR</strong> to our PayPal account: <strong><span class="copyable-email" onclick="copyToClipboard('admin@clearn.top')" style="cursor: pointer; text-decoration: underline; color: #007bff;">admin@clearn.top</span></strong> After completing the payment, copy the Transaction ID`,
-                payoneer: `Please send <strong>${amount} EUR</strong> via Payoneer to the email: <strong><span class="copyable-email" onclick="copyToClipboard('admin@clearn.top')" style="cursor: pointer; text-decoration: underline; color: #007bff;">admin@clearn.top</span></strong> After completing the payment, copy the Transaction ID or reference number`
-            };
-
-            const systemName = system.charAt(0).toUpperCase() + system.slice(1);
-        
-            const manualPaymentHTML = `
-                <div class="manual-payment-container">
-                    <h4 class="manual-payment-title">Manual Payment via ${systemName}</h4>
-                    <div class="manual-payment-instructions">
-                        <p>Please follow these steps:</p>
-                        <ol>
-                            <li>${instructions[system]}</li>
-                            <li>Paste it into the field below and confirm your payment.</li>
-                            <li>Our manager will verify your payment and credit the lessons to your account within a few hours.</li>
-                        </ol>
-                        <div class="form-group" style="margin-top: 20px;">
-                            <input type="text" id="paypal-transaction-id" placeholder=" " required>
-                            <label for="paypal-transaction-id">Paste Transaction ID here</label>
-                        </div>
-                        <button id="confirm-manual-payment" class="form-submit-button" disabled>I Have Paid</button>
-                        <p class="payment-error" id="paypal-manual-error" style="display: none;"></p>
-                    </div>
-                </div>
-            `;
-            manualPaymentContainer.innerHTML = manualPaymentHTML;
-            const confirmButton = document.getElementById('confirm-manual-payment');
-            const transactionIdInput = document.getElementById('paypal-transaction-id');
-            const termsCheckbox = document.getElementById('terms-checkbox');
-        
-            function updateConfirmManualButtonState() {
-                if (!confirmButton || !transactionIdInput || !termsCheckbox) return;
-                const identifierInput = document.getElementById('payment-identifier');
-                const isReady = transactionIdInput.value.trim() !== '' && termsCheckbox.checked && identifierInput.value.trim() !== '';
-                confirmButton.disabled = !isReady;
-            }
-            transactionIdInput.addEventListener('input', updateConfirmManualButtonState);
-            termsCheckbox.addEventListener('change', updateConfirmManualButtonState);
-            document.getElementById('payment-identifier').addEventListener('input', updateConfirmManualButtonState);
-
-            updateConfirmManualButtonState();
-
-            confirmButton.addEventListener('click', async () => {
-                const transactionId = transactionIdInput.value.trim();
-                const identifier = document.getElementById('payment-identifier').value.trim();
-                const errorP = document.getElementById('paypal-manual-error');
-                
-                if (!transactionId || !identifier || !termsCheckbox.checked) {
-                    errorP.textContent = 'Please fill all fields and agree to the terms.';
-                    errorP.style.display = 'block';
-                    return;
-                }
-
-                const quantity = isDonationMode ? 0 : parseInt(document.getElementById('lesson-quantity').value, 10);
-                const description = isDonationMode ? "Donation" : `${currentTariffName} x${quantity}`;
-
-                try {
-                    const response = await fetch('/api/manual-payment/submit', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            transactionId,
-                            paymentSystem: system,
-                            amount: parseFloat(amount),
-                            currency: paymentConfig.currency,
-                            lessonsPurchased: quantity,
-                            description,
-                            identifier
-                        })
-                    });
-
-                    if (response.ok) {
-                        window.location.href = '/successful-payment';
-                    } else {
-                        const errorData = await response.json();
-                        errorP.textContent = errorData.msg || 'An error occurred.';
-                        errorP.style.display = 'block';
-                    }
-                } catch (error) {
-                    errorP.textContent = 'Network error. Please try again.';
-                    errorP.style.display = 'block';
-                }
-            });
-        }
-        
-        const closePaymentModal = () => paymentModal.classList.remove('is-open');
         paymentModal.querySelector('.close-button').addEventListener('click', closePaymentModal);
-        window.addEventListener('click', (event) => { if (event.target === paymentModal) closePaymentModal(); });
-        window.addEventListener('keydown', (event) => { if (event.key === 'Escape' && paymentModal.classList.contains('is-open')) closePaymentModal(); });
+        paymentModal.addEventListener('click', (e) => { if (e.target === paymentModal) closePaymentModal(); });
+        window.addEventListener('keydown', (e) => { if (e.key === 'Escape' && paymentModal.classList.contains('is-open')) closePaymentModal(); });
     }
-    
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add('visible'); });
-    }, { threshold: 0.1 });
-    document.querySelectorAll('.animate-on-scroll').forEach(el => observer.observe(el));
-    
-    const savedTheme = localStorage.getItem('theme') || 'light';
-    let savedLang = localStorage.getItem('language') || 'en';
-    if (savedLang === 'ua') { savedLang = 'uk'; localStorage.setItem('language', 'uk'); }
-    setTheme(savedTheme);
-    setLanguage(savedLang);
 });
