@@ -156,6 +156,50 @@
     }
 }
 
+
+.settings-box .auth-form {
+    padding: 20px;
+}
+
+.settings-card {
+    background: var(--form-bg-color);
+    border: 1px solid var(--form-border-color);
+    border-radius: 15px;
+    padding: 25px;
+    margin-bottom: 20px;
+}
+
+.settings-card .card-icon-header {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 10px;
+}
+
+.settings-card .card-icon-header i {
+    font-size: 1.5rem;
+    color: var(--primary-color);
+}
+
+.settings-card h3 {
+    margin: 0;
+    font-size: 1.25rem;
+}
+
+.settings-box .page-header {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.settings-box .page-header h1 {
+    font-size: 2rem;
+}
+
+.settings-box .form-actions {
+    text-align: center;
+    margin-top: 20px;
+}
+
 /* === DASHBOARD LAYOUT === */
 .dashboard-layout { display: flex; min-height: 100vh; }
 .dashboard-sidebar { width: 260px; background-color: var(--popup-bg); border-right: 1px solid var(--card-border); display: flex; flex-direction: column; justify-content: space-between; padding: 20px; transition: width .3s ease; flex-shrink: 0; }

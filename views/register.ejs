@@ -1,13 +1,13 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Register - Code & Learn</title>
-  <link rel="stylesheet" href="/css/dashboard.css" />
+  <link rel="stylesheet" href="/css/auth.css" />
   <link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;800&family=Roboto:wght@400;700&display=swap" rel="stylesheet" />
 </head>
-<body class="auth-layout">
+<body>
     <% if ((locals.success_msg && locals.success_msg.length > 0) || (locals.error_msg && locals.error_msg.length > 0) || (locals.error && locals.error.length > 0)) { %>
         <div class="flash-messages">
             <% if (locals.success_msg && locals.success_msg.length > 0) { %>
@@ -22,10 +22,9 @@
         </div>
     <% } %>
 
+<div class="auth-layout">
   <div class="auth-box animated">
-    <header class="theme-toggle-wrapper">
-        <button id="theme-toggle" aria-label="Toggle theme">🌙</button>
-    </header>
+
     <div class="auth-side">
       <h2>“Every coder starts somewhere.”</h2>
       <p>— Start your journey with us today</p>
@@ -33,48 +32,51 @@
 
     <div class="auth-form">
       <div class="auth-header">
-        <h1 class="fade">Create Account</h1>
-        <p class="auth-subtitle fade">Start learning and building with code</p>
+        <h1>Create Account</h1>
+        <p class="auth-subtitle">Start learning and building with code</p>
       </div>
 
-      <form action="/users/register" method="POST" class="form-fields">
-        <div class="form-group floating fade">
+            <form action="/users/register" method="POST">
+                <div class="form-group floating">
           <input type="text" name="name" id="name" required placeholder=" " value="<%= typeof name != 'undefined' ? name : '' %>" />
           <label for="name">Full Name</label>
         </div>
 
-        <div class="form-group floating fade">
+                <div class="form-group floating">
           <input type="email" name="email" id="email" required placeholder=" " value="<%= typeof email != 'undefined' ? email : '' %>" />
           <label for="email">Email</label>
         </div>
 
-        <div class="form-group floating fade">
+                <div class="form-group floating">
           <input type="text" name="contact" id="contact" placeholder=" " value="<%= typeof contact != 'undefined' ? contact : '' %>" />
           <label for="contact">Telegram / WhatsApp (optional)</label>
         </div>
 
-        <div class="form-group floating fade">
+                <div class="form-group floating">
           <input type="password" name="password" id="password" required placeholder=" " />
           <label for="password">Password</label>
         </div>
 
-        <div class="form-group floating fade">
+                <div class="form-group floating">
           <input type="password" name="password2" id="password2" required placeholder=" " />
           <label for="password2">Confirm Password</label>
         </div>
 
-        <button type="submit" class="btn btn-primary fade">Create Account</button>
+                <button type="submit" class="btn btn-primary">Create Account</button>
       </form>
 
-      <div class="auth-divider fade">or</div>
+            <div class="auth-divider">or</div>
 
-      <a href="/users/auth/google" class="google-signin-button fade">
+            <a href="/users/auth/google" class="google-signin-button">
         <img src="/images/google.svg" alt="Google logo" width="18" height="18" />
         <span>Sign in with Google</span>
       </a>
 
 
-      <p class="switch-auth fade">Already have an account? <a href="/users/login">Login</a></p>
+            <p class="auth-footer">Already have an account? <a href="/users/login">Login</a></p>
+    </div>
+  </div>
+</div>
     </div>
   </div>
 

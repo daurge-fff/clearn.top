@@ -2,6 +2,31 @@
 // === MAIN GLOBAL SCRIPT FILE ===
 // ===================================
 
+// ===================================
+// === THEME TOGGLE FUNCTIONALITY ===
+// ===================================
+function initializeThemeToggle() {
+    const themeToggle = document.getElementById('theme-toggle');
+    if (!themeToggle) return;
+
+    const currentTheme = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    themeToggle.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+
+    themeToggle.addEventListener('click', () => {
+        let theme = document.documentElement.getAttribute('data-theme');
+        if (theme === 'light') {
+            theme = 'dark';
+            themeToggle.textContent = '☀️';
+        } else {
+            theme = 'light';
+            themeToggle.textContent = '🌙';
+        }
+        document.documentElement.setAttribute('data-theme', theme);
+        localStorage.setItem('theme', theme);
+    });
+}
+
 // Application initialization state
 const APP_STATE = {
     initialized: false,
@@ -421,6 +446,7 @@ if (document.querySelector('.dashboard-layout')) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+    initializeThemeToggle();
     if (APP_STATE.initialized) return;
     APP_STATE.initialized = true;
     
