@@ -888,7 +888,7 @@ const translations = {
         footer_terms: "Условия использования",
         footer_privacy: "Политика конфиденциальности",
         footer_cookie: "Политика использования cookie",
-        back_to_top: "Наверх",
+        
         notification_copy_success: "Email скопирован в буфер обмена!",
         form_sending: "Отправка...",
         form_success: "Ваш запрос отправлен!",

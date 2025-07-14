@@ -166,11 +166,7 @@ document.addEventListener('DOMContentLoaded', () => {
         input.addEventListener('blur', function() { this.parentElement.classList.remove('focused'); });
     });
 
-    const backToTopBtn = document.querySelector('.back-to-top');
-    if (backToTopBtn) {
-        window.addEventListener('scroll', () => backToTopBtn.classList.toggle('show', window.pageYOffset > 300));
-        backToTopBtn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
-    }
+
     
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
