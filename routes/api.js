@@ -697,8 +697,18 @@ const feedbackRateLimit = new Map();
 
 router.post('/feedback', async (req, res) => {
     const { name, email, message, timezone } = req.body;
-    let ip = req.ip || req.connection.remoteAddress;
-    if (ip === '::1') ip = 'localhost';
+    console.log('Feedback request headers:', req.headers);
+    console.log('req.ip:', req.ip);
+    console.log('req.connection.remoteAddress:', req.connection.remoteAddress);
+    let ip = req.headers['cf-connecting-ip'] ||
+           req.headers['x-real-ip'] ||
+           (req.headers['x-forwarded-for'] || '').split(',').shift().trim() ||
+           req.ip ||
+           req.connection.remoteAddress || 'unknown';
+    if (ip.startsWith('::ffff:')) {
+        ip = ip.slice(7);
+    }
+    console.log('Calculated IP:', ip);
     if (!name || !email || !message) {
         return res.status(400).json({ msg: 'All fields are required' });
     }

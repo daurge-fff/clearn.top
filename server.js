@@ -23,6 +23,7 @@ mongoose.connect(process.env.MONGO_URI)
     });
 
     const app = express();
+app.set('trust proxy', true);
 require('./config/passport')(passport);
 
 app.use(expressLayouts);
