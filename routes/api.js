@@ -693,6 +693,35 @@ router.post('/users/:id/reset-password', ensureAuth, ensureRole('admin'), async 
     }
 });
 
+const feedbackRateLimit = new Map();
+
+router.post('/feedback', async (req, res) => {
+    const { name, email, message, timezone } = req.body;
+    let ip = req.ip || req.connection.remoteAddress;
+    if (ip === '::1') ip = 'localhost';
+    if (!name || !email || !message) {
+        return res.status(400).json({ msg: 'All fields are required' });
+    }
+    if (feedbackRateLimit.has(ip) && Date.now() - feedbackRateLimit.get(ip) < 60000) {
+        return res.status(429).json({ msg: 'Please wait a minute before sending another feedback.' });
+    }
+    try {
+        let timezoneDisplay = 'Unknown';
+        if (timezone) {
+            const dateStr = new Date().toLocaleString('en', { timeZone: timezone, timeZoneName: 'short' });
+            const utcOffset = dateStr.split(' ').pop().replace('GMT', 'UTC');
+            timezoneDisplay = `${timezone} (${utcOffset})`;
+        }
+        const telegramMessage = `🆕 *New Feedback Received* \n\n👤 *Name:* ${name}\n📧 *Email:* ${email}\n🕒 *Timezone:* ${timezoneDisplay}\n🌐 *IP:* ${ip}\n\n💬 *Message:* \n${message}`;
+        await bot.sendMessage(process.env.TELEGRAM_CHAT_ID, telegramMessage, { parse_mode: 'Markdown' });
+        feedbackRateLimit.set(ip, Date.now());
+        res.json({ msg: 'Feedback sent successfully' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ msg: 'Server Error' });
+    }
+});
+
 router.post('/notify/telegram', ensureAuth, ensureRole('admin'), async (req, res) => {
     const { userId, message } = req.body;
     if (!userId || !message) {

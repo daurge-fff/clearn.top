@@ -600,6 +600,45 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         updateMainImage(0);
+
+    const feedbackForm = document.getElementById('feedback-form');
+    if (feedbackForm) {
+        function showNotification(message, type) {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            setTimeout(() => notification.remove(), 3000);
+        }
+
+        feedbackForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('name').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const message = document.getElementById('message').value.trim();
+            const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+            if (!name || !email || !message) {
+                showNotification('Please fill all fields.', 'error');
+                return;
+            }
+            try {
+                const response = await fetch('/api/feedback', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, email, message, timezone })
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    showNotification(data.msg || 'Feedback sent successfully!', 'success');
+                    feedbackForm.reset();
+                } else {
+                    showNotification(data.msg || 'An error occurred.', 'error');
+                }
+            } catch (error) {
+                showNotification('Network error. Please try again.', 'error');
+            }
+        });
+    }
     }
 });
 
