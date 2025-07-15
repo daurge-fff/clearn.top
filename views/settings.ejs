@@ -33,24 +33,7 @@
             </div>
         </div>
 
-        <div class="card settings-card full-width-card">
-            <div class="card-icon-header">
-                <i class="icon-bell"></i>
-                <h3>Notifications & Integrations</h3>
-            </div>
-            <p class="section-subtitle">Connect your accounts to receive important updates.</p>
-            
-            <div class="form-group">
-                <label for="telegramChatId">Your Telegram Chat ID</label>
-                <input type="text" id="telegramChatId" name="telegramChatId" value="<%= user.telegramChatId || '' %>" placeholder="Get it from @CodeLearnHelperBot">
-                <p class="form-hint">Start a chat with our bot to get your ID.</p>
-            </div>
-            <label class="checkbox-label">
-                <input type="checkbox" name="notifications[lessonReminders]" <%= (user.notifications && user.notifications.lessonReminders) ? 'checked' : '' %>>
-                <span class="custom-checkbox"><i class="icon-check"></i></span>
-                <span>Receive reminders about upcoming lessons</span>
-            </label>
-        </div>
+        
     </div>
 
     <div class="form-actions">

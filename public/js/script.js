@@ -3,7 +3,7 @@ function copyToClipboard(text) {
     const t = (typeof translations !== 'undefined' && translations[lang]) ? translations[lang] : { notification_copy_success: 'Copied to clipboard!' };
     const message = t.notification_copy_success;
     if (navigator.clipboard && window.isSecureContext) {
-        navigator.clipboard.writeText(text).then(() => showCopyNotification(message)).catch(err => console.error('Failed to copy: ', err));
+        navigator.clipboard.writeText(text).catch(err => console.error('Failed to copy: ', err));
     } else {
         const textArea = document.createElement('textarea');
         textArea.value = text;
@@ -13,28 +13,11 @@ function copyToClipboard(text) {
         textArea.select();
         try {
             document.execCommand('copy');
-            showCopyNotification(message);
         } catch (err) {
             console.error('Fallback: Oops, unable to copy', err);
         }
         document.body.removeChild(textArea);
     }
-}
-
-function showCopyNotification(message) {
-    const notification = document.createElement('div');
-    notification.textContent = message;
-    notification.style.cssText = 'position: fixed; top: 20px; right: 20px; background: #28a745; color: white; padding: 10px 15px; border-radius: 5px; z-index: 10000; font-size: 14px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); transition: opacity 0.3s, transform 0.3s;';
-    document.body.appendChild(notification);
-    setTimeout(() => {
-        notification.style.opacity = '0';
-        notification.style.transform = 'translateY(-20px)';
-        setTimeout(() => {
-            if (document.body.contains(notification)) {
-                document.body.removeChild(notification);
-            }
-        }, 300);
-    }, 2000);
 }
 
 function closeCardModal() {
@@ -603,13 +586,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const feedbackForm = document.getElementById('feedback-form');
     if (feedbackForm) {
-        function showNotification(message, type) {
-            const notification = document.createElement('div');
-            notification.className = `notification ${type}`;
-            notification.textContent = message;
-            document.body.appendChild(notification);
-            setTimeout(() => notification.remove(), 3000);
-        }
+        
 
         feedbackForm.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -618,7 +595,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const message = document.getElementById('message').value.trim();
             const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
             if (!name || !email || !message) {
-                showNotification('Please fill all fields.', 'error');
                 return;
             }
             try {
@@ -629,13 +605,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
                 const data = await response.json();
                 if (response.ok) {
-                    showNotification(data.msg || 'Feedback sent successfully!', 'success');
                     feedbackForm.reset();
-                } else {
-                    showNotification(data.msg || 'An error occurred.', 'error');
                 }
             } catch (error) {
-                showNotification('Network error. Please try again.', 'error');
             }
         });
     }

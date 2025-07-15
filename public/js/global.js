@@ -412,18 +412,7 @@ function initializeLessonModal() {
     });
 }
 
-function initializeFlashMessages() {
-    const messages = document.querySelectorAll('.flash-message');
-    messages.forEach(message => {
-        setTimeout(() => {
-            message.style.display = 'none';
-        }, 5000);
-    });
-}
 
-if (document.querySelector('.dashboard-layout')) {
-    initializeFlashMessages();
-}
 
 document.addEventListener('DOMContentLoaded', () => {
     initializeThemeToggle();

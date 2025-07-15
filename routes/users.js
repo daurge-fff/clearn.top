@@ -16,7 +16,6 @@ router.post('/login', (req, res, next) => {
     passport.authenticate('local', (err, user, info) => {
         if (err) { return next(err); }
         if (!user) {
-            req.flash('error_msg', info.message);
             return res.redirect('/users/login');
         }
         req.logIn(user, async (err) => {
@@ -44,12 +43,10 @@ router.post('/register', (req, res) => {
     if (password.length < 6) errors.push({ msg: 'Password must be at least 6 characters' });
 
     if (errors.length > 0) {
-        errors.forEach(err => req.flash('error_msg', err.msg));
         res.redirect('/users/register');
     } else {
         User.findOne({ email: email.toLowerCase() }).then(user => {
             if (user) {
-                req.flash('error_msg', 'Email already exists');
                 res.redirect('/users/register');
             } else {
                 const newUser = new User({ name, email: email.toLowerCase(), password, contact });
@@ -60,7 +57,6 @@ router.post('/register', (req, res) => {
                         newUser.save()
                         .then(async user => {
                             await claimPendingPaymentsForUser(user);
-                            req.flash('success_msg', 'You are now registered and can log in');
                             res.redirect('/users/login');
                         })
                         .catch(err => console.log(err));
@@ -82,7 +78,7 @@ router.get('/auth/google/callback', passport.authenticate('google', { failureRed
 router.get('/logout', (req, res, next) => {
     req.logout(function(err) {
         if (err) { return next(err); }
-        req.flash('success_msg', 'You are logged out');
+        
         res.redirect('/users/login');
     });
 });

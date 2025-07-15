@@ -128,20 +128,9 @@ async function approvePayment(paymentId) {
         const creditResult = await creditPaymentToUser(payment);
         if (!creditResult.success) throw new Error("Failed to credit payment to user.");
         const user = await User.findById(payment.userId).lean();
-        await notifyAdmin(
-            `✅ *Payment Approved & Linked*\n\n` +
-            `*Client:* \`${payment.pendingIdentifier}\`\n` +
-            `*User:* ${user.name}\n` +
-            `*Amount:* ${payment.amountPaid} ${payment.currency}\n` +
-            `*Action:* ${payment.lessonsPurchased} lesson(s) credited. New balance: *${user.lessonsPaid}* lessons.`
-        );
+        
     } else {
-        await notifyAdmin(
-            `⚠️ *Payment Approved, Linking FAILED*\n\n` +
-            `*Client:* \`${payment.pendingIdentifier}\`\n` +
-            `*Amount:* ${payment.amountPaid} ${payment.currency}\n` +
-            `*Action:* Payment status is 'completed', but no user was found. *Please link it manually in the dashboard.*`
-        );
+        
     }
 
     return { success: true, payment };
@@ -160,7 +149,7 @@ async function declinePayment(paymentId) {
     payment.status = 'failed';
     await payment.save();
     
-    await notifyAdmin(`❌ *Payment Declined*\n\n*Client:* \`${payment.pendingIdentifier}\`\n*Amount:* ${payment.amountPaid} ${payment.currency}\n*Declined by:* Admin`);
+    
 
     return { success: true, payment };
 }

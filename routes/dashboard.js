@@ -164,7 +164,6 @@ router.get('/lessons/add', ensureAuth, ensureRole('admin'), async (req, res) => 
 router.post('/lessons/add', ensureAuth, ensureRole('admin'), async (req, res) => {
     const { student, teacher, course, lessonDate, duration, topic } = req.body;
     if (!student || !teacher || !course || !lessonDate) {
-        req.flash('error_msg', 'Please fill all required fields.');
         return res.redirect('/dashboard/lessons/add');
     }
     try {
@@ -179,11 +178,9 @@ router.post('/lessons/add', ensureAuth, ensureRole('admin'), async (req, res) =>
             topic: topic || 'Scheduled Lesson'
         });
         await User.findByIdAndUpdate(student, { $inc: { lessonsPaid: -1 } });
-        req.flash('success_msg', 'Lesson scheduled successfully.');
         res.redirect('/dashboard/lessons');
     } catch (err) {
         console.error(err);
-        req.flash('error_msg', 'Server Error.');
         res.redirect('/dashboard/lessons/add');
     }
 });
@@ -425,7 +422,6 @@ router.post('/settings', ensureAuth, async (req, res) => {
 
         const user = await User.findById(req.user.id);
         if (!user) {
-            req.flash('error_msg', 'User not found.');
             return res.redirect('/settings');
         }
 
@@ -439,11 +435,9 @@ router.post('/settings', ensureAuth, async (req, res) => {
         }
 
         await user.save();
-        req.flash('success_msg', 'Settings updated successfully!');
         res.redirect('/dashboard/settings');
     } catch (err) {
         console.error(err);
-        req.flash('error_msg', 'Something went wrong.');
         res.redirect('/dashboard/settings');
     }
 });
@@ -464,7 +458,6 @@ router.post('/user-profile/:id/adjust-balance', ensureAuth, ensureRole('admin'),
         const amount = parseInt(adjustment, 10);
 
         if (!amount || !reason) {
-            req.flash('error_msg', 'Amount and reason are required.');
             return res.redirect(`/dashboard/user-profile/${req.params.id}`);
         }
 
@@ -480,12 +473,10 @@ router.post('/user-profile/:id/adjust-balance', ensureAuth, ensureRole('admin'),
         });
         await user.save();
 
-        req.flash('success_msg', 'Balance adjusted successfully.');
         res.redirect(`/dashboard/user-profile/${req.params.id}`);
 
     } catch (err) {
         console.error(err);
-        req.flash('error_msg', 'Something went wrong.');
         res.redirect(`/dashboard/user-profile/${req.params.id}`);
     }
 });
@@ -493,14 +484,12 @@ router.post('/users/add', ensureAuth, ensureRole('admin'), async (req, res) => {
     const { name, email, password, role, contact, lessonsPaid } = req.body;
     
     if (!name || !email || !password || !role) {
-        req.flash('error_msg', 'Please enter all required fields');
         return res.redirect('/dashboard/users/add');
     }
     
     try {
         const existingUser = await User.findOne({ email: email.toLowerCase() });
         if (existingUser) {
-            req.flash('error_msg', 'Email already exists');
             return res.redirect('/dashboard/users/add');
         }
         
@@ -544,12 +533,10 @@ router.post('/users/add', ensureAuth, ensureRole('admin'), async (req, res) => {
         
         await newUser.save();
 
-        req.flash('success_msg', 'User created successfully');
         res.redirect('/dashboard/users');
 
     } catch (err) {
         console.error(err);
-        req.flash('error_msg', 'Something went wrong');
         res.redirect('/dashboard/users/add');
     }
 });
@@ -562,7 +549,6 @@ router.post('/user-profile/:id/register-payment', ensureAuth, ensureRole('admin'
         const amount = parseFloat(amountPaid);
 
         if (!lessons || !amount || !paymentSystem) {
-            req.flash('error_msg', 'All fields are required.');
             return res.redirect(`/dashboard/user-profile/${req.params.id}`);
         }
 
@@ -588,12 +574,10 @@ router.post('/user-profile/:id/register-payment', ensureAuth, ensureRole('admin'
             transactionType: 'Manual'
         });
 
-        req.flash('success_msg', 'Payment registered and balance updated.');
         res.redirect(`/dashboard/user-profile/${req.params.id}`);
 
     } catch (err) {
         console.error(err);
-        req.flash('error_msg', 'Something went wrong.');
         res.redirect(`/dashboard/user-profile/${req.params.id}`);
     }
 });
