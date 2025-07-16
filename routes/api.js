@@ -3,6 +3,7 @@ const router = express.Router();
 const crypto = require('crypto');
 const axios = require('axios');
 const bcrypt = require('bcryptjs');
+const moment = require('moment-timezone');
 const { Parser } = require('json2csv');
 const { findUserByIdentifier, creditPaymentToUser, approvePayment, declinePayment } = require('../services/paymentService');
 const bot = require('../bot');
@@ -408,18 +409,24 @@ router.get('/lessons', ensureAuth, async (req, res) => {
         else if (req.user.role === 'teacher') query.teacher = req.user.id;
 
         const lessons = await Lesson.find(query)
-            .populate('student', 'name emojiAvatar')
-            .populate('teacher', 'name emojiAvatar')
+            .populate('student', 'name emojiAvatar timeZone')
+            .populate('teacher', 'name emojiAvatar timeZone')
             .populate('course', 'name');
+
+        const userTz = req.user.timeZone || 'Europe/Moscow';
 
         const events = lessons.map(lesson => {
             const isStudentRole = req.user.role === 'student';
             const otherParty = isStudentRole ? lesson.teacher : lesson.student;
 
+            // Конвертируем время урока в часовой пояс пользователя
+            const lessonStart = moment.utc(lesson.lessonDate).tz(userTz).toDate();
+            const lessonEnd = moment.utc(lesson.lessonDate).tz(userTz).add(lesson.duration, 'minutes').toDate();
+
             return {
                 title: otherParty ? `Lesson with ${otherParty.name}` : 'Lesson',
-                start: lesson.lessonDate,
-                end: new Date(new Date(lesson.lessonDate).getTime() + lesson.duration * 60000),
+                start: lessonStart,
+                end: lessonEnd,
                 backgroundColor: lesson.status === 'completed' ? '#2ecc71' : (lesson.status.startsWith('cancelled') ? '#e74c3c' : '#3498db'),
                 borderColor: lesson.status === 'completed' ? '#2ecc71' : (lesson.status.startsWith('cancelled') ? '#e74c3c' : '#3498db'),
                 id: lesson._id,
@@ -517,9 +524,10 @@ router.get('/users/export', ensureAuth, ensureRole('admin'), async (req, res) =>
 
 router.get('/lessons/export', ensureAuth, ensureRole('admin'), async (req, res) => {
     try {
-        const lessons = await Lesson.find({}).populate('student', 'name').populate('teacher', 'name').populate('course', 'name').lean();
+        const lessons = await Lesson.find({}).populate('student', 'name timeZone').populate('teacher', 'name timeZone').populate('course', 'name').lean();
+        const userTz = req.user.timeZone || 'Europe/Moscow';
         const lessonsData = lessons.map(l => ({
-            lesson_date: new Date(l.lessonDate).toLocaleString('ru-RU'),
+            lesson_date: moment.utc(l.lessonDate).tz(userTz).format('DD/MM/YYYY HH:mm'),
             student_name: l.student.name,
             teacher_name: l.teacher.name,
             course_name: l.course.name,

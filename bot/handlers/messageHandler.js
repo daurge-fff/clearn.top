@@ -5,6 +5,7 @@ const { createCalendarKeyboard } = require('../keyboards/calendarKeyboards');
 const stateService = require('../services/stateService');
 const searchService = require('../services/searchService');
 const analyticsService = require('../services/analyticsService');
+const moment = require('moment-timezone');
 
 let BASE_URL;
 let undoStack;
@@ -140,8 +141,11 @@ async function handleLessonCancellation(bot, chatId, user, lessonId, reason) {
         
         const teacher = lesson.teacher;
         if (teacher && teacher.telegramChatId) {
-            const date = new Date(lesson.lessonDate).toLocaleDateString('en-GB');
-            const time = new Date(lesson.lessonDate).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+            // Получаем часовой пояс учителя для отображения времени
+            const teacherData = await User.findById(teacher._id).select('timeZone').lean();
+            const teacherTz = teacherData?.timeZone || 'Europe/Moscow';
+            const date = moment.utc(lesson.lessonDate).tz(teacherTz).format('DD/MM/YYYY');
+            const time = moment.utc(lesson.lessonDate).tz(teacherTz).format('HH:mm');
             const notification = `⚠️ *Lesson Cancellation*\n\nStudent *${user.name}* has cancelled the lesson scheduled for *${date} at ${time}*.\n\n*Reason:* ${reason}`;
             bot.sendMessage(teacher.telegramChatId, notification, { parse_mode: 'Markdown' });
         }
@@ -317,25 +321,33 @@ async function findUserForAdjustment(bot, chatId, searchString, context = {}) {
 }
 
 async function sendCalendar(bot, chatId, user) {
-    const keyboard = await createCalendarKeyboard(user, new Date());
-    bot.sendMessage(chatId, "📅 Your schedule:", { reply_markup: keyboard });
+    try {
+        const userTz = user.timeZone || 'Europe/Moscow';
+        const keyboard = await createCalendarKeyboard(user, moment.tz(userTz).toDate());
+        bot.sendMessage(chatId, "📅 Your schedule:", { reply_markup: keyboard });
+    } catch (error) {
+        console.error('Error creating calendar:', error);
+        bot.sendMessage(chatId, "❌ Sorry, there was an error loading your calendar. Please try again later.");
+    }
 }
 
 async function sendTodaysLessons(bot, chatId, user) {
-    const startOfDay = new Date(); startOfDay.setHours(0, 0, 0, 0);
-    const endOfDay = new Date(); endOfDay.setHours(23, 59, 59, 999);
+    const userTz = user.timeZone || 'Europe/Moscow';
+    const today = moment.tz(userTz);
+    const startOfDay = today.clone().startOf('day').utc().toDate();
+    const endOfDay = today.clone().endOf('day').utc().toDate();
 
     const lessons = await Lesson.find({
         teacher: user._id,
         lessonDate: { $gte: startOfDay, $lte: endOfDay }
     }).sort({ lessonDate: 1 }).populate('student', 'name').populate('course', 'name').lean(); 
 
-    const dateTitle = escapeHtml(new Date().toLocaleDateString('en-GB'));
+    const dateTitle = escapeHtml(today.format('DD/MM/YYYY'));
     let response = `<b>Your lessons for today, ${dateTitle}:</b>\n\n`;
 
     if (lessons.length > 0) {
         lessons.forEach(l => {
-            const time = escapeHtml(new Date(l.lessonDate).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }));
+            const time = escapeHtml(moment.utc(l.lessonDate).tz(userTz).format('HH:mm'));
             const studentName = escapeHtml(l.student.name);
             const courseName = escapeHtml(l.course.name || 'General');
             const status = getStatusEmoji(l.status);

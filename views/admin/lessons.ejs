@@ -94,7 +94,7 @@
                                 <td><%= lesson.student.name %></td>
                                 <td><%= lesson.teacher.name %></td>
                                 <td><%= lesson.course.name %></td>
-                                <td><%= new Date(lesson.lessonDate).toLocaleString('en-GB') %></td>
+                                <td><%= new Date(lesson.localLessonDate).toLocaleString('en-GB') %></td>
 
                                 <td class="status-cell" data-lesson-id="<%= lesson._id %>" data-current-status="<%= lesson.status %>">
                                     <span class="badge status-<%= lesson.status.replace(/ /g, '_') %> current-status-badge">

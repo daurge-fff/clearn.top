@@ -95,7 +95,7 @@
                     <% if (lessons && lessons.length > 0) { %>
                         <% lessons.forEach(lesson => { %>
                             <tr data-lesson-id="<%= lesson._id %>">
-                                <td><%= new Date(lesson.lessonDate).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) %></td>
+                                <td><%= new Date(lesson.localLessonDate).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) %></td>
                                 <td><%= userProfile.role === 'student' ? (lesson.teacher ? lesson.teacher.name : 'N/A') : (lesson.student ? lesson.student.name : 'N/A') %></td>
                                 <td><%= lesson.topic %></td>
                                 <td class="status-cell" data-lesson-id="<%= lesson._id %>" data-current-status="<%= lesson.status %>">

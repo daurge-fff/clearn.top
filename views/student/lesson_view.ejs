@@ -3,7 +3,7 @@
         <div>
             <h1>Lesson: <%= lesson.course.name %></h1>
             <p class="section-subtitle">
-                <%= new Date(lesson.lessonDate).toLocaleDateString('en-GB', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) %>
+                <%= new Date(lesson.localLessonDate).toLocaleDateString('en-GB', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) %>
             </p>
         </div>
         <a href="/dashboard/my-lessons" class="btn btn-secondary">Back to My Lessons</a>

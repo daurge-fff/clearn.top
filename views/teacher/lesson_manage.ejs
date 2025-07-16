@@ -2,6 +2,7 @@
     <div>
         <h1>Manage Lesson</h1>
         <p class="section-subtitle">With <strong><%= lesson.student.name %></strong> on course <strong>"<%= lesson.course.name %>"</strong></p>
+        <p class="lesson-date">Scheduled for: <strong><%= new Date(lesson.localLessonDate).toLocaleString('en-GB', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' }) %></strong></p>
     </div>
 </div>
 

@@ -17,7 +17,7 @@
                 <div class="stat-info">
                     <span class="stat-label">Next Lesson</span>
                     <% if (stats.upcomingLesson) { %>
-                        <span class="stat-number small"><%= new Date(stats.upcomingLesson.lessonDate).toLocaleDateString('en-GB', { month: 'short', day: 'numeric' }) %></span>
+                        <span class="stat-number small"><%= new Date(stats.upcomingLesson.localLessonDate).toLocaleDateString('en-GB', { month: 'short', day: 'numeric' }) %></span>
                     <% } else { %>
                         <span class="stat-number small">No lessons scheduled</span>
                     <% } %>

@@ -68,7 +68,7 @@
                                 </a>
                             </td>
                             <td><%= lesson.teacher.name %></td>
-                            <td><%= new Date(lesson.lessonDate).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) %></td>
+                            <td><%= new Date(lesson.localLessonDate).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) %></td>
                             <td><span class="badge status-<%= lesson.status %>"><%= lesson.status.replace(/_/g, ' ') %></span></td>
                             <td class="actions-cell">
                                 <% if (lesson.status === 'scheduled') { %>

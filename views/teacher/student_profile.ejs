@@ -62,7 +62,7 @@
                     <% if (lessons && lessons.length > 0) { %>
                         <% lessons.forEach(lesson => { %>
                             <tr>
-                                <td><%= new Date(lesson.lessonDate).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) %></td>
+                                <td><%= new Date(lesson.localLessonDate).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) %></td>
                                 <td><%= lesson.topic %></td>
                                 <td><span class="badge status-<%= lesson.status %>"><%= lesson.status.replace(/_/g, ' ') %></span></td>
                                 <td class="actions-cell">

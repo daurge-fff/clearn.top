@@ -26,6 +26,12 @@ router.get('/', ensureAuth, async (req, res) => {
                 lessonDate: { $gte: now }
             }).sort({ lessonDate: 1 }).populate('teacher', 'name').lean();
             
+            const userTz = req.user.timeZone || 'Europe/Moscow';
+            
+            if (upcomingLesson) {
+                upcomingLesson.localLessonDate = moment.utc(upcomingLesson.lessonDate).tz(userTz).toDate();
+            }
+            
             stats = {
                 lessonsPaid: req.user.lessonsPaid,
                 upcomingLesson: upcomingLesson
@@ -37,8 +43,17 @@ router.get('/', ensureAuth, async (req, res) => {
             const endOfWeek = new Date(startOfWeek);
             endOfWeek.setDate(endOfWeek.getDate() + 7);
 
+            const lessonsThisWeek = await Lesson.find({ teacher: req.user.id, lessonDate: { $gte: startOfWeek, $lt: endOfWeek } }).populate('student', 'name').populate('course', 'name').sort({ lessonDate: 1 }).lean();
+            
+            const userTz = req.user.timeZone || 'Europe/Moscow';
+            const lessonsThisWeekWithLocalTime = lessonsThisWeek.map(lesson => ({
+                ...lesson,
+                localLessonDate: moment.utc(lesson.lessonDate).tz(userTz).toDate()
+            }));
+
             stats = {
-                lessonsThisWeek: await Lesson.countDocuments({ teacher: req.user.id, lessonDate: { $gte: startOfWeek, $lt: endOfWeek } }),
+                lessonsThisWeek: lessonsThisWeekWithLocalTime.length,
+                lessonsThisWeekList: lessonsThisWeekWithLocalTime,
                 studentCount: req.user.students.length
             };
         } 
@@ -172,6 +187,12 @@ router.get('/lessons', ensureAuth, ensureRole('admin'), async (req, res) => {
             .populate('course', 'name')
             .sort(sort)
             .lean();
+
+        const userTz = req.user.timeZone || 'Europe/Moscow';
+        const lessonsWithLocalTime = lessons.map(lesson => ({
+            ...lesson,
+            localLessonDate: moment.utc(lesson.lessonDate).tz(userTz).toDate()
+        }));
         
         const allTeachers = await User.find({ role: 'teacher' }).sort({ name: 1 }).lean();
         const allStudents = await User.find({ role: 'student' }).sort({ name: 1 }).lean();
@@ -179,7 +200,7 @@ router.get('/lessons', ensureAuth, ensureRole('admin'), async (req, res) => {
         res.render('admin/lessons', {
             layout: 'layouts/dashboard',
             user: req.user,
-            lessons: lessons,
+            lessons: lessonsWithLocalTime,
             teachers: allTeachers,
             students: allStudents,
             query: req.query,
@@ -197,13 +218,15 @@ router.post('/lessons/add', ensureAuth, ensureRole('admin'), async (req, res) =>
         return res.redirect('/dashboard/lessons/add');
     }
     try {
-        const dateWithoutTimezone = new Date(lessonDate);
+        const adminTz = req.user.timeZone || 'Europe/Moscow';
+        const lessonMoment = moment.tz(lessonDate, adminTz);
+        const lessonDateUTC = lessonMoment.toDate();
 
         await Lesson.create({
             student,
             teacher,
             course,
-            lessonDate: dateWithoutTimezone,
+            lessonDate: lessonDateUTC,
             duration: Number(duration),
             topic: topic || 'Scheduled Lesson'
         });
@@ -214,9 +237,9 @@ router.post('/lessons/add', ensureAuth, ensureRole('admin'), async (req, res) =>
         res.redirect('/dashboard/lessons/add');
     }
 });
-router.get('/schedule', ensureAuth, ensureRole('teacher'), async (req, res) => { try { const lessons = await Lesson.find({ teacher: req.user.id }).populate('student', 'name').populate('course', 'name').sort({ lessonDate: -1 }).lean(); res.render('teacher/schedule', { layout: 'layouts/dashboard', user: req.user, lessons: lessons, page_name: 'schedule' }); } catch (err) { console.error(err); res.status(500).send('Server Error'); } });
+router.get('/schedule', ensureAuth, ensureRole('teacher'), async (req, res) => { try { const lessons = await Lesson.find({ teacher: req.user.id }).populate('student', 'name').populate('course', 'name').sort({ lessonDate: -1 }).lean(); const userTz = req.user.timeZone || 'Europe/Moscow'; const lessonsWithLocalTime = lessons.map(lesson => ({ ...lesson, localLessonDate: moment.utc(lesson.lessonDate).tz(userTz).toDate() })); res.render('teacher/schedule', { layout: 'layouts/dashboard', user: req.user, lessons: lessonsWithLocalTime, page_name: 'schedule' }); } catch (err) { console.error(err); res.status(500).send('Server Error'); } });
 router.get('/my-students', ensureAuth, ensureRole('teacher'), async (req, res) => { try { const teacher = await User.findById(req.user.id).populate('students'); res.render('teacher/my_students', { layout: 'layouts/dashboard', user: req.user, students: teacher.students, page_name: 'students' }); } catch (err) { console.error(err); res.status(500).send('Server Error'); } });
-router.get('/lessons/manage/:id', ensureAuth, async (req, res) => { try { const lesson = await Lesson.findById(req.params.id).populate('student', 'name').populate('course', 'name').lean(); if (!lesson) return res.status(404).send('Lesson not found'); if (req.user.role !== 'admin' && String(lesson.teacher) !== String(req.user.id)) { return res.status(403).send('Forbidden: You are not authorized to manage this lesson.'); } res.render('teacher/lesson_manage', { layout: 'layouts/dashboard', user: req.user, lesson: lesson, page_name: req.user.role === 'admin' ? 'lessons' : 'schedule' }); } catch (err) { console.error(err); res.status(500).send('Server Error'); } });
+router.get('/lessons/manage/:id', ensureAuth, async (req, res) => { try { const lesson = await Lesson.findById(req.params.id).populate('student', 'name').populate('course', 'name').lean(); if (!lesson) return res.status(404).send('Lesson not found'); if (req.user.role !== 'admin' && String(lesson.teacher) !== String(req.user.id)) { return res.status(403).send('Forbidden: You are not authorized to manage this lesson.'); } const userTimeZone = req.user.timeZone || 'UTC'; lesson.localLessonDate = moment.tz(lesson.lessonDate, userTimeZone).toDate(); res.render('teacher/lesson_manage', { layout: 'layouts/dashboard', user: req.user, lesson: lesson, page_name: req.user.role === 'admin' ? 'lessons' : 'schedule' }); } catch (err) { console.error(err); res.status(500).send('Server Error'); } });
 // @desc    Просмотр профиля ученика учителем
 // @route   GET /dashboard/student/:id
 router.get('/student/:id', ensureAuth, ensureRole('teacher'), async (req, res) => {
@@ -227,11 +250,17 @@ router.get('/student/:id', ensureAuth, ensureRole('teacher'), async (req, res) =
         const student = await User.findById(req.params.id).lean();
         const lessons = await Lesson.find({ student: req.params.id, teacher: req.user.id }).sort({ lessonDate: -1 }).lean();
 
+        const userTz = req.user.timeZone || 'Europe/Moscow';
+        const lessonsWithLocalTime = lessons.map(lesson => ({
+            ...lesson,
+            localLessonDate: moment.utc(lesson.lessonDate).tz(userTz).toDate()
+        }));
+
         res.render('teacher/student_profile', {
             layout: 'layouts/dashboard',
             user: req.user,
             student: student,
-            lessons: lessons,
+            lessons: lessonsWithLocalTime,
             page_name: 'students'
         });
     } catch (err) {
@@ -364,10 +393,13 @@ router.get('/my-lessons', ensureAuth, ensureRole('student'), async (req, res) =>
         
         const payments = await Payment.find({ userId: req.user.id, status: 'completed' }).sort({ createdAt: -1 }).lean();
 
+        const userTz = req.user.timeZone || 'Europe/Moscow';
+        const lessonsWithLocalTime = lessons.map(lesson => ({ ...lesson, localLessonDate: moment.utc(lesson.lessonDate).tz(userTz).toDate() }));
+
         res.render('student/my_lessons', {
             layout: 'layouts/dashboard',
             user: req.user,
-            lessons: lessons,
+            lessons: lessonsWithLocalTime,
             payments: payments,
             page_name: 'my-lessons'
         });
@@ -384,6 +416,10 @@ router.get('/lessons/view/:id', ensureAuth, ensureRole('student'), async (req, r
         if (String(lesson.student) !== String(req.user.id)) return res.status(403).send('Forbidden');
 
         const grade = await Grade.findOne({ lesson: lesson._id }).lean();
+
+        // Convert lesson date to user's local time
+        const userTimeZone = req.user.timeZone || 'UTC';
+        lesson.localLessonDate = moment.tz(lesson.lessonDate, userTimeZone).toDate();
 
         res.render('student/lesson_view', {
             layout: 'layouts/dashboard',
@@ -418,6 +454,12 @@ router.get('/user-profile/:id', ensureAuth, ensureRole('admin'), async (req, res
                 .populate('student', 'name')
                 .sort({ lessonDate: -1 })
                 .lean();
+            
+            // Convert lesson dates to user's local time
+            const userTimeZone = req.user.timeZone || 'UTC';
+            lessons.forEach(lesson => {
+                lesson.localLessonDate = moment.tz(lesson.lessonDate, userTimeZone).toDate();
+            });
         }
 
         res.render('admin/user_profile', {

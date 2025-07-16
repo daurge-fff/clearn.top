@@ -6,6 +6,7 @@ const { getStatusEmoji, createPaginationKeyboard, escapeHtml } = require('../uti
 const stateService = require('../services/stateService');
 const searchService = require('../services/searchService');
 const { approvePayment, declinePayment } = require('../../services/paymentService');
+const moment = require('moment-timezone');
 
 async function handleCancellationRequest(bot, query, user, params, { answer }) {
     const lessonId = query.data.split('_')[2];
@@ -65,29 +66,65 @@ async function handleCalendarCallback(bot, query, user, params, { answer }) {
     if (type === 'ignore') return answer();
 
     if (type === 'nav') {
-        const [year, month] = rest;
-        const newDate = new Date(year, month);
-        const keyboard = await createCalendarKeyboard(user, newDate);
-        await bot.editMessageReplyMarkup(keyboard, { chat_id: chatId, message_id: messageId });
-        return answer();
+        try {
+            const [year, month] = rest.map(Number);
+            
+            // Валидация параметров
+            if (isNaN(year) || isNaN(month) || year < 1900 || year > 2100 || month < 0 || month > 11) {
+                throw new Error(`Invalid calendar navigation parameters: year=${year}, month=${month}`);
+            }
+            
+            const userTz = user.timeZone || 'Europe/Moscow';
+            const newDate = moment.tz({year, month, day: 1}, userTz).toDate();
+            const keyboard = await createCalendarKeyboard(user, newDate);
+            await bot.editMessageReplyMarkup(keyboard, { chat_id: chatId, message_id: messageId });
+            return answer();
+        } catch (error) {
+            console.error('Error creating calendar navigation:', error);
+            await answer({ text: "❌ Error loading calendar. Please try again." });
+            return;
+        }
     } 
 
     if (type === 'day') {
-        const [year, month, day] = rest;
-        const selectedDate = new Date(year, month, day);
-        const startOfDay = new Date(new Date(selectedDate).setHours(0, 0, 0, 0));
-        const endOfDay = new Date(new Date(selectedDate).setHours(23, 59, 59, 999));
-        const q = { lessonDate: { $gte: startOfDay, $lte: endOfDay } };
+        const [year, month, day] = rest.map(Number);
+        
+        // Валидация параметров даты
+        if (isNaN(year) || isNaN(month) || isNaN(day) || 
+            year < 1900 || year > 2100 || 
+            month < 0 || month > 11 || 
+            day < 1 || day > 31) {
+            return answer({ text: "❌ Invalid date selected." });
+        }
+
+        const userTz = user.timeZone || 'Europe/Moscow';
+
+        const dateString = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        const dayMoment = moment.tz(dateString, 'YYYY-MM-DD', userTz);
+
+        if (!dayMoment.isValid()) {
+            console.error(`Invalid moment created: ${dateString} for TZ ${userTz}`);
+            return answer({ text: "❌ Invalid date selected." });
+        }
+
+        // Создаем границы дня в часовом поясе пользователя
+        const startOfDay = dayMoment.clone().startOf('day').utc().toDate();
+        const nextDayStart = dayMoment.clone().add(1, 'days').startOf('day').utc().toDate();
+
+        const q = { lessonDate: { $gte: startOfDay, $lt: nextDayStart } };
         if (user.role === 'student') q.student = user._id;
         if (user.role === 'teacher') q.teacher = user._id;
         const lessons = await Lesson.find(q).sort({lessonDate: 1}).populate('teacher student', 'name').populate('course', 'name').lean();
-        let response = `<b>Lessons for ${selectedDate.toLocaleDateString('en-GB')}</b>\n\n`;
+        
+        const formattedDate = dayMoment.format('DD/MM/YYYY');
+        let response = `<b>Lessons for ${formattedDate}</b>\n\n`;
         let k = { inline_keyboard: [] };
         if (lessons.length > 0) {
             lessons.forEach(l => {
                 let lw = escapeHtml(user.role === 'student' ? (l.teacher?.name || 'N/A') : (l.student?.name || 'N/A'));
                 const courseName = escapeHtml(l.course?.name || 'General');
-                const time = escapeHtml(new Date(l.lessonDate).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }));
+                // Конвертируем время урока в часовой пояс пользователя
+                const time = escapeHtml(moment.utc(l.lessonDate).tz(userTz).format('HH:mm'));
                 const status = getStatusEmoji(l.status);
                 response += `${status} <b>${time}</b> - ${lw} <i>(${courseName})</i>\n`;
                 if (l.status === 'scheduled') {
@@ -97,7 +134,7 @@ async function handleCalendarCallback(bot, query, user, params, { answer }) {
                     k.inline_keyboard.push([{ text: `❌ Cancel Lesson at ${time}`, callback_data: `cancel_request_${l._id}` }]);
                 }
             });
-        } else { response = `You have no lessons on ${selectedDate.toLocaleDateString('en-GB')}.`; }
+        } else { response = `You have no lessons on ${formattedDate}.`; }
         await bot.sendMessage(chatId, response, { parse_mode: 'HTML', reply_markup: k });
         return answer();
     }
@@ -114,21 +151,19 @@ async function handleCalendarCallback(bot, query, user, params, { answer }) {
 async function sendFilteredLessons(bot, query, user, filterType, page = 1) {
     const chatId = query.message.chat.id;
     const messageId = query.message.message_id;
-    const now = new Date();
+    const userTz = user.timeZone || 'Europe/Moscow';
+    const now = moment.tz(userTz);
     let startDate, endDate;
     const limit = 5;
     const skip = (page - 1) * limit;
 
     if (filterType === 'week') {
-        const firstDayOfWeek = now.getDate() - now.getDay() + (now.getDay() === 0 ? -6 : 1);
-        startDate = new Date(new Date(now).setDate(firstDayOfWeek));
-        endDate = new Date(new Date(startDate).setDate(startDate.getDate() + 6));
+        startDate = now.clone().startOf('week').utc().toDate();
+        endDate = now.clone().endOf('week').utc().toDate();
     } else {
-        startDate = new Date(now.getFullYear(), now.getMonth(), 1);
-        endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+        startDate = now.clone().startOf('month').utc().toDate();
+        endDate = now.clone().endOf('month').utc().toDate();
     }
-    startDate.setHours(0,0,0,0);
-    endDate.setHours(23,59,59,999);
 
     const q = { lessonDate: { $gte: startDate, $lte: endDate } };
     if (user.role === 'student') q.student = user._id;
@@ -144,8 +179,8 @@ async function sendFilteredLessons(bot, query, user, filterType, page = 1) {
 
     let response = `<b>Lessons for this ${filterType} (Page ${page}/${totalPages}):</b>\n\n`;
     lessons.forEach(l => {
-        const date = escapeHtml(new Date(l.lessonDate).toLocaleDateString('en-GB'));
-        const time = escapeHtml(new Date(l.lessonDate).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }));
+        const date = escapeHtml(moment.utc(l.lessonDate).tz(userTz).format('DD/MM/YYYY'));
+        const time = escapeHtml(moment.utc(l.lessonDate).tz(userTz).format('HH:mm'));
         const lessonWith = escapeHtml(user.role === 'student' ? (l.teacher?.name || 'N/A') : (l.student?.name || 'N/A'));
         const status = getStatusEmoji(l.status);
 
