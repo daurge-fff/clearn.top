@@ -22,6 +22,8 @@ router.post('/login', (req, res, next) => {
             if (err) { return next(err); }
             
             await claimPendingPaymentsForUser(user);
+            user.timeZone = req.body.timeZone || user.timeZone || 'Europe/Moscow';
+            await user.save();
             
             return res.redirect('/dashboard');
         });

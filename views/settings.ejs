@@ -33,6 +33,49 @@
             </div>
         </div>
 
+        <div class="card settings-card">
+            <div class="card-icon-header">
+                <i class="icon-calendar"></i>
+                <h3>Time Zone</h3>
+            </div>
+            <p class="section-subtitle">Select your time zone for accurate scheduling and notifications.</p>
+
+            <div class="form-group">
+                <label for="timeZone">Time Zone</label>
+                <select id="timeZone" name="timeZone" required>
+                <% timeZones.forEach(group => { %>
+                    <optgroup label="<%= group.label %>">
+                        <% group.zones.forEach(tz => { %>
+                            <option value="<%= tz.value %>" <%= user.timeZone === tz.value ? 'selected' : '' %>><%= tz.label %></option>
+                        <% }); %>
+                    </optgroup>
+                <% }); %>
+            </select>
+            </div>
+        </div>
+
+        <div class="card settings-card">
+            <div class="card-icon-header">
+                <i class="icon-telegram"></i>
+                <h3>Telegram Integration</h3>
+            </div>
+            <p class="section-subtitle">Connect your Telegram account and manage notifications.</p>
+
+            <div class="form-group">
+                <label for="telegramChatId">Telegram Chat ID</label>
+                <input type="text" id="telegramChatId" name="telegramChatId" value="<%= user.telegramChatId || '' %>" placeholder="Enter your Telegram Chat ID">
+            </div>
+            <div class="form-group">
+                <label class="checkbox-label" for="lessonReminders">
+                    <div class="custom-checkbox">
+                        <input type="checkbox" id="lessonReminders" name="notifications[lessonReminders]" <%= user.notifications && user.notifications.lessonReminders ? 'checked' : '' %>>
+                        <span class="checkmark"></span>
+                    </div>
+                    <span>Receive lesson reminders via Telegram</span>
+                </label>
+            </div>
+        </div>
+
         
     </div>
 

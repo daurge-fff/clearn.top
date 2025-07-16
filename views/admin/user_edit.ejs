@@ -34,6 +34,18 @@
                  <option value="paused" <%= userToEdit.status === 'paused' ? 'selected' : '' %>>Paused</option>
             </select>
         </div>
+        <div class="form-group">
+            <label for="timeZone">Time Zone</label>
+            <select id="timeZone" name="timeZone" required>
+                <% timeZones.forEach(group => { %>
+                    <optgroup label="<%= group.label %>">
+                        <% group.zones.forEach(tz => { %>
+                            <option value="<%= tz.value %>" <%= userToEdit.timeZone === tz.value ? 'selected' : '' %>><%= tz.label %></option>
+                        <% }); %>
+                    </optgroup>
+                <% }); %>
+            </select>
+        </div>
         
         <div id="student-fields">
             <div class="form-group">

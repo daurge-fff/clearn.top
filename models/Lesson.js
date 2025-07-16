@@ -68,8 +68,14 @@ const LessonSchema = new mongoose.Schema({
         description: String
     },
     remindersSent: {
-        oneHour: { type: Boolean, default: false },
-        twentyFourHour: { type: Boolean, default: false }
+        student: {
+            oneHour: { type: Boolean, default: false },
+            twentyFourHour: { type: Boolean, default: false }
+        },
+        teacher: {
+            oneHour: { type: Boolean, default: false },
+            twentyFourHour: { type: Boolean, default: false }
+        }
     },
     postLessonPrompt: { type: Boolean, default: false },
     difficulty: String 

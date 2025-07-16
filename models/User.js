@@ -16,6 +16,10 @@ const UserSchema = new mongoose.Schema({
     googleId: {
         type: String
     },
+    timeZone: {
+        type: String,
+        default: 'Europe/Moscow'
+    },
     contact: {
         type: String
     },

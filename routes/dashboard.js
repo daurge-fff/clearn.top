@@ -3,6 +3,7 @@ const router = express.Router();
 const bcrypt = require('bcryptjs');
 const { ensureAuth, ensureRole } = require('../middleware/auth');
 const fs = require('fs');
+const moment = require('moment-timezone');
 
 const User = require('../models/User');
 const Lesson = require('../models/Lesson');
@@ -94,8 +95,37 @@ router.get('/users', ensureAuth, ensureRole('admin'), async (req, res) => {
 });
 router.get('/users/add', ensureAuth, ensureRole('admin'), (req, res) => { res.render('admin/user_add', { layout: 'layouts/dashboard', user: req.user, page_name: 'users' }); });
 router.post('/users/add', ensureAuth, ensureRole('admin'), async (req, res) => { const { name, email, password, role, contact, lessonsPaid } = req.body; if (!name || !email || !password || !role) return res.status(400).send('Please fill all required fields.'); try { if (await User.findOne({ email: email.toLowerCase() })) return res.status(400).send('User with this email already exists.'); const newUser = new User({ name, email: email.toLowerCase(), password, role, contact, lessonsPaid: role === 'student' ? Number(lessonsPaid) : 0 }); const salt = await bcrypt.genSalt(10); newUser.password = await bcrypt.hash(password, salt); await newUser.save(); res.redirect('/dashboard/users'); } catch (err) { console.error(err); res.status(500).send('Server Error'); } });
-router.get('/users/edit/:id', ensureAuth, ensureRole('admin'), async (req, res) => { try { const userToEdit = await User.findById(req.params.id).lean(); if (!userToEdit) return res.status(404).send('User not found'); const teachers = await User.find({ role: 'teacher' }).lean(); res.render('admin/user_edit', { layout: 'layouts/dashboard', user: req.user, userToEdit: userToEdit, teachers: teachers, page_name: 'users' }); } catch (err) { console.error(err); res.status(500).send('Server Error'); } });
-router.post('/users/edit/:id', ensureAuth, ensureRole('admin'), async (req, res) => { try { const userId = req.params.id; const { name, email, role, contact, lessonsPaid, status, teacher: newTeacherId } = req.body; const userToUpdate = await User.findById(userId); if (!userToUpdate) return res.status(404).send('User not found'); const oldTeacherId = userToUpdate.teacher ? String(userToUpdate.teacher) : null; const newTeacherIdStr = newTeacherId || null; if (oldTeacherId !== newTeacherIdStr) { if (oldTeacherId) { await User.updateOne({ _id: oldTeacherId }, { $pull: { students: userId } }); } if (newTeacherIdStr && role === 'student') { await User.updateOne({ _id: newTeacherIdStr }, { $addToSet: { students: userId } }); } } userToUpdate.name = name; userToUpdate.email = email.toLowerCase(); userToUpdate.contact = contact; userToUpdate.status = status; if (userToUpdate.role !== 'student' && role === 'student') { userToUpdate.teacher = newTeacherIdStr; } else if (userToUpdate.role === 'student' && role !== 'student') { if(oldTeacherId) { await User.updateOne({ _id: oldTeacherId }, { $pull: { students: userId } }); } userToUpdate.teacher = null; } userToUpdate.role = role; if (role === 'student') { userToUpdate.lessonsPaid = Number(lessonsPaid); userToUpdate.teacher = newTeacherIdStr; } else { userToUpdate.lessonsPaid = 0; userToUpdate.teacher = null; } if (req.body.password) { const salt = await bcrypt.genSalt(10); userToUpdate.password = await bcrypt.hash(req.body.password, salt); } await userToUpdate.save(); res.redirect('/dashboard/users'); } catch (err) { console.error(err); res.status(500).send('Server Error'); } });
+router.get('/users/edit/:id', ensureAuth, ensureRole('admin'), async (req, res) => { try { const userToEdit = await User.findById(req.params.id).lean(); if (!userToEdit) return res.status(404).send('User not found'); const teachers = await User.find({ role: 'teacher' }).lean(); res.render('admin/user_edit', { layout: 'layouts/dashboard', user: req.user, userToEdit: userToEdit, teachers: teachers, page_name: 'users', timeZones: (() => {
+    const zones = moment.tz.names()
+      .filter(tz => tz.includes('/'))
+      .map(tz => {
+        const offset = moment.tz(tz).utcOffset();
+        const hours = Math.floor(offset / 60);
+        const minutes = Math.abs(offset % 60);
+        let offsetStr = (offset >= 0 ? '+' : '-') + Math.abs(hours);
+        if (minutes) offsetStr += `:${minutes.toString().padStart(2, '0')}`;
+        return { value: tz, label: `${tz} (UTC${offsetStr})`, offset };
+      });
+    const grouped = zones.reduce((acc, zone) => {
+      const groupKey = zone.offset;
+      if (!acc[groupKey]) acc[groupKey] = [];
+      acc[groupKey].push(zone);
+      return acc;
+    }, {});
+    return Object.keys(grouped).sort((a, b) => Number(a) - Number(b)).map(offset => {
+        const hours = Math.floor(Number(offset) / 60);
+        const minutes = Math.abs(Number(offset) % 60);
+        let offsetStr = (Number(offset) >= 0 ? '+' : '-') + Math.abs(hours);
+        if (minutes) offsetStr += `:${minutes.toString().padStart(2, '0')}`;
+        return {
+          offset: Number(offset),
+          label: `UTC ${offsetStr}`,
+          zones: grouped[offset].sort((a, b) => a.value.localeCompare(b.value))
+        };
+      });
+  })() }); } catch (err) { console.error(err); res.status(500).send('Server Error'); } });
+router.post('/users/edit/:id', ensureAuth, ensureRole('admin'), async (req, res) => { try { const userId = req.params.id; const { name, email, role, contact, lessonsPaid, status, teacher: newTeacherId, timeZone } = req.body; const userToUpdate = await User.findById(userId); if (!userToUpdate) return res.status(404).send('User not found'); const oldTeacherId = userToUpdate.teacher ? String(userToUpdate.teacher) : null; const newTeacherIdStr = newTeacherId || null; if (oldTeacherId !== newTeacherIdStr) { if (oldTeacherId) { await User.updateOne({ _id: oldTeacherId }, { $pull: { students: userId } }); } if (newTeacherIdStr && role === 'student') { await User.updateOne({ _id: newTeacherIdStr }, { $addToSet: { students: userId } }); } } userToUpdate.name = name; userToUpdate.email = email.toLowerCase(); userToUpdate.contact = contact;
+userToUpdate.timeZone = timeZone || userToUpdate.timeZone; userToUpdate.status = status; if (userToUpdate.role !== 'student' && role === 'student') { userToUpdate.teacher = newTeacherIdStr; } else if (userToUpdate.role === 'student' && role !== 'student') { if(oldTeacherId) { await User.updateOne({ _id: oldTeacherId }, { $pull: { students: userId } }); } userToUpdate.teacher = null; } userToUpdate.role = role; if (role === 'student') { userToUpdate.lessonsPaid = Number(lessonsPaid); userToUpdate.teacher = newTeacherIdStr; } else { userToUpdate.lessonsPaid = 0; userToUpdate.teacher = null; } if (req.body.password) { const salt = await bcrypt.genSalt(10); userToUpdate.password = await bcrypt.hash(req.body.password, salt); } await userToUpdate.save(); res.redirect('/dashboard/users'); } catch (err) { console.error(err); res.status(500).send('Server Error'); } });
 router.get('/users/delete/:id', ensureAuth, ensureRole('admin'), async (req, res) => { try { await User.findByIdAndDelete(req.params.id); res.redirect('/dashboard/users'); } catch (err) { console.error(err); res.status(500).send('Server Error'); } });
 // @desc    Страница просмотра всех уроков (с поиском, фильтрацией и сортировкой)
 // @route   GET /dashboard/lessons
@@ -409,7 +439,36 @@ router.get('/settings', ensureAuth, (req, res) => {
     res.render('settings', {
         layout: 'layouts/dashboard',
         user: req.user,
-        page_name: 'settings'
+        page_name: 'settings',
+        timeZones: (() => {
+    const zones = moment.tz.names()
+      .filter(tz => tz.includes('/'))
+      .map(tz => {
+        const offset = moment.tz(tz).utcOffset();
+        const hours = Math.floor(offset / 60);
+        const minutes = Math.abs(offset % 60);
+        let offsetStr = (offset >= 0 ? '+' : '-') + Math.abs(hours);
+        if (minutes) offsetStr += `:${minutes.toString().padStart(2, '0')}`;
+        return { value: tz, label: `${tz} (UTC${offsetStr})`, offset };
+      });
+    const grouped = zones.reduce((acc, zone) => {
+      const groupKey = zone.offset;
+      if (!acc[groupKey]) acc[groupKey] = [];
+      acc[groupKey].push(zone);
+      return acc;
+    }, {});
+    return Object.keys(grouped).sort((a, b) => Number(a) - Number(b)).map(offset => {
+        const hours = Math.floor(Number(offset) / 60);
+        const minutes = Math.abs(Number(offset) % 60);
+        let offsetStr = (Number(offset) >= 0 ? '+' : '-') + Math.abs(hours);
+        if (minutes) offsetStr += `:${minutes.toString().padStart(2, '0')}`;
+        return {
+          offset: Number(offset),
+          label: `UTC ${offsetStr}`,
+          zones: grouped[offset].sort((a, b) => a.value.localeCompare(b.value))
+        };
+      });
+  })()
     });
 });
 
@@ -417,7 +476,7 @@ router.get('/settings', ensureAuth, (req, res) => {
 // @route   POST /dashboard/settings
 router.post('/settings', ensureAuth, async (req, res) => {
     try {
-        const { name, password, telegramChatId } = req.body;
+        const { name, password, telegramChatId, timeZone } = req.body;
         const receiveReminders = !!req.body['notifications[lessonReminders]'];
 
         const user = await User.findById(req.user.id);
@@ -428,6 +487,7 @@ router.post('/settings', ensureAuth, async (req, res) => {
         user.name = name;
         user.telegramChatId = telegramChatId;
         user.notifications.lessonReminders = receiveReminders;
+        user.timeZone = timeZone || user.timeZone;
 
         if (password) {
             const salt = await bcrypt.genSalt(10);
