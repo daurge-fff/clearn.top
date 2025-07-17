@@ -11,6 +11,7 @@ const Course = require('../models/Course');
 const Grade = require('../models/Grade');
 const upload = require('../middleware/upload');
 const Payment = require('../models/Payment');
+const paymentService = require('../services/paymentService');
 
 // @desc    Главная страница личного кабинета
 // @route   GET /dashboard
@@ -78,6 +79,19 @@ router.get('/', ensureAuth, async (req, res) => {
     }
 });
 
+// @desc    Update payment status
+// @route   POST /dashboard/payments/:id/status
+router.post('/payments/:id/status', ensureAuth, ensureRole('admin'), async (req, res) => {
+    try {
+        const { status } = req.body;
+        const payment = await paymentService.updatePaymentStatus(req.params.id, status, req.user._id);
+        res.status(200).json({ message: 'Payment status updated successfully', payment });
+    } catch (error) {
+        console.error('Error updating payment status:', error);
+        res.status(500).json({ message: error.message });
+    }
+});
+
 // @desc    Страница управления пользователями (с фильтрацией и сортировкой)
 // @route   GET /dashboard/users
 router.get('/users', ensureAuth, ensureRole('admin'), async (req, res) => {
@@ -142,6 +156,70 @@ router.get('/users/edit/:id', ensureAuth, ensureRole('admin'), async (req, res) 
 router.post('/users/edit/:id', ensureAuth, ensureRole('admin'), async (req, res) => { try { const userId = req.params.id; const { name, email, role, contact, lessonsPaid, status, teacher: newTeacherId, timeZone } = req.body; const userToUpdate = await User.findById(userId); if (!userToUpdate) return res.status(404).send('User not found'); const oldTeacherId = userToUpdate.teacher ? String(userToUpdate.teacher) : null; const newTeacherIdStr = newTeacherId || null; if (oldTeacherId !== newTeacherIdStr) { if (oldTeacherId) { await User.updateOne({ _id: oldTeacherId }, { $pull: { students: userId } }); } if (newTeacherIdStr && role === 'student') { await User.updateOne({ _id: newTeacherIdStr }, { $addToSet: { students: userId } }); } } userToUpdate.name = name; userToUpdate.email = email.toLowerCase(); userToUpdate.contact = contact;
 userToUpdate.timeZone = timeZone || userToUpdate.timeZone; userToUpdate.status = status; if (userToUpdate.role !== 'student' && role === 'student') { userToUpdate.teacher = newTeacherIdStr; } else if (userToUpdate.role === 'student' && role !== 'student') { if(oldTeacherId) { await User.updateOne({ _id: oldTeacherId }, { $pull: { students: userId } }); } userToUpdate.teacher = null; } userToUpdate.role = role; if (role === 'student') { userToUpdate.lessonsPaid = Number(lessonsPaid); userToUpdate.teacher = newTeacherIdStr; } else { userToUpdate.lessonsPaid = 0; userToUpdate.teacher = null; } if (req.body.password) { const salt = await bcrypt.genSalt(10); userToUpdate.password = await bcrypt.hash(req.body.password, salt); } await userToUpdate.save(); res.redirect('/dashboard/users'); } catch (err) { console.error(err); res.status(500).send('Server Error'); } });
 router.get('/users/delete/:id', ensureAuth, ensureRole('admin'), async (req, res) => { try { await User.findByIdAndDelete(req.params.id); res.redirect('/dashboard/users'); } catch (err) { console.error(err); res.status(500).send('Server Error'); } });
+
+// @desc    Редактирование записи в истории баланса
+// @route   POST /dashboard/users/balance/edit/:id
+router.post('/users/balance/edit/:id', ensureAuth, ensureRole('admin'), async (req, res) => {
+    try {
+        const { change, reason } = req.body;
+        const { userId } = req.query;
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).send('User not found');
+        }
+        
+        const balanceEntry = user.balanceHistory.id(req.params.id);
+        if (!balanceEntry) {
+            return res.status(404).send('Balance entry not found');
+        }
+        
+        balanceEntry.change = Number(change);
+        balanceEntry.reason = reason;
+
+        user.balanceHistory.sort((a, b) => a.date - b.date);
+        let currentBalance = 0;
+        user.balanceHistory.forEach(entry => {
+            currentBalance += entry.change;
+            entry.balanceAfter = currentBalance;
+        });
+        user.lessonsPaid = currentBalance;
+
+        await user.save();
+        res.redirect(`/dashboard/user-profile/${user._id}`);
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Server Error');
+    }
+});
+
+// @desc    Удаление записи из истории баланса
+// @route   POST /dashboard/users/balance/delete/:id
+router.post('/users/balance/delete/:id', ensureAuth, ensureRole('admin'), async (req, res) => {
+    try {
+        const { userId } = req.query;
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).send('User not found');
+        }
+        
+        user.balanceHistory.pull({ _id: req.params.id });
+
+        user.balanceHistory.sort((a, b) => a.date - b.date);
+        let currentBalance = 0;
+        user.balanceHistory.forEach(entry => {
+            currentBalance += entry.change;
+            entry.balanceAfter = currentBalance;
+        });
+        user.lessonsPaid = currentBalance;
+
+        await user.save();
+        
+        res.redirect(`/dashboard/user-profile/${user._id}`);
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Server Error');
+    }
+});
 // @desc    Страница просмотра всех уроков (с поиском, фильтрацией и сортировкой)
 // @route   GET /dashboard/lessons
 router.get('/lessons', ensureAuth, ensureRole('admin'), async (req, res) => {

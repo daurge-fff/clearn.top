@@ -141,6 +141,41 @@ async function approvePayment(paymentId) {
  * @param {string} paymentId - ID платежа для отклонения.
  * @returns {Promise<{success: boolean, payment?: object, error?: string}>}
  */
+async function updatePaymentStatus(paymentId, newStatus, adminId) {
+    const payment = await Payment.findById(paymentId).populate('userId');
+
+    if (!payment) {
+        throw new Error('Payment not found');
+    }
+
+    if (payment.status === 'completed' && newStatus !== 'completed') {
+        throw new Error('Cannot change status of a completed payment.');
+    }
+
+    const oldStatus = payment.status;
+    payment.status = newStatus;
+    payment.processedBy = adminId;
+
+    if (newStatus === 'completed' && oldStatus !== 'completed') {
+        if (!payment.userId) {
+            const user = await findUserByIdentifier(payment.pendingIdentifier);
+            if (user) {
+                payment.userId = user._id;
+                console.log(`Auto-linked payment ${payment._id} for '${payment.pendingIdentifier}' to user ${user.email}`);
+            } else {
+                console.log(`Could not find a user for identifier '${payment.pendingIdentifier}' during status update.`);
+            }
+        }
+
+        if (payment.userId) {
+            await creditPaymentToUser(payment);
+        }
+    }
+
+    await payment.save();
+    return payment;
+}
+
 async function declinePayment(paymentId) {
     const payment = await Payment.findById(paymentId);
     if (!payment) return { success: false, error: 'Payment not found.' };
@@ -159,5 +194,6 @@ module.exports = {
     creditPaymentToUser,
     claimPendingPaymentsForUser,
     approvePayment,
-    declinePayment
+    declinePayment,
+    updatePaymentStatus
 };

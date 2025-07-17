@@ -389,27 +389,29 @@ function initializeLessonModal() {
         el.addEventListener('click', closeModal);
     });
     
-    lessonForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const data = Object.fromEntries(new FormData(lessonForm).entries());
-        const { mode, id } = lessonForm.dataset;
-        const url = mode === 'create' ? '/api/lessons' : `/api/lessons/${id}`;
-        const method = mode === 'create' ? 'POST' : 'PUT';
-        
-        try {
-            const response = await fetch(url, { 
-                method, 
-                headers: { 'Content-Type': 'application/json' }, 
-                body: JSON.stringify(data) 
-            });
+    if (lessonForm) {
+        lessonForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const data = Object.fromEntries(new FormData(lessonForm).entries());
+            const { mode, id } = lessonForm.dataset;
+            const url = mode === 'create' ? '/api/lessons' : `/api/lessons/${id}`;
+            const method = mode === 'create' ? 'POST' : 'PUT';
             
-            if (!response.ok) throw new Error((await response.json()).msg);
-            closeModal();
-            location.reload();
-        } catch (error) {
-            alert(`Error: ${error.message}`);
-        }
-    });
+            try {
+                const response = await fetch(url, { 
+                    method, 
+                    headers: { 'Content-Type': 'application/json' }, 
+                    body: JSON.stringify(data) 
+                });
+                
+                if (!response.ok) throw new Error((await response.json()).msg);
+                closeModal();
+                location.reload();
+            } catch (error) {
+                alert(`Error: ${error.message}`);
+            }
+        });
+    }
 }
 
 

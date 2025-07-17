@@ -352,8 +352,28 @@
     justify-content: center;
     min-width: 100px;
 }
-.btn-icon { position: relative; display: inline-block; color: var(--text-color); padding: 5px; opacity: .7; border: 2px solid #000000; border-radius: 13px; }
-.btn-icon:hover { opacity: 1; color: var(--accent-color-1); }
+.btn-icon {
+    position: relative;
+    display: inline-flex; /* Use flex to center icon */
+    align-items: center;
+    justify-content: center;
+    color: var(--text-color);
+    padding: 5px;
+    opacity: .7;
+    border: 1px solid var(--card-border); /* Use theme-aware border color */
+    border-radius: 50%; /* Make it circular */
+    width: 32px; /* Explicit size */
+    height: 32px; /* Explicit size */
+    background-color: transparent;
+    transition: all 0.2s ease;
+}
+
+.btn-icon:hover {
+    opacity: 1;
+    color: var(--accent-color-1);
+    background-color: var(--bg-color); /* Add a background on hover */
+    border-color: var(--accent-color-1);
+}
 .btn-icon.btn-danger:hover { color: var(--accent-color-2);  }
 
 /* === FORM STYLES === */
@@ -366,66 +386,67 @@
 .form-actions { display: flex; gap: 15px; margin-top: 30px; flex-direction: column; }
 
 /* === CUSTOM CHECKBOX === */
-label.checkbox-label {
+.form-group-checkbox {
     display: flex;
     align-items: center;
-    cursor: pointer;
-    gap: 12px;
-    font-weight: normal; /* Override the bold label style */
-    margin-bottom: 0; /* Override default form-group margin */
+    margin-top: 10px;
 }
 
-.custom-checkbox {
-    position: relative;
-    width: 20px;
-    height: 20px;
-}
-
-.custom-checkbox input {
+.form-group-checkbox input[type="checkbox"] {
     opacity: 0;
+    position: absolute;
     width: 0;
     height: 0;
 }
 
-.checkmark {
+.form-group-checkbox label {
+    position: relative;
+    padding-left: 30px; /* Space for custom checkbox */
+    cursor: pointer;
+    font-weight: normal;
+    display: inline-block;
+    color: var(--text-color);
+    margin-bottom: 0;
+}
+
+.form-group-checkbox label::before {
+    content: '';
     position: absolute;
-    top: 0;
     left: 0;
-    height: 20px;
+    top: 50%;
+    transform: translateY(-50%);
     width: 20px;
-    background-color: var(--bg-color);
+    height: 20px;
     border: 1px solid var(--card-border);
+    background-color: var(--bg-color);
     border-radius: 4px;
     transition: all 0.2s ease;
 }
 
-label.checkbox-label:hover .checkmark {
+.form-group-checkbox label:hover::before {
     border-color: var(--accent-color-1);
 }
 
-.custom-checkbox input:checked ~ .checkmark {
+.form-group-checkbox input[type="checkbox"]:checked + label::before {
     background-color: var(--accent-color-1);
     border-color: var(--accent-color-1);
 }
 
-.checkmark:after {
-    content: "";
+.form-group-checkbox label::after {
+    content: '';
     position: absolute;
-    display: none;
-}
-
-.custom-checkbox input:checked ~ .checkmark:after {
-    display: block;
-}
-
-.custom-checkbox .checkmark:after {
-    left: 6px;
-    top: 2px;
+    left: 7px;
+    top: 50%;
+    transform: translateY(-50%) rotate(45deg) scale(0);
     width: 5px;
     height: 10px;
     border: solid white;
-    border-width: 0 3px 3px 0;
-    transform: rotate(45deg);
+    border-width: 0 2px 2px 0;
+    transition: transform 0.2s ease;
+}
+
+.form-group-checkbox input[type="checkbox"]:checked + label::after {
+    transform: translateY(-50%) rotate(45deg) scale(1);
 }
 
 /* === SIDEBAR HEADER ACTIONS (NEW) === */
@@ -470,6 +491,76 @@ label.checkbox-label:hover .checkmark {
 .user-info { flex-grow: 1; overflow: hidden; text-align: center; }
 .user-name { display: block; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 0.9rem; }
 .user-role { font-size: .8rem; opacity: .7; text-transform: capitalize; }
+
+
+/* Modal Styles */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 9999;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.6);
+    align-items: center; /* Center vertically */
+    justify-content: center; /* Center horizontally */
+}
+
+.modal.show {
+    display: flex;
+}
+
+.modal-content {
+    background-color: var(--card-bg);
+    padding: 30px;
+    border: 1px solid var(--card-border);
+    width: 90%;
+    max-width: 500px;
+    border-radius: 12px;
+    position: relative;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    animation: modal-appear 0.3s ease-out;
+}
+
+@keyframes modal-appear {
+    from { transform: scale(0.9); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+.modal-content h2 {
+    font-family: var(--font-headings);
+    margin-top: 0;
+    margin-bottom: 20px;
+}
+
+.modal-content p {
+    margin-bottom: 20px;
+    line-height: 1.6;
+}
+
+.close-button {
+    color: var(--text-color-light);
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    font-size: 28px;
+    font-weight: bold;
+    transition: color 0.2s ease;
+}
+
+.close-button:hover,
+.close-button:focus {
+    color: var(--accent-color-2);
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.modal .form-actions {
+    justify-content: flex-end;
+    flex-direction: row;
+}
 
 
 /* === CUSTOM TOOLTIPS === */

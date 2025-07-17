@@ -70,7 +70,7 @@
                                         <%= payment.status.replace('_', ' ') %>
                                     </span>
                                     <div class="status-dropdown">
-                                        <% if (payment.status === 'manual_review') { %>
+                                        <% if (payment.status === 'manual_review' || payment.status === 'pending') { %>
                                             <div class="status-dropdown-item" data-status="completed">Approve (Completed)</div>
                                             <div class="status-dropdown-item" data-status="failed">Decline (Failed)</div>
                                         <% } else { %>
