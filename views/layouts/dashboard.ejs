@@ -41,7 +41,7 @@
                         <a href="/dashboard/users" class="nav-link <%= (typeof page_name !== 'undefined' && page_name === 'users') ? 'active' : '' %>"><i class="icon-users"></i><span>Users</span></a>
                         <a href="/dashboard/lessons" class="nav-link <%= (typeof page_name !== 'undefined' && page_name === 'lessons') ? 'active' : '' %>"><i class="icon-list"></i><span>All Lessons</span></a>
                         <a href="/dashboard/analytics" class="nav-link <%= (typeof page_name !== 'undefined' && page_name === 'analytics') ? 'active' : '' %>"><i class="icon-chart"></i><span>Analytics</span></a>
-                        <a href="/dashboard/payments" class="nav-link <%= page_name === 'payments' ? 'active' : '' %>">
+                        <a href="/dashboard/payments" class="nav-link <%= (typeof page_name !== 'undefined' && page_name === 'payments') ? 'active' : '' %>">
                             <i class="icon-credit-card"></i>
                             <span>Payments</span>
                         </a>
@@ -51,6 +51,7 @@
                         <a href="/dashboard/schedule" class="nav-link <%= (typeof page_name !== 'undefined' && page_name === 'schedule') ? 'active' : '' %>"><i class="icon-calendar"></i><span>Schedule</span></a>
                         <a href="/dashboard/my-students" class="nav-link <%= (typeof page_name !== 'undefined' && page_name === 'students') ? 'active' : '' %>"><i class="icon-users"></i><span>My Students</span></a>
                     <% } %>
+                    <a href="/referral" class="nav-link <%= (typeof page_name !== 'undefined' && page_name === 'referral') ? 'active' : '' %>"><i class="icon-star"></i><span>Referral Program</span></a>
                     <a href="/dashboard/settings" class="nav-link <%= (typeof page_name !== 'undefined' && page_name === 'settings') ? 'active' : '' %>"><i class="icon-settings"></i><span>Settings</span></a>
                 </nav>
                 

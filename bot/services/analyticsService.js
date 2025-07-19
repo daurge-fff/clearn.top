@@ -7,7 +7,7 @@ function init(dependencies) {
     // Placeholder for future dependencies, if any
 }
 
-async function sendAdminReports(bot, chatId) {
+async function sendAdminReports(ctx) {
     const [
         totalStudents,
         totalTeachers,
@@ -40,10 +40,10 @@ async function sendAdminReports(bot, chatId) {
                     `  - Total Revenue: €${revenue}\n` +
                     `  - Total Payments: ${totalPayments}`;
 
-    await bot.sendMessage(chatId, message, { parse_mode: 'Markdown' });
+    await ctx.reply(message, { parse_mode: 'Markdown' });
 }
 
-async function sendTeacherStatistics(bot, chatId, teacher) {
+async function sendTeacherStatistics(ctx, teacher) {
     const [
         studentCount,
         lessonsThisMonth,
@@ -69,7 +69,7 @@ async function sendTeacherStatistics(bot, chatId, teacher) {
                     `  - Lessons this month: ${lessonsThisMonth}\n` +
                     `  - Average grade given: ${averageScore} / 10`;
 
-    await bot.sendMessage(chatId, message, { parse_mode: 'Markdown' });
+    await ctx.reply(message, { parse_mode: 'Markdown' });
 }
 
 module.exports = {

@@ -10,8 +10,9 @@ const expressLayouts = require('express-ejs-layouts');
 dotenv.config({ path: './.env' });
 
 const bot = require('./bot');
-const { registerMessageHandler } = require('./bot/handlers/messageHandler');
+const messageHandler = require('./bot/handlers/messageHandler');
 const { registerCallbackQueryHandler } = require('./bot/handlers/callbackQueryHandler');
+const searchService = require('./bot/services/searchService');
 const { startScheduler } = require('./services/scheduler');
 const UndoStack = require('./services/undoStack');
 
@@ -47,17 +48,14 @@ app.use(express.static(path.join(__dirname, 'public')));
 if (process.env.BASE_URL && process.env.TELEGRAM_BOT_TOKEN) {
     const secretPath = `/telegram/webhook/${process.env.TELEGRAM_BOT_TOKEN}`;
     const webhookUrl = `${process.env.BASE_URL}${secretPath}`;
-    
-    bot.setWebHook(webhookUrl)
-        .then(() => console.log(`Webhook successfully set to ${process.env.BASE_URL}`))
-        .catch(err => console.error('Error setting webhook:', err.message));
-    
-    app.post(secretPath, (req, res) => {
-        bot.processUpdate(req.body);
-        res.sendStatus(200);
-    });
+
+    bot.telegram.setWebhook(webhookUrl);
+
+    app.use(bot.webhookCallback(secretPath));
+
 } else {
     console.warn("WARNING: BASE_URL or TELEGRAM_BOT_TOKEN not set. Bot might not receive updates via webhook.");
+    bot.launch();
 }
 
 const undoStack = new UndoStack();
@@ -65,8 +63,9 @@ const dependencies = {
     undoStack,
     BASE_URL: process.env.BASE_URL || 'https://clearn.top'
 };
-registerMessageHandler(bot, dependencies);
+messageHandler.registerMessageHandler(bot, dependencies);
 registerCallbackQueryHandler(bot, dependencies);
+searchService.init(dependencies);
 
 startScheduler(bot);
 
@@ -103,6 +102,7 @@ app.post('/submit-form', async (req, res) => {
 
 app.use('/', require('./routes/index'));
 app.use('/users', require('./routes/users'));
+app.use('/referral', require('./routes/referral'));
 app.use('/dashboard', require('./routes/dashboard'));
 app.use('/api', require('./routes/api'));
 

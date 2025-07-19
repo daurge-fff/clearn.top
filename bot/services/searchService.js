@@ -15,13 +15,13 @@ async function findUser(query, page = 1, limit = 5) {
     return { users, totalPages, currentPage: page };
 }
 
-async function listStudentsForTeacher(bot, chatId, teacher, page = 1, messageId = null) {
+async function listStudentsForTeacher(ctx, teacher, page = 1) {
     const query = { _id: { $in: teacher.students } };
     const result = await findUser(query, page);
 
     if (result.users.length === 0) {
         const text = "You don't have any students assigned yet.";
-        return messageId ? bot.editMessageText(text, { chat_id: chatId, message_id: messageId }) : bot.sendMessage(chatId, text);
+        return ctx.editMessageText ? await ctx.editMessageText(text) : await ctx.reply(text);
     }
 
     let response = `<b>Your Students (Page ${result.currentPage}/${result.totalPages}):</b>\n\n`;
@@ -45,30 +45,29 @@ async function listStudentsForTeacher(bot, chatId, teacher, page = 1, messageId 
     }
 
     const options = {
-        chat_id: chatId,
         parse_mode: 'HTML',
         reply_markup: { inline_keyboard: keyboardRows }
     };
 
     try {
-        if (messageId) {
-            return await bot.editMessageText(response, { ...options, message_id: messageId });
+        if (ctx.callbackQuery) {
+            return await ctx.editMessageText(response, options);
         } else {
-            return await bot.sendMessage(chatId, response, options);
+            return await ctx.reply(response, options);
         }
     } catch (error) {
-         if (!error.response?.body?.description.includes('message is not modified')) {
-            console.error("Telegram API Error:", error.response.body);
+         if (!error.message.includes('message is not modified')) {
+            console.error("Telegram API Error:", error);
          }
     }
 }
 
 
-async function findUserForAdmin(bot, chatId, searchString, page = 1, messageId = null) {
+async function findUserForAdmin(ctx, searchString, page = 1) {
     const searchRegex = new RegExp(searchString, 'i');
     const query = { $or: [{ name: searchRegex }, { email: searchRegex }] };
     const result = await findUser(query, page);
-    if (result.users.length === 0) return bot.sendMessage(chatId, `No users found matching "${searchString}".`);
+    if (result.users.length === 0) return ctx.reply(`No users found matching "${searchString}".`);
     let response = `<b>Found users (Page ${result.currentPage}/${result.totalPages}):</b>\n\n`;
     const keyboardRows = [];
     result.users.forEach(u => {
@@ -82,23 +81,22 @@ async function findUserForAdmin(bot, chatId, searchString, page = 1, messageId =
         keyboardRows.push(paginationKeyboard.inline_keyboard[0]);
     }
     const options = {
-        chat_id: chatId,
         parse_mode: 'HTML', 
         reply_markup: { inline_keyboard: keyboardRows }
     };
     try {
-        if (messageId) {
-            return await bot.editMessageText(response, { ...options, message_id: messageId });
+        if (ctx.callbackQuery) {
+            return await ctx.editMessageText(response, options);
         } else {
-            return await bot.sendMessage(chatId, response, options);
+            return await ctx.reply(response, options);
         }
     } catch (error) {
-        console.error("Telegram send/edit error:", error.response.body);
-        return bot.sendMessage(chatId, "Could not display user list due to a formatting error.");
+        console.error("Telegram send/edit error:", error);
+        return ctx.reply("Could not display user list due to a formatting error.");
     }
 }
 
-async function findStudentForTeacher(bot, chatId, teacher, studentName, page = 1, messageId = null) {
+async function findStudentForTeacher(ctx, teacher, studentName, page = 1) {
     const searchRegex = new RegExp(studentName, 'i');
     const query = {
         _id: { $in: teacher.students },
@@ -108,7 +106,7 @@ async function findStudentForTeacher(bot, chatId, teacher, studentName, page = 1
     const result = await findUser(query, page);
 
     if (result.users.length === 0) {
-        return bot.sendMessage(chatId, `No students found in your list matching "${studentName}".`);
+        return ctx.reply(`No students found in your list matching "${studentName}".`);
     }
 
     let response = `<b>Found your students (Page ${result.currentPage}/${result.totalPages})</b>:\n\n`;
@@ -128,24 +126,23 @@ async function findStudentForTeacher(bot, chatId, teacher, studentName, page = 1
     }
 
     const options = {
-        chat_id: chatId,
         parse_mode: 'HTML',
         reply_markup: { inline_keyboard: keyboardRows }
     };
 
-    if (messageId) {
-        return bot.editMessageText(response, { ...options, message_id: messageId });
+    if (ctx.callbackQuery) {
+        return ctx.editMessageText(response, options);
     } else {
-        return bot.sendMessage(chatId, response, options);
+        return ctx.reply(response, options);
     }
 }
 
-async function listAllUsers(bot, chatId, page = 1, messageId = null) {
+async function listAllUsers(ctx, page = 1) {
     const result = await findUser({}, page); 
 
     if (result.users.length === 0) {
         const text = "No users found in the system.";
-        return messageId ? bot.editMessageText(text, { chat_id: chatId, message_id: messageId }) : bot.sendMessage(chatId, text);
+        return ctx.editMessageText ? await ctx.editMessageText(text) : await ctx.reply(text);
     }
 
     let response = `<b>All Users (Page ${result.currentPage}/${result.totalPages}):</b>\n\n`;
@@ -169,20 +166,19 @@ async function listAllUsers(bot, chatId, page = 1, messageId = null) {
     }
 
     const options = {
-        chat_id: chatId,
         parse_mode: 'HTML',
         reply_markup: { inline_keyboard: keyboardRows }
     };
 
     try {
-        if (messageId) {
-            return await bot.editMessageText(response, { ...options, message_id: messageId });
+        if (ctx.callbackQuery) {
+            return await ctx.editMessageText(response, options);
         } else {
-            return await bot.sendMessage(chatId, response, options);
+            return await ctx.reply(response, options);
         }
     } catch (error) {
-        if (!error.response?.body?.description.includes('message is not modified')) {
-            console.error("Telegram API Error:", error.response.body);
+        if (!error.message.includes('message is not modified')) {
+            console.error("Telegram API Error:", error);
         }
     }
 }
@@ -194,4 +190,5 @@ module.exports = {
     listAllUsers,
     listStudentsForTeacher,
     findUserForAdmin,
+    findStudentForTeacher
 };

@@ -1,0 +1,89 @@
+.referral-container {
+    padding: 2rem;
+}
+
+.referral-header {
+    margin-bottom: 2rem;
+}
+
+.referral-card {
+    background-color: #fff;
+    border-radius: 0.75rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 2rem;
+    margin-bottom: 2rem;
+}
+
+.referral-link-container {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.referral-link {
+    background-color: #f0f2f5;
+    border: 1px solid #e0e0e0;
+    border-radius: 0.5rem;
+    padding: 0.75rem 1rem;
+    font-family: 'Courier New', Courier, monospace;
+    color: #333;
+    flex-grow: 1;
+    white-space: nowrap;
+    overflow-x: auto;
+}
+
+.copy-btn {
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.copy-btn:hover {
+    background-color: #0056b3;
+}
+
+.referral-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1.5rem;
+}
+
+.stat-item {
+    background-color: #f8f9fa;
+    padding: 1.5rem;
+    border-radius: 0.5rem;
+    text-align: center;
+}
+
+.stat-item h3 {
+    margin: 0;
+    font-size: 2rem;
+    font-weight: 700;
+}
+
+.stat-item p {
+    margin: 0;
+    color: #6c757d;
+}
+
+.referred-users-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.referred-users-table th,
+.referred-users-table td {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.referred-users-table thead th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+}

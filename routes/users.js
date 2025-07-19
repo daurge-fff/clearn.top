@@ -36,8 +36,8 @@ router.get('/register', ensureGuest, (req, res) => {
 });
 
 // Register Handle
-router.post('/register', (req, res) => {
-    const { name, email, password, password2, contact } = req.body;
+router.post('/register', async (req, res) => {
+    const { name, email, password, password2, contact, referralCode } = req.body;
     let errors = [];
 
     if (!name || !email || !password || !password2) errors.push({ msg: 'Please enter all required fields' });
@@ -45,27 +45,46 @@ router.post('/register', (req, res) => {
     if (password.length < 6) errors.push({ msg: 'Password must be at least 6 characters' });
 
     if (errors.length > 0) {
-        res.redirect('/users/register');
-    } else {
-        User.findOne({ email: email.toLowerCase() }).then(user => {
-            if (user) {
-                res.redirect('/users/register');
-            } else {
-                const newUser = new User({ name, email: email.toLowerCase(), password, contact });
-                bcrypt.genSalt(10, (err, salt) => {
-                    bcrypt.hash(newUser.password, salt, (err, hash) => {
-                        if (err) throw err;
-                        newUser.password = hash;
-                        newUser.save()
-                        .then(async user => {
-                            await claimPendingPaymentsForUser(user);
-                            res.redirect('/users/login');
-                        })
-                        .catch(err => console.log(err));
-                    });
-                });
+        return res.render('register', { errors, name, email, contact, referralCode, layout: false });
+    }
+
+    try {
+        const existingUser = await User.findOne({ email: email.toLowerCase() });
+        if (existingUser) {
+            errors.push({ msg: 'Email is already registered' });
+            return res.render('register', { errors, name, email, contact, referralCode, layout: false });
+        }
+
+        let referrer = null;
+        if (referralCode) {
+            referrer = await User.findOne({ referralCode: referralCode.trim() });
+            if (!referrer) {
+                errors.push({ msg: 'Invalid referral code' });
+                return res.render('register', { errors, name, email, contact, referralCode, layout: false });
             }
-        });
+        }
+
+        const newUser = new User({ name, email: email.toLowerCase(), password, contact });
+
+        if (referrer) {
+            newUser.referredBy = referrer._id;
+        }
+
+        const salt = await bcrypt.genSalt(10);
+        newUser.password = await bcrypt.hash(password, salt);
+        const savedUser = await newUser.save();
+
+        if (referrer) {
+            referrer.referralBonuses = (referrer.referralBonuses || 0) + 1;
+            await referrer.save();
+        }
+
+        await claimPendingPaymentsForUser(savedUser);
+        res.redirect('/users/login');
+
+    } catch (err) {
+        console.log(err);
+        res.redirect('/users/register');
     }
 });
 

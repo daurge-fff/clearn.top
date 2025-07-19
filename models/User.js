@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const crypto = require('crypto');
 
 const UserSchema = new mongoose.Schema({
     name: {
@@ -74,10 +75,26 @@ const UserSchema = new mongoose.Schema({
     date_registered: {
         type: Date,
         default: Date.now
+    },
+    referralCode: {
+        type: String,
+        unique: true,
+        sparse: true
+    },
+    referredBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+    },
+    referralBonuses: {
+        type: Number,
+        default: 0
     }
 });
 
 UserSchema.pre('save', function(next) {
+    if (this.isNew && !this.referralCode) {
+        this.referralCode = crypto.randomBytes(5).toString('hex');
+    }
     if (this.isModified('botState') && this.botState.name) {
         this.botState.updatedAt = new Date();
     }
