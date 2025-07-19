@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const passport = require('passport');
 const session = require('express-session');
+const flash = require('connect-flash');
 
 const path = require('path');
 const expressLayouts = require('express-ejs-layouts');
@@ -38,6 +39,7 @@ app.use(session({
 }));
 app.use(passport.initialize());
 app.use(passport.session());
+app.use(flash());
 
 app.use((req, res, next) => {
     res.locals.user = req.user || null;

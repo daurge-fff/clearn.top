@@ -5,13 +5,20 @@
 
     <div class="stats-grid">
         <% if (user.role === 'student') { %>
-            <div class="stat-card">
-                <div class="stat-icon" style="--icon-bg: rgba(0, 242, 254, 0.2); --icon-color: var(--accent-color-1);"><i class="icon-list"></i></div>
-                <div class="stat-info">
-                    <span class="stat-label">Lessons Paid</span>
-                    <span class="stat-number"><%= stats.lessonsPaid %></span>
-                </div>
-            </div>
+              <div class="stat-card">
+                  <div class="stat-icon" style="--icon-bg: rgba(255, 215, 0, 0.2); --icon-color: #FFD700;"><i class="icon-star"></i></div>
+                  <div class="stat-info">
+                      <span class="stat-label">My Stars</span>
+                      <span class="stat-number"><%= user.stars || 0 %></span>
+                  </div>
+              </div>
+              <div class="stat-card">
+                  <div class="stat-icon" style="--icon-bg: rgba(231, 76, 60, 0.2); --icon-color: #e74c3c;"><i class="icon-credit-card"></i></div>
+                  <div class="stat-info">
+                      <span class="stat-label">Paid Lessons</span>
+                      <span class="stat-number"><%= user.lessonsPaid %></span>
+                  </div>
+              </div>
             <div class="stat-card">
                 <div class="stat-icon" style="--icon-bg: rgba(196, 58, 214, 0.2); --icon-color: var(--accent-color-2);"><i class="icon-calendar"></i></div>
                 <div class="stat-info">

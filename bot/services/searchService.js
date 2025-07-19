@@ -31,7 +31,7 @@ async function listStudentsForTeacher(ctx, teacher, page = 1) {
         const studentName = escapeHtml(s.name);
         const emoji = s.emojiAvatar || getRoleEmoji('student');
         const statusIcon = getUserStatusEmoji(s.status);
-        response += `${emoji} <b>${studentName}</b> ${statusIcon}\n   Balance: ${s.lessonsPaid} lessons\n\n`;
+        response += `${emoji} <b>${studentName}</b> ${statusIcon}\n   Balance: ${s.stars || 0} ⭐\n\n`;
         return { text: s.name, url: `${BASE_URL}/dashboard/student/${s._id}` };
     });
 
@@ -73,7 +73,11 @@ async function findUserForAdmin(ctx, searchString, page = 1) {
     result.users.forEach(u => {
         const emoji = u.emojiAvatar || getRoleEmoji(u.role);
         const statusIcon = getUserStatusEmoji(u.status);
-        response += `${emoji} <b>${u.name}</b> (${u.role}) ${statusIcon}\n`;
+        response += `${emoji} <b>${u.name}</b> (${u.role}) ${statusIcon}`;
+        if (u.role === 'student') {
+            response += `\n   Balance: ${u.stars || 0} ⭐`;
+        }
+        response += '\n';
         keyboardRows.push([{ text: `${u.name}`, url: `${BASE_URL}/dashboard/user-profile/${u._id}` }]);
     });
     const paginationKeyboard = createPaginationKeyboard('admin_list_users', result.currentPage, result.totalPages, 'all');
@@ -116,7 +120,7 @@ async function findStudentForTeacher(ctx, teacher, studentName, page = 1) {
         const studentName = escapeHtml(s.name);
         const emoji = s.emojiAvatar || getRoleEmoji('student');
         const statusIcon = getUserStatusEmoji(s.status);
-        response += `${emoji} <b>${studentName}</b> ${statusIcon}\n   Balance: ${s.lessonsPaid} lessons\n\n`;
+        response += `${emoji} <b>${studentName}</b> ${statusIcon}\n   Balance: ${s.stars || 0} ⭐\n\n`;
         keyboardRows.push([{ text: `${s.name}`, url: `${BASE_URL}/dashboard/user-profile/${s._id}` }]);
     });
 
@@ -152,7 +156,11 @@ async function listAllUsers(ctx, page = 1) {
         const name = escapeHtml(u.name);
         const roleIcon = getRoleEmoji(u.role);
         const statusIcon = getUserStatusEmoji(u.status);
-        response += `${roleIcon} <b>${name}</b> (${u.role}) ${statusIcon}\n`;
+        response += `${roleIcon} <b>${name}</b> (${u.role}) ${statusIcon}`;
+        if (u.role === 'student') {
+            response += `\n   Balance: ${u.stars || 0} ⭐`;
+        }
+        response += '\n';
         return { text: u.name, url: `${BASE_URL}/dashboard/user-profile/${u._id}` };
     });
 

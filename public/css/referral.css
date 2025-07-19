@@ -14,11 +14,19 @@
     margin-bottom: 2rem;
 }
 
+[data-theme="dark"] .referral-card {
+    background-color: #2a2a2a;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    color: #e0e0e0;
+}
+
 .referral-link-container {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
     margin-bottom: 1rem;
+}
+
+.copy-btn-container {
+    margin-top: 1rem;
+    text-align: center;
 }
 
 .referral-link {
@@ -31,6 +39,12 @@
     flex-grow: 1;
     white-space: nowrap;
     overflow-x: auto;
+}
+
+[data-theme="dark"] .referral-link {
+    background-color: #3a3a3a;
+    border: 1px solid #555;
+    color: #e0e0e0;
 }
 
 .copy-btn {
@@ -60,6 +74,10 @@
     text-align: center;
 }
 
+[data-theme="dark"] .stat-item {
+    background-color: #3a3a3a;
+}
+
 .stat-item h3 {
     margin: 0;
     font-size: 2rem;
@@ -69,6 +87,10 @@
 .stat-item p {
     margin: 0;
     color: #6c757d;
+}
+
+[data-theme="dark"] .stat-item p {
+    color: #b0b0b0;
 }
 
 .referred-users-table {
@@ -83,7 +105,17 @@
     border-bottom: 1px solid #dee2e6;
 }
 
+[data-theme="dark"] .referred-users-table th,
+[data-theme="dark"] .referred-users-table td {
+    border-bottom: 1px solid #555;
+    color: #e0e0e0;
+}
+
 .referred-users-table thead th {
     background-color: #f8f9fa;
     font-weight: 600;
+}
+
+[data-theme="dark"] .referred-users-table thead th {
+    background-color: #3a3a3a;
 }

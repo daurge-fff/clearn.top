@@ -186,7 +186,7 @@ async function handleMenuButton(ctx, user, text) {
             return sendHelpMessage(ctx);
 
         case '💳 Balance':
-            return ctx.reply(`You have *${user.lessonsPaid}* paid lessons remaining.`, { 
+            return ctx.reply(`You have *${user.stars || 0}* ⭐ stars.`, { 
                 parse_mode: 'Markdown',
                 reply_markup: { inline_keyboard: [[{ text: "🔄 Refresh", callback_data: "refresh_balance" }]] }
             });

@@ -664,19 +664,52 @@ router.put('/lessons/:id/status', ensureAuth, ensureRole('admin'), async (req, r
         if (!newStatus) {
             return res.status(400).json({ msg: 'New status is required' });
         }
-        const lesson = await Lesson.findById(req.params.id);
+
+        const lesson = await Lesson.findById(req.params.id).populate('student');
         if (!lesson) {
             return res.status(404).json({ msg: 'Lesson not found' });
         }
+
+        const user = lesson.student;
         const oldStatus = lesson.status;
-        if (oldStatus !== 'scheduled' && newStatus === 'scheduled') {
-            await User.findByIdAndUpdate(lesson.student, { $inc: { lessonsPaid: -1 } });
-        } else if (oldStatus === 'scheduled' && (newStatus.startsWith('cancelled_'))) {
-            await User.findByIdAndUpdate(lesson.student, { $inc: { lessonsPaid: 1 } });
+
+        // Logic for stars and lessonsPaid based on status change
+        if (newStatus !== oldStatus) {
+            let lessonsPaidUpdate = 0;
+            let starsUpdate = 0;
+
+            // Case 1: Lesson is marked as completed
+            if (newStatus === 'completed' && oldStatus !== 'completed') {
+                starsUpdate = 1;
+            }
+            // Case 2: A completed lesson is changed to something else
+            else if (oldStatus === 'completed' && newStatus !== 'completed') {
+                starsUpdate = -1;
+            }
+
+            // Case 3: A scheduled lesson is cancelled
+            if (oldStatus === 'scheduled' && newStatus.startsWith('cancelled_')) {
+                lessonsPaidUpdate = 1;
+            }
+            // Case 4: A cancelled lesson is rescheduled
+            else if (oldStatus.startsWith('cancelled_') && newStatus === 'scheduled') {
+                lessonsPaidUpdate = -1;
+            }
+
+            // Apply updates if there are any changes
+            if (lessonsPaidUpdate !== 0 || starsUpdate !== 0) {
+                user.lessonsPaid += lessonsPaidUpdate;
+                user.stars += starsUpdate;
+                await user.save();
+            }
+
+            lesson.status = newStatus;
+            await lesson.save();
+
+            res.json({ msg: 'Status updated successfully', lesson });
+        } else {
+            res.json({ msg: 'Status is already the same.', lesson });
         }
-        lesson.status = newStatus;
-        await lesson.save();
-        res.json({ msg: 'Status updated successfully', lesson });
     } catch (err) {
         console.error(err.message);
         res.status(500).json({ msg: 'Server Error' });

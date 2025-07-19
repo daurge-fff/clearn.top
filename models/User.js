@@ -37,6 +37,10 @@ const UserSchema = new mongoose.Schema({
         type: Number,
         default: 0
     },
+    stars: {
+        type: Number,
+        default: 0
+    },
     teacher: { 
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'
@@ -63,9 +67,12 @@ const UserSchema = new mongoose.Schema({
         type: String
     },
     balanceHistory: [{
+        isStarAdjustment: { type: Boolean },
+        starsBalanceAfter: { type: Number },
+        lessonsBalanceAfter: { type: Number },
         date: { type: Date, default: Date.now },
         change: Number,
-        balanceAfter: Number,
+        balanceAfter: Number, // Legacy, to be deprecated
         reason: String,
         amountPaid: Number,
         currency: String,

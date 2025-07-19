@@ -33,48 +33,78 @@
     </div>
 
     <div class="stats-grid">
-        <div class="stat-card">
+        <div class="stat-card status-card">
             <div class="stat-info">
-                <span class="stat-number small"><span class="badge status-<%= userProfile.status %>"><%= userProfile.status %></span></span>
+                <span class="stat-number small">
+                    <span class="badge status-<%= userProfile.status %> status-badge">
+                        <i class="status-icon"></i>
+                        <%= userProfile.status.charAt(0).toUpperCase() + userProfile.status.slice(1) %>
+                    </span>
+                </span>
                 <span class="stat-label">Status</span>
             </div>
         </div>
-        <% if (userProfile.role === 'student') { %>
-            <div class="stat-card">
-                <div class="stat-info">
-                    <span class="stat-number"><%= userProfile.lessonsPaid %></span>
-                    <span class="stat-label">Lessons Balance</span>
-                </div>
-            </div>
-        <% } %>
         <div class="stat-card">
             <div class="stat-info">
                 <span class="stat-number small"><%= userProfile.email %></span>
                 <span class="stat-label">Email</span>
             </div>
         </div>
+        <% if (userProfile.role === 'student') { %>
+            <div class="stat-card">
+                <div class="stat-info">
+                    <span class="stat-number"><%= userProfile.stars %></span>
+                    <span class="stat-label">Stars Balance</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-info">
+                    <span class="stat-number"><%= userProfile.lessonsPaid %></span>
+                    <span class="stat-label">Paid Lessons</span>
+                </div>
+            </div>
+        <% } %>
     </div>
     
     <% if (userProfile.role === 'student') { %>
         <div class="card">
-            <h2>Manual Payment Registration</h2>
-            <form action="/dashboard/user-profile/<%= userProfile._id %>/register-payment" method="POST" class="adjustment-form">
-                <div class="form-group">
-                    <label for="lessonsPurchased">Lessons Purchased</label>
-                    <input type="number" id="lessonsPurchased" name="lessonsPurchased" placeholder="e.g., 10" required>
-                </div>
-                <div class="form-group">
-                    <label for="amountPaid">Amount Paid (EUR)</label>
-                    <input type="number" step="0.01" id="amountPaid" name="amountPaid" placeholder="e.g., 180" required>
-                </div>
-                <div class="form-group reason-group">
-                    <label for="paymentSystem">Payment Method / Reason</label>
-                    <input type="text" id="paymentSystem" name="paymentSystem" placeholder="e.g., Direct Bank Transfer, Cash" required>
-                </div>
-                <div class="form-actions">
-                    <button type="submit" class="btn btn-primary">Register Payment</button>
-                </div>
-            </form>
+            <h2>Adjust Balance</h2>
+            <div class="tabs">
+                <button class="tab-link active" data-tab="stars">Stars</button>
+                <button class="tab-link" data-tab="lessons">Paid Lessons</button>
+            </div>
+
+            <div id="stars" class="tab-content active">
+                <form action="/dashboard/user-profile/<%= userProfile._id %>/adjust-stars" method="POST" class="adjustment-form">
+                    <div class="form-group">
+                        <label for="starsAdjustment">Stars Adjustment</label>
+                        <input type="number" id="starsAdjustment" name="starsAdjustment" placeholder="e.g., 10 or -5" required>
+                    </div>
+                    <div class="form-group reason-group">
+                        <label for="starsAdjustmentReason">Reason for Adjustment</label>
+                        <input type="text" id="starsAdjustmentReason" name="adjustmentReason" placeholder="e.g., Bonus for excellent work" required>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">Adjust Stars</button>
+                    </div>
+                </form>
+            </div>
+
+            <div id="lessons" class="tab-content">
+                <form action="/dashboard/user-profile/<%= userProfile._id %>/adjust-lessons" method="POST" class="adjustment-form">
+                    <div class="form-group">
+                        <label for="lessonsAdjustment">Paid Lessons Adjustment</label>
+                        <input type="number" id="lessonsAdjustment" name="lessonsAdjustment" placeholder="e.g., 8 or -1" required>
+                    </div>
+                    <div class="form-group reason-group">
+                        <label for="lessonsAdjustmentReason">Reason for Adjustment</label>
+                        <input type="text" id="lessonsAdjustmentReason" name="adjustmentReason" placeholder="e.g., Payment received" required>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">Adjust Lessons</button>
+                    </div>
+                </form>
+            </div>
         </div>
     <% } %>
 
@@ -131,7 +161,8 @@
                             <th>Date</th>
                             <th>Details</th>
                             <th>Change</th>
-                            <th>Balance After</th>
+                            <th>Stars After</th>
+                            <th>Lessons After</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -154,7 +185,12 @@
                                         <%= entry.change > 0 ? '+' : '' %><%= entry.change %>
                                     </span>
                                 </td>
-                                <td><%= entry.balanceAfter %></td>
+                                <td>
+                                    <%= (entry.starsBalanceAfter !== undefined && entry.starsBalanceAfter !== null && !isNaN(entry.starsBalanceAfter)) ? Number(entry.starsBalanceAfter) : 'N/A' %>
+                                </td>
+                                <td>
+                                    <%= (entry.lessonsBalanceAfter !== undefined && entry.lessonsBalanceAfter !== null && !isNaN(entry.lessonsBalanceAfter)) ? Number(entry.lessonsBalanceAfter) : 'N/A' %>
+                                </td>
                                 <td class="actions-cell">
                                     <form action="/dashboard/users/balance/delete/<%= entry._id %>?userId=<%= userProfile._id %>" method="POST" style="display:inline;">
                                         <button type="submit" class="btn-icon" data-tooltip="Delete" onclick="return confirm('Are you sure you want to delete this entry?');"><i class="icon-delete"></i></button>
@@ -170,3 +206,49 @@
 </div>
 
 <script src="/js/user_profile.js" defer></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Find adjustment card by checking h2 text content
+        const adjustmentCard = Array.from(document.querySelectorAll('.card')).find(card => {
+            const h2 = card.querySelector('h2');
+            return h2 && h2.textContent.includes('Adjust Balance');
+        });
+        
+        if (adjustmentCard) {
+            adjustmentCard.style.display = 'none';
+        }
+
+        const adjustBalanceBtn = document.getElementById('adjust-balance-btn');
+        if (adjustBalanceBtn) {
+            adjustBalanceBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                if (adjustmentCard) {
+                    adjustmentCard.style.display = adjustmentCard.style.display === 'none' ? 'block' : 'none';
+                }
+            });
+        }
+
+        // Tab functionality
+        const tabs = document.querySelectorAll('.tab-link');
+        const tabContents = document.querySelectorAll('.tab-content');
+
+        tabs.forEach(tab => {
+            tab.addEventListener('click', function(e) {
+                e.preventDefault();
+                const targetId = this.dataset.tab;
+                const targetContent = document.getElementById(targetId);
+
+                // Remove active class from all tabs and contents
+                tabs.forEach(t => t.classList.remove('active'));
+                tabContents.forEach(content => content.classList.remove('active'));
+
+                // Add active class to clicked tab and corresponding content
+                this.classList.add('active');
+                if (targetContent) {
+                    targetContent.classList.add('active');
+                }
+            });
+        });
+    });
+</script>

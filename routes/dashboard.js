@@ -720,45 +720,89 @@ router.post('/users/add', ensureAuth, ensureRole('admin'), async (req, res) => {
         res.redirect('/dashboard/users/add');
     }
 });
-// @desc    Ручная регистрация платежа админом
-// @route   POST /dashboard/user-profile/:id/register-payment
-router.post('/user-profile/:id/register-payment', ensureAuth, ensureRole('admin'), async (req, res) => {
+// @desc    Admin adjusts student's stars balance
+// @route   POST /dashboard/user-profile/:id/adjust-stars
+router.post('/user-profile/:id/adjust-stars', ensureAuth, ensureRole('admin'), async (req, res) => {
     try {
-        const { lessonsPurchased, amountPaid, paymentSystem } = req.body;
-        const lessons = parseInt(lessonsPurchased, 10);
-        const amount = parseFloat(amountPaid);
+        const { starsAdjustment, adjustmentReason } = req.body;
+        const stars = parseInt(starsAdjustment, 10);
 
-        if (!lessons || !amount || !paymentSystem) {
+        if (!stars || !adjustmentReason) {
+            req.flash('error_msg', 'Please fill in all fields.');
             return res.redirect(`/dashboard/user-profile/${req.params.id}`);
         }
 
         const user = await User.findById(req.params.id);
-        const newBalance = user.lessonsPaid + lessons;
+        if (!user) {
+            req.flash('error_msg', 'User not found.');
+            return res.redirect('/dashboard/users');
+        }
 
-        user.lessonsPaid = newBalance;
+        const newStarsBalance = (user.stars || 0) + stars;
+        user.stars = newStarsBalance;
+
+        // Optionally, keep a history of star adjustments if needed
+        // This could be a new field in the User model or part of balanceHistory
         user.balanceHistory.push({
-            change: lessons,
-            balanceAfter: newBalance,
-            reason: `Manual Payment: +${lessons} lessons via ${paymentSystem}`
+            date: new Date(),
+            change: stars,
+            starsBalanceAfter: Number(newStarsBalance),
+            lessonsBalanceAfter: Number(user.lessonsPaid || 0),
+            reason: `Stars Adjustment: ${adjustmentReason}`,
+            isStarAdjustment: true
         });
+
         await user.save();
 
-        await Payment.create({
-            userId: req.params.id,
-            amountPaid: amount,
-            baseAmount: amount,
-            discountApplied: 0,
-            lessonsPurchased: lessons,
-            pricePerLesson: amount / lessons,
-            paymentSystem: paymentSystem,
-            transactionType: 'Manual'
-        });
-
+        req.flash('success_msg', 'Stars balance updated successfully.');
         res.redirect(`/dashboard/user-profile/${req.params.id}`);
 
     } catch (err) {
         console.error(err);
+        req.flash('error_msg', 'An error occurred while adjusting stars.');
+        res.redirect('/dashboard');
+    }
+});
+
+// @desc    Admin adjusts student's paid lessons balance
+// @route   POST /dashboard/user-profile/:id/adjust-lessons
+router.post('/user-profile/:id/adjust-lessons', ensureAuth, ensureRole('admin'), async (req, res) => {
+    try {
+        const { lessonsAdjustment, adjustmentReason } = req.body;
+        const lessons = parseInt(lessonsAdjustment, 10);
+
+        if (!lessons || !adjustmentReason) {
+            req.flash('error_msg', 'Please fill in all fields.');
+            return res.redirect(`/dashboard/user-profile/${req.params.id}`);
+        }
+
+        const user = await User.findById(req.params.id);
+        if (!user) {
+            req.flash('error_msg', 'User not found.');
+            return res.redirect('/dashboard/users');
+        }
+
+        const newLessonsPaidBalance = (user.lessonsPaid || 0) + lessons;
+        user.lessonsPaid = newLessonsPaidBalance;
+
+        user.balanceHistory.push({
+            date: new Date(),
+            change: lessons,
+            starsBalanceAfter: Number(user.stars || 0),
+            lessonsBalanceAfter: Number(newLessonsPaidBalance),
+            reason: `Paid Lessons Adjustment: ${adjustmentReason}`,
+            isStarAdjustment: false
+        });
+
+        await user.save();
+
+        req.flash('success_msg', 'Paid lessons balance updated successfully.');
         res.redirect(`/dashboard/user-profile/${req.params.id}`);
+
+    } catch (err) {
+        console.error(err);
+        req.flash('error_msg', 'An error occurred while adjusting paid lessons.');
+        res.redirect('/dashboard');
     }
 });
 

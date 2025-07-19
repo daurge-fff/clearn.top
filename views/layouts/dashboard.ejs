@@ -67,7 +67,18 @@
                     </div>
                     <div class="user-info">
                         <span class="user-name"><%= user.name %></span>
-                        <span class="user-role"><%= user.role %></span>
+                        <div class="user-meta">
+                            <% if (user.role === 'student') { %>
+                                   <div class="user-balance">
+                                       <i class="icon-star"></i>
+                                      <span><%= user.stars || 0 %></span>
+                                   </div>
+                                   <div class="user-balance">
+                                       <i class="icon-credit-card"></i>
+                                       <span><%= user.lessonsPaid %></span>
+                                   </div>
+                              <% } %>
+                        </div>
                     </div>
                 </div>
             </div>

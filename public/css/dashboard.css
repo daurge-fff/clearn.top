@@ -346,6 +346,51 @@
 .badge.status-completed { background-color: rgba(46, 204, 113, 0.2); color: #2ecc71; }
 .badge.status-cancelled_by_student, .badge.status-cancelled_by_teacher, .badge.status-no_show { background-color: rgba(231, 76, 60, 0.2); color: #e74c3c; }
 .badge.role-student { background-color: rgba(0, 242, 254, .2); color: var(--accent-color-1); } .badge.role-teacher { background-color: rgba(196, 58, 214, .2); color: var(--accent-color-2); } .badge.role-admin { background-color: rgba(255, 185, 43, .2); color: #ffb92b; }
+
+/* Улучшенные стили для статуса */
+.status-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.status-card .status-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border-radius: 25px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    transition: all 0.2s ease;
+    min-width: 80px;
+}
+
+.status-card .status-badge:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    color: inherit !important;
+}
+
+.status-badge .status-icon::before {
+    content: '●';
+    font-size: 0.7rem;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+}
+
+.badge.status-active { background: linear-gradient(135deg, rgba(46, 204, 113, 0.2), rgba(46, 204, 113, 0.1)); color: #27ae60; border: 1px solid rgba(46, 204, 113, 0.3); }
+.badge.status-inactive { background: linear-gradient(135deg, rgba(231, 76, 60, 0.2), rgba(231, 76, 60, 0.1)); color: #c0392b; border: 1px solid rgba(231, 76, 60, 0.3); }
+.badge.status-paused { background: linear-gradient(135deg, rgba(241, 196, 15, 0.2), rgba(241, 196, 15, 0.1)); color: #d68910; border: 1px solid rgba(241, 196, 15, 0.3); }
 .actions-cell {
     display: flex;
     gap: 10px;
@@ -384,6 +429,21 @@
 .form-group textarea { resize: vertical; min-height: 80px; }
 .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: var(--accent-color-1); box-shadow: 0 0 0 3px var(--shadow-color); }
 .form-actions { display: flex; gap: 15px; margin-top: 30px; flex-direction: column; }
+
+.adjustment-form {
+    display: grid;
+    grid-template-columns: 1fr 1fr auto;
+    gap: 20px;
+    align-items: end;
+}
+
+.adjustment-form .form-group {
+    margin-bottom: 0;
+}
+
+.adjustment-form .form-actions {
+    margin-top: 0;
+}
 
 /* === CUSTOM CHECKBOX === */
 .form-group-checkbox {
@@ -491,6 +551,77 @@
 .user-info { flex-grow: 1; overflow: hidden; text-align: center; }
 .user-name { display: block; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 0.9rem; }
 .user-role { font-size: .8rem; opacity: .7; text-transform: capitalize; }
+
+.user-meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    justify-content: center;
+}
+
+/* === TABS === */
+.tabs {
+    display: flex;
+    border-bottom: 1px solid var(--card-border);
+    margin-bottom: 20px;
+}
+
+.tab-link {
+    padding: 10px 20px;
+    cursor: pointer;
+    border: none;
+    background-color: transparent;
+    color: var(--text-color-light);
+    font-weight: 700;
+    position: relative;
+    transition: all 0.2s ease;
+    border-radius: 8px 8px 0 0;
+}
+
+.tab-link:hover {
+    color: var(--accent-color-1);
+    background-color: rgba(0, 242, 254, 0.05);
+}
+
+.tab-link.active {
+    color: var(--accent-color-1);
+    background-color: rgba(0, 242, 254, 0.1);
+}
+
+.tab-link.active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background-color: var(--accent-color-1);
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+.user-balance {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.9em;
+    color: var(--text-color-secondary);
+    background-color: var(--bg-color);
+    padding: 2px 8px;
+    border-radius: 12px;
+    border: 1px solid var(--card-border);
+}
+
+.user-balance .icon-star {
+    color: #FFD700;
+    font-size: 1.1em;
+}
 
 
 /* Modal Styles */
@@ -909,6 +1040,11 @@
 
 @media (max-width: 991.98px) {
     .mobile-sidebar-toggle { display: flex; align-items: center; justify-content: center; position: fixed; top: 15px; left: 15px; z-index: 1002; width: 45px; height: 45px; background-color: var(--card-bg); border: 1px solid var(--card-border); border-radius: 50%; box-shadow: 0 4px 15px rgba(0,0,0,0.1); transition: opacity 0.3s ease; }
+    .mobile-sidebar-toggle i {
+        color: var(--text-color);
+        width: 20px;
+        height: 20px;
+    }
     .dashboard-body.sidebar-open .mobile-sidebar-toggle { opacity: 0; pointer-events: none; }
     .dashboard-sidebar { position: fixed; left: 0; top: 0; height: 100%; z-index: 1001; transform: translateX(-100%); transition: transform 0.3s ease-in-out; box-shadow: 5px 0 25px rgba(0,0,0,0.1); }
     .dashboard-body.sidebar-open .dashboard-sidebar { transform: translateX(0); }
@@ -1106,6 +1242,55 @@
 
 .checkbox-label { display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 1rem; color: var(--text-color); line-height: 20px; }
 .checkbox-label:hover { opacity: 0.8; }
+
+.custom-checkbox {
+    position: relative;
+    display: inline-block;
+}
+
+.custom-checkbox input[type="checkbox"] {
+    opacity: 0;
+    position: absolute;
+    width: 0;
+    height: 0;
+}
+
+.custom-checkbox .checkmark {
+    position: relative;
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    background-color: var(--bg-color);
+    border: 2px solid var(--card-border);
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.custom-checkbox:hover .checkmark {
+    border-color: var(--accent-color-1);
+}
+
+.custom-checkbox input[type="checkbox"]:checked + .checkmark {
+    background-color: var(--accent-color-1);
+    border-color: var(--accent-color-1);
+}
+
+.custom-checkbox .checkmark::after {
+    content: '';
+    position: absolute;
+    left: 6px;
+    top: 2px;
+    width: 5px;
+    height: 10px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg) scale(0);
+    transition: transform 0.2s ease;
+}
+
+.custom-checkbox input[type="checkbox"]:checked + .checkmark::after {
+    transform: rotate(45deg) scale(1);
+}
 .custom-checkbox { position: relative; display: inline-block; width: 20px; height: 20px; flex-shrink: 0; } .custom-checkbox input { opacity: 0; width: 0; height: 0; position: absolute; } .checkmark { position: absolute; top: 0; left: 0; height: 20px; width: 20px; background-color: var(--bg-color); border: 2px solid var(--accent-color-1); border-radius: 6px; transition: all 0.3s ease; } .custom-checkbox input:checked ~ .checkmark { background: linear-gradient(45deg, var(--accent-color-1), var(--accent-color-2)); border: none; box-shadow: 0 2px 8px rgba(0,242,254,0.3); } .checkmark:after { content: ""; position: absolute; display: none; left: 7px; top: 5px; width: 5px; height: 10px; border: solid white; border-width: 0 3px 3px 0; transform: rotate(45deg); } .custom-checkbox input:checked ~ .checkmark:after { display: block; animation: checkmark 0.3s ease-in-out; } @keyframes checkmark { 0% { transform: rotate(45deg) scale(0); opacity: 0; } 100% { transform: rotate(45deg) scale(1); opacity: 1; } } .custom-checkbox:hover .checkmark { box-shadow: 0 0 10px rgba(0,242,254,0.2); }
 .attachment-info {
     display: flex;
