@@ -5,8 +5,8 @@
 
 <div class="stats-grid">
     <div class="stat-card">
-        <h3>Lessons Paid</h3>
-        <p class="stat-number"><%= user.lessonsPaid %></p>
+        <h3>Total Lessons</h3>
+        <p class="stat-number"><%= user.lessonsPaid || 0 %></p>
         <span class="stat-desc">Remaining lessons on your balance</span>
     </div>
 </div>

@@ -95,6 +95,10 @@ const UserSchema = new mongoose.Schema({
     referralBonuses: {
         type: Number,
         default: 0
+    },
+    freeReferralLessons: {
+        type: Number,
+        default: 0
     }
 });
 

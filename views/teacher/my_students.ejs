@@ -25,7 +25,7 @@
                             <div class="user-card-body">
                                 <div class="info-item">
                                     <i class="icon-list"></i>
-                                    <span>Balance: <strong><%= student.lessonsPaid %> lessons</strong></span>
+                                    <span>Balance: <strong><%= student.lessonsPaid || 0 %> lessons</strong></span>
                                 </div>
                                 <% if (student.contact) { %>
                                     <div class="info-item">

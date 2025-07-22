@@ -18,12 +18,23 @@ async function handleReferral(ctx, referralCode) {
         }
 
         referredUser.referredBy = referrer._id;
-        referrer.referralBonuses = (referrer.referralBonuses || 0) + 1; // Example: 1 bonus per referral
+        // Give 1 free lesson to the new user
+        referredUser.lessonsPaid = (referredUser.lessonsPaid || 0) + 1;
+        
+        // Add to balance history
+        referredUser.balanceHistory.push({
+            date: new Date(),
+            change: 1,
+            starsBalanceAfter: Number(referredUser.stars || 0),
+            lessonsBalanceAfter: Number(referredUser.lessonsPaid || 0),
+            reason: 'Free lesson for joining via referral link',
+            isStarAdjustment: false
+        });
 
         await referredUser.save();
         await referrer.save();
 
-        await ctx.reply(`You have been referred by ${referrer.name}.`);
+        await ctx.reply(`You have been referred by ${referrer.name}. You received 1 free lesson! 🎉`);
         
         try {
                 await ctx.telegram.sendMessage(referrer.telegramChatId, `User ${referredUser.name} has joined using your link!`);
@@ -65,14 +76,19 @@ async function showReferralInfo(ctx) {
         const referralLink = `https://t.me/${botInfo.username}?start=${user.referralCode}`;
 
         let message = `Your partner link: ${referralLink}\n`;
-        message += `Your bonus balance: ${user.referralBonuses || 0}\n`;
+        message += `Your total lessons: ${user.lessonsPaid || 0}\n`;
 
         if (user.referredBy) {
             message += `You were referred by: ${user.referredBy.name}\n`;
         }
 
         const referredUsers = await User.find({ referredBy: user._id });
-        message += `Number of referred users: ${referredUsers.length}`;
+        message += `Number of referred users: ${referredUsers.length}\n\n`;
+        message += `📋 How it works:\n`;
+        message += `• Invite friends using your link\n`;
+        message += `• You get 1 free lesson when they make their first payment\n`;
+        message += `• You get +1 bonus lesson if they buy 20+ lessons at once\n`;
+        message += `• New users get 1 free lesson when joining via referral`;
 
         ctx.reply(message);
     } catch (error) {

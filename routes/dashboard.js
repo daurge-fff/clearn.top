@@ -438,7 +438,7 @@ router.post('/lessons/manage/:id', ensureAuth, upload, async (req, res) => {
                             date: new Date(),
                             change: starsToAward,
                             starsBalanceAfter: Number(newStarsBalance),
-                            lessonsBalanceAfter: Number(student.lessonsPaid || 0),
+                    lessonsBalanceAfter: Number(student.lessonsPaid || 0),
                             reason: `Stars earned for lesson grade: ${finalScore}/${maxScore} (ID: ${lesson._id})`,
                             isStarAdjustment: true
                         });
@@ -565,7 +565,29 @@ router.get('/my-lessons', ensureAuth, ensureRole('student'), async (req, res) =>
         res.status(500).send('Server Error');
     }
 });
-router.post('/lessons/cancel/:id', ensureAuth, ensureRole('student'), async (req, res) => { try { const lesson = await Lesson.findById(req.params.id); if (!lesson) { return res.status(404).send('Lesson not found.'); } if (String(lesson.student) !== String(req.user.id)) { return res.status(403).send('Forbidden.'); } if (lesson.status !== 'scheduled') { return res.status(400).send('This lesson cannot be cancelled.'); } await Lesson.findByIdAndUpdate(req.params.id, { status: 'cancelled_by_student', cancellationReason: req.body.reason || 'Cancelled by student' }); await User.findByIdAndUpdate(req.user.id, { $inc: { lessonsPaid: 1 } }); res.redirect('/dashboard/my-lessons'); } catch (err) { console.error(err); res.status(500).send('Server Error'); } });
+router.post('/lessons/cancel/:id', ensureAuth, ensureRole('student'), async (req, res) => { 
+    try { 
+        const lesson = await Lesson.findById(req.params.id); 
+        if (!lesson) { 
+            return res.status(404).send('Lesson not found.'); 
+        } 
+        if (String(lesson.student) !== String(req.user.id)) { 
+            return res.status(403).send('Forbidden.'); 
+        } 
+        if (lesson.status !== 'scheduled') { 
+            return res.status(400).send('This lesson cannot be cancelled.'); 
+        } 
+        await Lesson.findByIdAndUpdate(req.params.id, { 
+            status: 'cancelled_by_student', 
+            cancellationReason: req.body.reason || 'Cancelled by student' 
+        }); 
+        await User.findByIdAndUpdate(req.user.id, { $inc: { lessonsPaid: 1 } }); 
+        res.redirect('/dashboard/my-lessons'); 
+    } catch (err) { 
+        console.error(err); 
+        res.status(500).send('Server Error'); 
+    } 
+});
 router.get('/lessons/view/:id', ensureAuth, ensureRole('student'), async (req, res) => {
     try {
         const lesson = await Lesson.findById(req.params.id).populate('teacher', 'name').populate('course', 'name').lean();
@@ -727,6 +749,7 @@ router.post('/user-profile/:id/adjust-balance', ensureAuth, ensureRole('admin'),
         user.balanceHistory.push({
             change: amount,
             balanceAfter: newBalance,
+            lessonsBalanceAfter: user.lessonsPaid,
             reason: `Manual Correction: ${reason}`,
             transactionType: 'Manual Correction'
         });

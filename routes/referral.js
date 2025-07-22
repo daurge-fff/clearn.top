@@ -11,6 +11,13 @@ router.get('/', ensureAuth, async (req, res) => {
         const user = await User.findById(req.user.id).populate('referredBy');
         const referredUsers = await User.find({ referredBy: user._id });
 
+        // Generate referral code if user doesn't have one
+        if (!user.referralCode) {
+            const crypto = require('crypto');
+            user.referralCode = crypto.randomBytes(5).toString('hex');
+            await user.save();
+        }
+        
         const botInfo = { username: 'CodeAndLearnBot' }; // Replace with actual bot username logic if needed
         const referralLink = `https://t.me/${botInfo.username}?start=${user.referralCode}`;
 

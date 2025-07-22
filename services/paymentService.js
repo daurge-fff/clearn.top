@@ -53,7 +53,7 @@ async function findUserByIdentifier(identifier) {
 async function creditPaymentToUser(payment) {
     if (!payment.userId) return;
     
-    const user = await User.findById(payment.userId);
+    const user = await User.findById(payment.userId).populate('referredBy');
     if (!user) {
         console.error(`User with ID ${payment.userId} not found for crediting payment ${payment._id}.`);
         return;
@@ -71,6 +71,50 @@ async function creditPaymentToUser(payment) {
         transactionType: payment.transactionType,
         paymentId: payment._id
     });
+    
+    // Check if this is the first payment and user was referred
+    if (user.referredBy) {
+        const previousPayments = await Payment.countDocuments({
+            userId: user._id,
+            status: 'completed',
+            _id: { $ne: payment._id }
+        });
+        
+        if (previousPayments === 0) {
+            // This is the first payment - give referrer 1 free lesson
+            const referrer = await User.findById(user.referredBy._id);
+            if (referrer) {
+                referrer.lessonsPaid = (referrer.lessonsPaid || 0) + 1;
+
+                
+                referrer.balanceHistory.push({
+                    date: new Date(),
+                    change: 1,
+                    starsBalanceAfter: Number(referrer.stars || 0),
+                    lessonsBalanceAfter: Number(referrer.lessonsPaid || 0),
+                    reason: `Referral lesson for referring ${user.name} (first payment)`,
+                    isStarAdjustment: false
+                });
+                
+                // Check if user bought 20+ lessons for bonus
+                if (payment.lessonsPurchased >= 20) {
+                    referrer.lessonsPaid += 1;
+                    
+                    referrer.balanceHistory.push({
+                        date: new Date(),
+                        change: 1,
+                        starsBalanceAfter: Number(referrer.stars || 0),
+                        lessonsBalanceAfter: Number(referrer.lessonsPaid || 0),
+                        reason: `Bonus referral lesson for referring ${user.name} (20+ lessons purchase)`,
+                        isStarAdjustment: false
+                    });
+                }
+                
+                await referrer.save();
+                console.log(`Credited referral lessons to ${referrer.email} for referring ${user.email}`);
+            }
+        }
+    }
     
     await user.save();
     console.log(`Credited ${payment.lessonsPurchased} lessons to user ${user.email}. New balance: ${newBalance}.`);

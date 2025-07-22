@@ -20,8 +20,8 @@
         <h2>Your Stats</h2>
         <div class="referral-stats">
             <div class="stat-item">
-                <h3><%= user.referralBonuses || 0 %></h3>
-                <p>Bonus Balance</p>
+                <h3><%= user.lessonsPaid || 0 %></h3>
+                <p>Total Lessons</p>
             </div>
             <div class="stat-item">
                 <h3><%= referredUsers.length %></h3>
@@ -33,6 +33,18 @@
                 <p>Referred By</p>
             </div>
             <% } %>
+        </div>
+    </div>
+
+    <div class="referral-card">
+        <h2>How It Works</h2>
+        <div class="referral-info">
+            <ul style="list-style: none; padding: 0; margin: 0;">
+                <li style="margin-bottom: 10px; padding: 10px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #007bff;">📋 <strong>Share your link</strong> - Invite friends using your referral link</li>
+                <li style="margin-bottom: 10px; padding: 10px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #28a745;">🎁 <strong>New users get 1 free lesson</strong> - When someone joins via your link</li>
+                <li style="margin-bottom: 10px; padding: 10px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #ffc107;">💰 <strong>You get 1 free lesson</strong> - When they make their first payment</li>
+                <li style="margin-bottom: 10px; padding: 10px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #dc3545;">🚀 <strong>Bonus lesson</strong> - +1 extra if they buy 20+ lessons at once</li>
+            </ul>
         </div>
     </div>
 

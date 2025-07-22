@@ -82,7 +82,7 @@ async function handleLessonCallback(ctx, user, params, { undoStack }) {
                     date: new Date(),
                     change: completionStars,
                     starsBalanceAfter: Number(newStarsBalance),
-                    lessonsBalanceAfter: Number(student.lessonsPaid || 0),
+                    lessonsBalanceAfter: Number((student.lessonsPaid || 0) + (student.freeReferralLessons || 0)),
                     reason: `Stars earned for completing ${lesson.isProject ? 'project' : 'lesson'} (ID: ${lessonId})`,
                     isStarAdjustment: true
                 });
@@ -91,10 +91,7 @@ async function handleLessonCallback(ctx, user, params, { undoStack }) {
             }
         }
         
-        const completionMessage = alreadyAwarded ? 
-            `✅ Lesson with ${lesson.student.name} marked as completed.` :
-            `✅ Lesson with ${lesson.student.name} marked as completed. Student earned ${lesson.isProject ? 5 : 2} stars! ⭐`;
-        await ctx.editMessageText(completionMessage);
+        await ctx.editMessageText(`✅ Lesson with ${lesson.student.name} marked as completed.`);
         const gradeKeyboard = { inline_keyboard: [ [1,2,3,4,5].map(g => ({ text: `${g} ⭐`, callback_data: `grade_${lessonId}_${g}` })), [6,7,8,9,10].map(g => ({ text: `${g} ⭐`, callback_data: `grade_${lessonId}_${g}` })) ] };
         await ctx.reply("Please rate the lesson from 1 to 10:", { reply_markup: gradeKeyboard });
     } else if (actionType === 'noshow') {
@@ -355,7 +352,7 @@ async function handleLessonGrade(ctx, user, lessonId, grade) {
                         date: new Date(),
                         change: starsToAward,
                         starsBalanceAfter: Number(newStarsBalance),
-                        lessonsBalanceAfter: Number(student.lessonsPaid || 0),
+                        lessonsBalanceAfter: Number((student.lessonsPaid || 0) + (student.freeReferralLessons || 0)),
                         reason: `Stars earned for lesson grade: ${finalScore}/${lesson.isProject ? 25 : 10} (ID: ${lessonId})`,
                         isStarAdjustment: true
                     });
@@ -366,10 +363,7 @@ async function handleLessonGrade(ctx, user, lessonId, grade) {
         }
         
         await ctx.editMessageReplyMarkup({ inline_keyboard: [] });
-        const gradeMessage = gradeAlreadyAwarded ? 
-            `✅ Grade ${finalScore}/${lesson.isProject ? 25 : 10} set for lesson with ${lesson.student.name}.` :
-            `✅ Grade ${finalScore}/${lesson.isProject ? 25 : 10} set for lesson with ${lesson.student.name}. Student earned ${starsToAward} stars! ⭐`;
-        await ctx.reply(gradeMessage);
+        await ctx.reply(`✅ Grade ${finalScore}/${lesson.isProject ? 25 : 10} set for lesson with ${lesson.student.name}.`);
         await ctx.answerCbQuery(`Grade ${grade} saved`);
     } catch (error) {
         console.error("Grade error:", error);
