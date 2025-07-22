@@ -24,7 +24,7 @@ mongoose.connect(process.env.MONGO_URI, {
     maxPoolSize: 10, // Maintain up to 10 socket connections
     minPoolSize: 5, // Maintain a minimum of 5 socket connections
     maxIdleTimeMS: 30000, // Close connections after 30 seconds of inactivity
-    bufferMaxEntries: 0 // Disable mongoose buffering
+    bufferCommands: false // Disable mongoose buffering
 })
     .then(() => console.log('MongoDB Connected via server.js...'))
     .catch(err => {
