@@ -13,6 +13,27 @@ const upload = require('../middleware/upload');
 const Payment = require('../models/Payment');
 const paymentService = require('../services/paymentService');
 
+// Function to calculate stars based on grade
+function calculateStarsFromGrade(score, isProject) {
+    if (isProject) {
+        // For projects (max 25 points)
+        if (score >= 23) return 10; // Excellent (23-25)
+        if (score >= 20) return 8;  // Very good (20-22)
+        if (score >= 17) return 6;  // Good (17-19)
+        if (score >= 14) return 4;  // Satisfactory (14-16)
+        if (score >= 10) return 2;  // Basic (10-13)
+        return 1; // Participation (1-9)
+    } else {
+        // For regular lessons (max 10 points)
+        if (score >= 9) return 5;   // Excellent (9-10)
+        if (score >= 8) return 4;   // Very good (8)
+        if (score >= 7) return 3;   // Good (7)
+        if (score >= 6) return 2;   // Satisfactory (6)
+        if (score >= 4) return 1;   // Basic (4-5)
+        return 1; // Participation (1-3)
+    }
+}
+
 // @desc    Главная страница личного кабинета
 // @route   GET /dashboard
 router.get('/', ensureAuth, async (req, res) => {
@@ -397,6 +418,64 @@ router.post('/lessons/manage/:id', ensureAuth, upload, async (req, res) => {
                 },
                 { upsert: true, new: true, setDefaultsOnInsert: true }
             );
+
+            // Award stars based on grade
+            const starsToAward = calculateStarsFromGrade(finalScore, lesson.isProject);
+            if (starsToAward > 0) {
+                const student = await User.findById(lesson.student);
+                if (student) {
+                    // Check if grade stars were already awarded for this specific lesson
+                    const gradeAlreadyAwarded = student.balanceHistory.some(entry => 
+                        entry.reason && entry.reason.includes('lesson grade') && 
+                        entry.reason.includes(`(ID: ${lesson._id})`)
+                    );
+                    
+                    if (!gradeAlreadyAwarded) {
+                        const newStarsBalance = (student.stars || 0) + starsToAward;
+                        student.stars = newStarsBalance;
+                        
+                        student.balanceHistory.push({
+                            date: new Date(),
+                            change: starsToAward,
+                            starsBalanceAfter: Number(newStarsBalance),
+                            lessonsBalanceAfter: Number(student.lessonsPaid || 0),
+                            reason: `Stars earned for lesson grade: ${finalScore}/${maxScore} (ID: ${lesson._id})`,
+                            isStarAdjustment: true
+                        });
+                        
+                        await student.save();
+                    }
+                }
+            }
+        }
+
+        // Award stars for completing lesson (if status changed to completed and not already awarded)
+        if (originalStatus !== 'completed' && status === 'completed') {
+            const student = await User.findById(lesson.student);
+            if (student) {
+                // Check if completion stars were already awarded for this specific lesson
+                const alreadyAwarded = student.balanceHistory.some(entry => 
+                    entry.reason && entry.reason.includes(`completing`) && 
+                    entry.reason.includes(`(ID: ${lesson._id})`)
+                );
+                
+                if (!alreadyAwarded) {
+                    const completionStars = lesson.isProject ? 5 : 2; // More stars for project completion
+                    const newStarsBalance = (student.stars || 0) + completionStars;
+                    student.stars = newStarsBalance;
+                    
+                    student.balanceHistory.push({
+                        date: new Date(),
+                        change: completionStars,
+                        starsBalanceAfter: Number(newStarsBalance),
+                        lessonsBalanceAfter: Number(student.lessonsPaid || 0),
+                        reason: `Stars earned for completing ${lesson.isProject ? 'project' : 'lesson'} (ID: ${lesson._id})`,
+                        isStarAdjustment: true
+                    });
+                    
+                    await student.save();
+                }
+            }
         }
 
         await lesson.save();

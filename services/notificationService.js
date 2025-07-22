@@ -8,9 +8,10 @@ async function notifyAdmin(message) {
     }
 
     try {
-        await bot.sendMessage(adminChatId, message, { parse_mode: 'Markdown' });
+        await bot.telegram.sendMessage(adminChatId, message, { parse_mode: 'Markdown' });
     } catch (error) {
-        console.error(`Error sending admin notification to ${adminChatId}:`, error.message);
+        console.error('Failed to send admin notification:', error.message);
+        // Don't throw the error to prevent breaking the calling function
     }
 }
 

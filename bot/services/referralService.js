@@ -25,17 +25,20 @@ async function handleReferral(ctx, referralCode) {
 
         await ctx.reply(`You have been referred by ${referrer.name}.`);
         
-        const bot = ctx.telegram;
-        await bot.sendMessage(referrer.telegramChatId, `User ${referredUser.name} has joined using your link!`);
+        try {
+                await ctx.telegram.sendMessage(referrer.telegramChatId, `User ${referredUser.name} has joined using your link!`);
+            } catch (telegramError) {
+                console.error(`Failed to send referral notification to referrer ${referrer.name}:`, telegramError.message);
+            }
 
         // Notify admins
         const admins = await User.find({ role: 'admin' });
         for (const admin of admins) {
             if (admin.telegramChatId) {
                 try {
-                    await bot.sendMessage(admin.telegramChatId, `New referral: ${referrer.name} (ID: ${referrer.telegramChatId}) referred ${referredUser.name} (ID: ${referredUser.telegramChatId}).`);
-                } catch (e) {
-                    console.error(`Failed to send notification to admin ${admin.name}:`, e);
+                    await ctx.telegram.sendMessage(admin.telegramChatId, `New referral: ${referrer.name} (ID: ${referrer.telegramChatId}) referred ${referredUser.name} (ID: ${referredUser.telegramChatId}).`);
+                } catch (telegramError) {
+                    console.error(`Failed to send referral notification to admin ${admin.name}:`, telegramError.message);
                 }
             }
         }

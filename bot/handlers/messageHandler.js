@@ -162,7 +162,11 @@ async function handleLessonCancellation(ctx, user, lessonId, reason) {
             const date = moment.utc(lesson.lessonDate).tz(teacherTz).format('DD/MM/YYYY');
             const time = moment.utc(lesson.lessonDate).tz(teacherTz).format('HH:mm');
             const notification = `⚠️ *Lesson Cancellation*\n\nStudent *${user.name}* has cancelled the lesson scheduled for *${date} at ${time}*.\n\n*Reason:* ${reason}`;
-            ctx.telegram.sendMessage(teacher.telegramChatId, notification, { parse_mode: 'Markdown' });
+            try {
+                ctx.telegram.sendMessage(teacher.telegramChatId, notification, { parse_mode: 'Markdown' });
+            } catch (telegramError) {
+                console.error(`Failed to send lesson notification to teacher ${teacher.name}:`, telegramError.message);
+            }
         }
     } else if (isTeacher) {
         newStatus = 'cancelled_by_teacher';

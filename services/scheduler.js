@@ -11,11 +11,19 @@ function startScheduler(bot) {
     console.log('Scheduler started using node-cron.');
 
     cron.schedule('* * * * *', async () => {
-        await processReminders(bot, 'oneHour', 60);
+        try {
+            await processReminders(bot, 'oneHour', 60);
+        } catch (error) {
+            console.error('Scheduler (oneHour reminder) error:', error);
+        }
     });
 
     cron.schedule('*/10 * * * *', async () => {
-        await processReminders(bot, 'twentyFourHour', 1440);
+        try {
+            await processReminders(bot, 'twentyFourHour', 1440);
+        } catch (error) {
+            console.error('Scheduler (twentyFourHour reminder) error:', error);
+        }
     });
 
     cron.schedule('*/5 * * * *', async () => {
@@ -68,10 +76,15 @@ async function processReminders(bot, reminderType, minutesBefore) {
                         const lessonTime = lessonLocal.format('HH:mm');
                         const topicText = lesson.topic ? `\n📝 Topic: *${lesson.topic}*` : '';
                         const msg = `🔔 *Reminder!* Your lesson with ${lesson[role === 'student' ? 'teacher' : 'student'].name} starts ${timeText}.\n⏰ Time: *${lessonTime}*${topicText}`;
-                        await bot.sendMessage(user.telegramChatId, msg, { parse_mode: 'Markdown' });
-
-                        lesson.remindersSent[role][reminderType] = true;
-                        await lesson.save();
+                        
+                        try {
+                            await bot.telegram.sendMessage(user.telegramChatId, msg, { parse_mode: 'Markdown' });
+                            lesson.remindersSent[role][reminderType] = true;
+                            await lesson.save();
+                        } catch (telegramError) {
+                            console.error(`Failed to send ${reminderType} reminder to ${role} ${user.name}:`, telegramError.message);
+                            // Don't mark as sent if message failed to send
+                        }
                     }
                 }
             }
@@ -95,7 +108,13 @@ async function sendPostLessonPrompt(bot, lesson) {
             ]]
         }
     };
-    await bot.sendMessage(lesson.teacher.telegramChatId, message, options);
+    
+    try {
+        await bot.telegram.sendMessage(lesson.teacher.telegramChatId, message, options);
+    } catch (telegramError) {
+        console.error(`Failed to send post-lesson prompt for lesson ${lesson._id}:`, telegramError.message);
+        throw telegramError; // Re-throw to be caught by the calling function
+    }
 }
 
 module.exports = { startScheduler };

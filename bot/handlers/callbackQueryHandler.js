@@ -8,6 +8,27 @@ const searchService = require('../services/searchService');
 const { approvePayment, declinePayment } = require('../../services/paymentService');
 const moment = require('moment-timezone');
 
+// Function to calculate stars based on grade
+function calculateStarsFromGrade(score, isProject) {
+    if (isProject) {
+        // For projects (max 25 points)
+        if (score >= 23) return 10; // Excellent (23-25)
+        if (score >= 20) return 8;  // Very good (20-22)
+        if (score >= 17) return 6;  // Good (17-19)
+        if (score >= 14) return 4;  // Satisfactory (14-16)
+        if (score >= 10) return 2;  // Basic (10-13)
+        return 1; // Participation (1-9)
+    } else {
+        // For regular lessons (max 10 points)
+        if (score >= 9) return 5;   // Excellent (9-10)
+        if (score >= 8) return 4;   // Very good (8)
+        if (score >= 7) return 3;   // Good (7)
+        if (score >= 6) return 2;   // Satisfactory (6)
+        if (score >= 4) return 1;   // Basic (4-5)
+        return 1; // Participation (1-3)
+    }
+}
+
 async function handleCancellationRequest(ctx, user, params) {
     const lessonId = ctx.callbackQuery.data.split('_')[2];
     await stateService.setState(user.telegramChatId, 'awaiting_cancellation_reason', { lessonId });
@@ -42,7 +63,38 @@ async function handleLessonCallback(ctx, user, params, { undoStack }) {
 
     if (actionType === 'completed') {
         await Lesson.findByIdAndUpdate(lessonId, { status: 'completed' });
-        await ctx.editMessageText(`✅ Lesson with ${lesson.student.name} marked as completed.`);
+        
+        // Award stars for completing lesson
+        const student = await User.findById(lesson.student._id);
+        if (student) {
+            // Check if completion stars were already awarded for this specific lesson
+            const alreadyAwarded = student.balanceHistory.some(entry => 
+                entry.reason && entry.reason.includes('completing') && 
+                entry.reason.includes(`(ID: ${lessonId})`)
+            );
+            
+            if (!alreadyAwarded) {
+                const completionStars = lesson.isProject ? 5 : 2; // More stars for project completion
+                const newStarsBalance = (student.stars || 0) + completionStars;
+                student.stars = newStarsBalance;
+                
+                student.balanceHistory.push({
+                    date: new Date(),
+                    change: completionStars,
+                    starsBalanceAfter: Number(newStarsBalance),
+                    lessonsBalanceAfter: Number(student.lessonsPaid || 0),
+                    reason: `Stars earned for completing ${lesson.isProject ? 'project' : 'lesson'} (ID: ${lessonId})`,
+                    isStarAdjustment: true
+                });
+                
+                await student.save();
+            }
+        }
+        
+        const completionMessage = alreadyAwarded ? 
+            `✅ Lesson with ${lesson.student.name} marked as completed.` :
+            `✅ Lesson with ${lesson.student.name} marked as completed. Student earned ${lesson.isProject ? 5 : 2} stars! ⭐`;
+        await ctx.editMessageText(completionMessage);
         const gradeKeyboard = { inline_keyboard: [ [1,2,3,4,5].map(g => ({ text: `${g} ⭐`, callback_data: `grade_${lessonId}_${g}` })), [6,7,8,9,10].map(g => ({ text: `${g} ⭐`, callback_data: `grade_${lessonId}_${g}` })) ] };
         await ctx.reply("Please rate the lesson from 1 to 10:", { reply_markup: gradeKeyboard });
     } else if (actionType === 'noshow') {
@@ -268,9 +320,56 @@ async function handleLessonGrade(ctx, user, lessonId, grade) {
     try {
         const lesson = await Lesson.findById(lessonId).populate('student', 'name');
         if (!lesson) return ctx.answerCbQuery("Lesson not found");
-        await Grade.findOneAndUpdate({ lesson: lessonId }, { lesson: lessonId, student: lesson.student._id, teacher: lesson.teacher, score: parseInt(grade), date: new Date() }, { upsert: true, new: true, setDefaultsOnInsert: true });
+        
+        const finalScore = parseInt(grade);
+        await Grade.findOneAndUpdate(
+            { lesson: lessonId }, 
+            { 
+                lesson: lessonId, 
+                student: lesson.student._id, 
+                teacher: lesson.teacher, 
+                score: finalScore, 
+                date: new Date(),
+                isProjectGrade: lesson.isProject || false
+            }, 
+            { upsert: true, new: true, setDefaultsOnInsert: true }
+        );
+        
+        // Award stars based on grade
+        const starsToAward = calculateStarsFromGrade(finalScore, lesson.isProject);
+        if (starsToAward > 0) {
+            const User = require('../../models/User');
+            const student = await User.findById(lesson.student._id);
+            if (student) {
+                // Check if grade stars were already awarded for this specific lesson
+                const gradeAlreadyAwarded = student.balanceHistory.some(entry => 
+                    entry.reason && entry.reason.includes('lesson grade') && 
+                    entry.reason.includes(`(ID: ${lessonId})`)
+                );
+                
+                if (!gradeAlreadyAwarded) {
+                    const newStarsBalance = (student.stars || 0) + starsToAward;
+                    student.stars = newStarsBalance;
+                    
+                    student.balanceHistory.push({
+                        date: new Date(),
+                        change: starsToAward,
+                        starsBalanceAfter: Number(newStarsBalance),
+                        lessonsBalanceAfter: Number(student.lessonsPaid || 0),
+                        reason: `Stars earned for lesson grade: ${finalScore}/${lesson.isProject ? 25 : 10} (ID: ${lessonId})`,
+                        isStarAdjustment: true
+                    });
+                    
+                    await student.save();
+                }
+            }
+        }
+        
         await ctx.editMessageReplyMarkup({ inline_keyboard: [] });
-        await ctx.reply(`✅ You have graded the lesson with ${lesson.student.name} a ${grade}.`);
+        const gradeMessage = gradeAlreadyAwarded ? 
+            `✅ Grade ${finalScore}/${lesson.isProject ? 25 : 10} set for lesson with ${lesson.student.name}.` :
+            `✅ Grade ${finalScore}/${lesson.isProject ? 25 : 10} set for lesson with ${lesson.student.name}. Student earned ${starsToAward} stars! ⭐`;
+        await ctx.reply(gradeMessage);
         await ctx.answerCbQuery(`Grade ${grade} saved`);
     } catch (error) {
         console.error("Grade error:", error);

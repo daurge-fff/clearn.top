@@ -214,24 +214,28 @@ router.post('/manual-payment/submit', async (req, res) => {
 
         const systemName = paymentSystem.charAt(0).toUpperCase() + paymentSystem.slice(1);
 
-        await bot.sendMessage(process.env.TELEGRAM_CHAT_ID,
-            `⚠️ *Manual ${systemName} Confirmation*\n\n` +
-            `A user claims to have paid. Please verify this transaction in your ${systemName} account.\n\n` +
-            `💰 *Amount:* ${amount} ${currency}\n` +
-            `👤 *Client:* \`${identifier}\`\n` +
-            `🧾 *Transaction Ref:* \`${transactionId}\``,
-            {
-                parse_mode: 'Markdown',
-                reply_markup: {
-                    inline_keyboard: [
-                        [
-                            { text: "✅ Approve", callback_data: `payment_approve_${newPayment._id}` },
-                            { text: "❌ Decline", callback_data: `payment_decline_${newPayment._id}` }
+        try {
+            await bot.telegram.sendMessage(process.env.TELEGRAM_CHAT_ID,
+                `⚠️ *Manual ${systemName} Confirmation*\n\n` +
+                `A user claims to have paid. Please verify this transaction in your ${systemName} account.\n\n` +
+                `💰 *Amount:* ${amount} ${currency}\n` +
+                `👤 *Client:* \`${identifier}\`\n` +
+                `🧾 *Transaction Ref:* \`${transactionId}\``,
+                {
+                    parse_mode: 'Markdown',
+                    reply_markup: {
+                        inline_keyboard: [
+                            [
+                                { text: "✅ Approve", callback_data: `payment_approve_${newPayment._id}` },
+                                { text: "❌ Decline", callback_data: `payment_decline_${newPayment._id}` }
+                            ]
                         ]
-                    ]
+                    }
                 }
-            }
-        );
+            );
+        } catch (telegramError) {
+            console.error('Failed to send manual payment notification to admin:', telegramError.message);
+        }
 
         res.status(200).json({ 
             msg: 'Your payment confirmation has been received and is awaiting review.',
@@ -726,7 +730,12 @@ router.post('/users/:id/reset-password', ensureAuth, ensureRole('admin'), async 
         user.password = await bcrypt.hash(newPassword, salt);
         await user.save();
         const message = `🔑 *Password Reset*\n\nHi ${user.name}! An administrator has reset your password.\n\nYour new temporary password is: \`${newPassword}\`\n\nPlease log in and change it in your settings as soon as possible.`;
-        await bot.sendMessage(user.telegramChatId, message, { parse_mode: 'Markdown' });
+        try {
+            await bot.telegram.sendMessage(user.telegramChatId, message, { parse_mode: 'Markdown' });
+        } catch (telegramError) {
+            console.error(`Failed to send password reset message to user ${user.name}:`, telegramError.message);
+            return res.status(500).json({ msg: 'Failed to send Telegram message.' });
+        }
         res.json({ msg: `A new temporary password has been sent to ${user.name} via Telegram.` });
     } catch (err) {
         console.error(err.message);
@@ -764,7 +773,11 @@ router.post('/feedback', async (req, res) => {
             timezoneDisplay = `${timezone} (${utcOffset})`;
         }
         const telegramMessage = `🆕 *New Feedback Received* \n\n👤 *Name:* ${name}\n📧 *Email:* ${email}\n🕒 *Timezone:* ${timezoneDisplay}\n🌐 *IP:* ${ip}\n\n💬 *Message:* \n${message}`;
-        await bot.sendMessage(process.env.TELEGRAM_CHAT_ID, telegramMessage, { parse_mode: 'Markdown' });
+        try {
+            await bot.telegram.sendMessage(process.env.TELEGRAM_CHAT_ID, telegramMessage, { parse_mode: 'Markdown' });
+        } catch (telegramError) {
+            console.error('Failed to send feedback notification to admin:', telegramError.message);
+        }
         feedbackRateLimit.set(ip, Date.now());
         res.json({ msg: 'Feedback sent successfully' });
     } catch (err) {
@@ -786,8 +799,13 @@ router.post('/notify/telegram', ensureAuth, ensureRole('admin'), async (req, res
         if (!user.telegramChatId) {
             return res.status(400).json({ msg: `User ${user.name} has not linked their Telegram account.` });
         }
-        await bot.sendMessage(user.telegramChatId, message, { parse_mode: 'Markdown' });
-        res.json({ msg: `Message successfully sent to ${user.name}.` });
+        try {
+            await bot.telegram.sendMessage(user.telegramChatId, message, { parse_mode: 'Markdown' });
+            res.json({ msg: `Message successfully sent to ${user.name}.` });
+        } catch (telegramError) {
+            console.error(`Failed to send Telegram notification to user ${user.name}:`, telegramError.message);
+            return res.status(500).json({ msg: 'Failed to send Telegram message.' });
+        }
     } catch (error) {
         console.error("Telegram notification error:", error);
         res.status(500).json({ msg: "Failed to send Telegram message." });
