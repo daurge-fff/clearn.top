@@ -35,7 +35,7 @@
     <header>
       <div class="container">
         <a href="/" class="logo">Code & Learn</a>
-        <nav>
+        <nav class="desktop-nav">
           <a href="#courses" data-translate="nav_courses">Courses</a>
           <a href="#tariffs" data-translate="nav_tariffs">Pricing</a>
           <a href="#why-us" data-translate="nav_why_us">Why Us</a>
@@ -61,8 +61,23 @@
           <button id="theme-switcher" title="Switch theme">
             <img src="https://emojicdn.elk.sh/☀️" alt="theme">
           </button>
+          <button class="mobile-menu-toggle" id="mobile-menu-toggle">
+            <span></span>
+            <span></span>
+            <span></span>
+          </button>
         </div>
       </div>
+      
+      <!-- Mobile Navigation -->
+      <nav class="mobile-nav" id="mobile-nav">
+        <div class="mobile-nav-content">
+          <a href="#courses" data-translate="nav_courses">Courses</a>
+          <a href="#tariffs" data-translate="nav_tariffs">Pricing</a>
+          <a href="#why-us" data-translate="nav_why_us">Why Us</a>
+          <a href="#about" data-translate="nav_about">About me</a>
+        </div>
+      </nav>
     </header>
 
     <main>
@@ -103,37 +118,7 @@
             </div>
         </section>
 
-        <section id="tariffs">
-            <div class="container">
-                <h2 class="section-title animate-on-scroll" data-translate="tariffs_title">Pricing and Payment</h2>
-                <div class="tariffs-grid">
-                    <div class="tariff-card animate-on-scroll">
-                        <h3 data-translate="tariff_25_h">25 Minute Lesson</h3>
-                        <p class="tariff-price" data-translate="tariff_price_1">10 EUR</p>
-                        <p class="tariff-description" data-translate="tariff_25_p">Ideal for the youngest (5-7 years) and for maintaining concentration.</p>
-                        <button class="buy-button" data-duration="25" data-translate="tariff_button">Select</button>
-                    </div>
-                    <div class="tariff-card animate-on-scroll">
-                        <h3 data-translate="tariff_50_h">50 Minute Lesson</h3>
-                        <p class="tariff-price" data-translate="tariff_price_2">20 EUR</p>
-                        <p class="tariff-description" data-translate="tariff_50_p">Standard format for a deep dive into topics for children aged 8 and up.</p>
-                        <button class="buy-button" data-duration="50" data-translate="tariff_button">Select</button>
-                    </div>
-                    <div class="donation-card-wrapper animate-on-scroll">
-                        <div id="donate-card" class="donation-card clickable">
-                            <div class="donation-icon">
-                                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12,21.35L10.55,20.03C5.4,15.36 2,12.27 2,8.5C2,5.41 4.42,3 7.5,3C9.24,3 10.91,3.81 12,5.08C13.09,3.81 14.76,3 16.5,3C19.58,3 22,5.41 22,8.5C22,12.27 18.6,15.36 13.45,20.03L12,21.35Z"/></svg>
-                            </div>
-                            <div class="donation-text">
-                                <h3 data-translate="donation_card_title">Support the Project</h3>
-                                <p data-translate="donation_card_desc">Your contribution helps me create new lessons and improve the platform.</p>
-                            </div>
-                            <div class="donation-arrow">→</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
+
 
         <section id="about" class="modern-about-section">
             <div class="container">
@@ -231,6 +216,38 @@
             </div>
         </section>
         
+        <section id="tariffs">
+            <div class="container">
+                <h2 class="section-title animate-on-scroll" data-translate="tariffs_title">Pricing and Payment</h2>
+                <div class="tariffs-grid">
+                    <div class="tariff-card animate-on-scroll">
+                        <h3 data-translate="tariff_25_h">25 Minute Lesson</h3>
+                        <p class="tariff-price" data-translate="tariff_price_1">10 EUR</p>
+                        <p class="tariff-description" data-translate="tariff_25_p">Ideal for the youngest (5-7 years) and for maintaining concentration.</p>
+                        <button class="buy-button" data-duration="25" data-translate="tariff_button">Select</button>
+                    </div>
+                    <div class="tariff-card animate-on-scroll">
+                        <h3 data-translate="tariff_50_h">50 Minute Lesson</h3>
+                        <p class="tariff-price" data-translate="tariff_price_2">20 EUR</p>
+                        <p class="tariff-description" data-translate="tariff_50_p">Standard format for a deep dive into topics for children aged 8 and up.</p>
+                        <button class="buy-button" data-duration="50" data-translate="tariff_button">Select</button>
+                    </div>
+                    <div class="donation-card-wrapper animate-on-scroll">
+                        <div id="donate-card" class="donation-card clickable">
+                            <div class="donation-icon">
+                                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12,21.35L10.55,20.03C5.4,15.36 2,12.27 2,8.5C2,5.41 4.42,3 7.5,3C9.24,3 10.91,3.81 12,5.08C13.09,3.81 14.76,3 16.5,3C19.58,3 22,5.41 22,8.5C22,12.27 18.6,15.36 13.45,20.03L12,21.35Z"/></svg>
+                            </div>
+                            <div class="donation-text">
+                                <h3 data-translate="donation_card_title">Support the Project</h3>
+                                <p data-translate="donation_card_desc">Your contribution helps me create new lessons and improve the platform.</p>
+                            </div>
+                            <div class="donation-arrow">→</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
         <section class="modern-about-section">
             <div class="container">
                 <section class="photo-gallery-section">
@@ -314,7 +331,7 @@
                             <div class="input-group">
                                 <div class="floating-input">
                                     <input type="email" id="email" name="email" required placeholder=" ">
-                                    <label for="email" data-translate="form_contact">Your Email</label>
+                                    <label for="email" data-translate="form_contact">Your Email <span class="required-asterisk">*</span></label>
                                     <div class="input-highlight"></div>
                                 </div>
                             </div>
@@ -386,7 +403,11 @@
     
     <div id="payment-modal" class="modal">
         <div class="modal-content">
-            <div class="modal-header"><h2 data-translate="payment_modal_title">Payment</h2><span class="close-button">×</span></div>
+            <div class="modal-header">
+                <h2 data-translate="payment_modal_title">Payment</h2>
+                <span class="close-button">×</span>
+                <div class="scroll-hint" data-translate="payment_modal_scroll_hint">↓ Scroll down to complete payment ↓</div>
+            </div>
             <div class="modal-body">
                 <div class="payment-details">
                     <p><strong><span data-translate="payment_modal_tariff">Your tariff:</span></strong> <span id="modal-tariff-name"></span></p>
@@ -405,7 +426,7 @@
                     </div>
                     <div class="form-group" style="margin-bottom: 20px; position: relative;">
                         <input type="text" id="payment-identifier" name="identifier" required placeholder=" ">
-                        <label for="payment-identifier" data-translate="payment_modal_identifier">Your Email or Telegram</label>
+                        <label for="payment-identifier" data-translate="payment_modal_identifier">Your Email or Telegram <span class="required-asterisk">*</span></label>
                         <p class="form-hint" data-translate="payment_modal_identifier_hint">We'll use this to credit lessons to your account.</p>
                         <p class="payment-error" id="identifier-error" style="display: none;"></p>
                     </div>

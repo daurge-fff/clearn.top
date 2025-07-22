@@ -306,10 +306,16 @@ function initializeLessonModal() {
 
     const openModal = () => {
         document.body.classList.add('modal-open');
+        modalOverlay.style.display = 'block';
+        modalContainer.style.display = 'block';
         modalFormContent.innerHTML = '<div class="spinner"></div>';
     };
     
-    const closeModal = () => document.body.classList.remove('modal-open');
+    const closeModal = () => {
+        document.body.classList.remove('modal-open');
+        modalOverlay.style.display = 'none';
+        modalContainer.style.display = 'none';
+    };
 
     const buildFormHtml = (data, lesson = {}, preselectedStudentId = null) => {
         const toLocalISOString = (date) => {
@@ -386,7 +392,16 @@ function initializeLessonModal() {
 
     // Modal close and form submission handlers
     [closeBtn, cancelBtn, modalOverlay].forEach(el => {
-        el.addEventListener('click', closeModal);
+        if (el) {
+            el.addEventListener('click', closeModal);
+        }
+    });
+    
+    // Additional close handler for all modal close buttons
+    document.addEventListener('click', (e) => {
+        if (e.target.classList.contains('modal-close-btn') || e.target.closest('.modal-close-btn')) {
+            closeModal();
+        }
     });
     
     if (lessonForm) {
@@ -440,12 +455,29 @@ document.addEventListener('DOMContentLoaded', () => {
     function closeAllModals() {
         if(adminOverlay) adminOverlay.style.display = 'none';
         document.querySelectorAll('.modal-container').forEach(modal => modal.style.display = 'none');
+        document.querySelectorAll('.modal-overlay').forEach(overlay => overlay.style.display = 'none');
+        document.body.classList.remove('modal-open');
     }
 
     if(adminOverlay) {
         adminOverlay.addEventListener('click', closeAllModals);
-        document.querySelectorAll('.modal-close-btn').forEach(btn => btn.addEventListener('click', closeAllModals));
+        document.querySelectorAll('.modal-close-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                closeAllModals();
+            });
+        });
     }
+    
+    // Global modal close handler for all close buttons
+    document.addEventListener('click', (e) => {
+        if (e.target.classList.contains('modal-close-btn') || e.target.closest('.modal-close-btn')) {
+            e.preventDefault();
+            e.stopPropagation();
+            closeAllModals();
+        }
+    });
 
     const adjustBalanceModal = document.getElementById('adjust-balance-modal');
     if (adjustBalanceModal) {

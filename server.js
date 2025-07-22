@@ -102,6 +102,25 @@ app.post('/submit-form', async (req, res) => {
     }
 });
 
+// File download route
+app.get('/download/:filename', (req, res) => {
+    const filename = req.params.filename;
+    const filePath = path.join(__dirname, 'uploads', filename);
+    
+    // Check if file exists
+    if (!require('fs').existsSync(filePath)) {
+        return res.status(404).send('File not found');
+    }
+    
+    // Send file for download
+    res.download(filePath, (err) => {
+        if (err) {
+            console.error('Error downloading file:', err);
+            res.status(500).send('Error downloading file');
+        }
+    });
+});
+
 app.use('/', require('./routes/index'));
 app.use('/users', require('./routes/users'));
 app.use('/referral', require('./routes/referral'));
