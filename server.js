@@ -26,7 +26,12 @@ mongoose.connect(process.env.MONGO_URI, {
     maxIdleTimeMS: 30000, // Close connections after 30 seconds of inactivity
     bufferCommands: false // Disable mongoose buffering
 })
-    .then(() => console.log('MongoDB Connected via server.js...'))
+    .then(() => {
+        console.log('MongoDB Connected via server.js...');
+        // Start scheduler only after MongoDB connection is established
+        startScheduler(bot);
+        console.log('Scheduler started after MongoDB connection.');
+    })
     .catch(err => {
         console.error('MongoDB Connection Error:', err);
         process.exit(1);
@@ -76,8 +81,6 @@ const dependencies = {
 messageHandler.registerMessageHandler(bot, dependencies);
 registerCallbackQueryHandler(bot, dependencies);
 searchService.init(dependencies);
-
-startScheduler(bot);
 
 console.log('Telegram Bot logic has been initialized by the main server.');
 
@@ -134,6 +137,7 @@ app.use('/users', require('./routes/users'));
 app.use('/referral', require('./routes/referral'));
 app.use('/dashboard', require('./routes/dashboard'));
 app.use('/api', require('./routes/api'));
+app.use('/api/payments', require('./routes/payments'));
 
 
 process.on('unhandledRejection', (reason, promise) => {

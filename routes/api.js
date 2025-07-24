@@ -38,6 +38,14 @@ router.post('/create-payment', async (req, res) => {
             const merchantLogin = process.env.ROBOKASSA_MERCHANT_LOGIN;
             const isTest = process.env.ROBOKASSA_IS_TEST === '1';
             const pass1 = isTest ? process.env.ROBOKASSA_TEST_PASS_1 : process.env.ROBOKASSA_PASS_1;
+            
+            console.log('[DEBUG] Robokassa env vars:');
+            console.log('ROBOKASSA_MERCHANT_LOGIN:', process.env.ROBOKASSA_MERCHANT_LOGIN);
+            console.log('ROBOKASSA_IS_TEST:', process.env.ROBOKASSA_IS_TEST);
+            console.log('ROBOKASSA_PASS_1:', process.env.ROBOKASSA_PASS_1);
+            console.log('merchantLogin:', merchantLogin);
+            console.log('isTest:', isTest);
+            console.log('pass1:', pass1);
             const formattedAmount = Number(amount).toFixed(2);
             const stringForHashing = `${merchantLogin}:${formattedAmount}:${robokassaInvoiceId}:${pass1}`;
             const signature = crypto.createHash('md5').update(stringForHashing).digest('hex');
@@ -119,7 +127,7 @@ router.post('/payment/robokassa/result', async (req, res) => {
         const signatureString = `${OutSum}:${InvId}:${pass2}`;
         const mySignature = crypto.createHash('md5').update(signatureString).digest('hex');
         
-        if (mySignature.toLowerCase() !== SignatureValue.toLowerCase()) {
+        if (!SignatureValue || mySignature.toLowerCase() !== SignatureValue.toLowerCase()) {
             console.error(`Robokassa: Invalid signature for order ${InvId}.`);
             return res.status(400).send('Invalid signature');
         }
@@ -809,6 +817,48 @@ router.post('/notify/telegram', ensureAuth, ensureRole('admin'), async (req, res
     } catch (error) {
         console.error("Telegram notification error:", error);
         res.status(500).json({ msg: "Failed to send Telegram message." });
+    }
+});
+
+// Эндпоинт для обработки ручных платежей
+router.post('/manual-payment/submit', async (req, res) => {
+    try {
+        const { transactionId, paymentSystem, amount, currency, lessonsPurchased, description, identifier } = req.body;
+        
+        // Валидация входных данных
+        if (!transactionId || !paymentSystem || !amount || !identifier) {
+            return res.status(400).json({ msg: 'Missing required fields: transactionId, paymentSystem, amount, identifier' });
+        }
+        
+        // Создаем запись о платеже со статусом manual_review
+        const pendingPayment = await createPendingPayment({
+            amount,
+            currency: currency || 'EUR',
+            description: description || 'Manual payment',
+            identifier,
+            paymentSystem,
+            robokassaInvoiceId: transactionId // Используем transactionId как универсальный ID
+        });
+        
+        // Обновляем статус на manual_review для ручной проверки
+        pendingPayment.status = 'manual_review';
+        await pendingPayment.save();
+        
+        // Уведомляем администратора о ручном платеже
+        await notifyAdmin(
+            `🔍 *Manual Payment Submitted*\n\n` +
+            `💰 *Amount:* ${amount} ${currency || 'EUR'}\n` +
+            `💳 *System:* ${paymentSystem}\n` +
+            `🆔 *Transaction ID:* ${transactionId}\n` +
+            `👤 *Client:* \`${identifier}\`\n` +
+            `📝 *Description:* ${description || 'Manual payment'}\n\n` +
+            `⚠️ *Requires manual verification*`
+        );
+        
+        res.json({ success: true, msg: 'Payment submitted for manual review' });
+    } catch (error) {
+        console.error('Error processing manual payment:', error);
+        res.status(500).json({ msg: 'Server error while processing payment' });
     }
 });
 

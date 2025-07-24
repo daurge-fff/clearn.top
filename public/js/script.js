@@ -502,7 +502,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const identifier = document.getElementById('payment-identifier').value;
             const errorP = document.getElementById('identifier-error');
             try {
-                const response = await fetch('/api/create-payment', {
+                const response = await fetch('/api/payments/create', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ amount: parseFloat(amount), currency: paymentConfig.currency, description, paymentSystem: selectedPaymentSystem, identifier })
