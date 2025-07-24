@@ -4,11 +4,8 @@ const MonobankProvider = require('./MonobankProvider');
 const PaypalProvider = require('./PaypalProvider');
 const PayoneerProvider = require('./PayoneerProvider');
 const paymentConfig = require('../../config/payments');
+const currencyService = require('../currencyService');
 
-/**
- * Менеджер платежных систем
- * Управляет всеми платежными провайдерами и предоставляет единый интерфейс
- */
 class PaymentManager {
     constructor() {
         this.providers = new Map();
@@ -16,11 +13,7 @@ class PaymentManager {
         this.initializeProviders();
     }
 
-    /**
-     * Инициализирует все платежные провайдеры
-     */
     initializeProviders() {
-        // Инициализация провайдеров на основе конфигурации
         const { enabledProviders } = this.config.general;
         
         if (enabledProviders.includes('robokassa') && this.config.robokassa.enabled) {
@@ -49,19 +42,10 @@ class PaymentManager {
             Array.from(this.providers.keys()).join(', '));
     }
 
-    /**
-     * Получает провайдер по имени
-     * @param {string} providerName
-     * @returns {PaymentProvider|null}
-     */
     getProvider(providerName) {
         return this.providers.get(providerName.toLowerCase()) || null;
     }
 
-    /**
-     * Получает список всех доступных провайдеров
-     * @returns {Array}
-     */
     getAvailableProviders() {
         return Array.from(this.providers.entries()).map(([name, provider]) => ({
             name,
@@ -69,23 +53,12 @@ class PaymentManager {
         }));
     }
 
-    /**
-     * Получает список провайдеров, поддерживающих определенную валюту
-     * @param {string} currency
-     * @returns {Array}
-     */
     getProvidersByCurrency(currency) {
         return this.getAvailableProviders().filter(provider => 
             provider.supportedCurrencies.includes(currency.toUpperCase())
         );
     }
 
-    /**
-     * Создает платеж через указанный провайдер
-     * @param {string} providerName
-     * @param {Object} paymentData
-     * @returns {Promise<Object>}
-     */
     async createPayment(providerName, paymentData) {
         const provider = this.getProvider(providerName);
         if (!provider) {
@@ -93,7 +66,29 @@ class PaymentManager {
         }
 
         try {
-            const result = await provider.createPayment(paymentData);
+            const supportedCurrencies = provider.getSupportedCurrencies();
+            let processedPaymentData = { ...paymentData };
+            
+            if (!supportedCurrencies.includes(paymentData.currency)) {
+                const targetCurrency = supportedCurrencies[0];
+                
+                console.log(`[PaymentManager] Converting ${paymentData.amount} ${paymentData.currency} to ${targetCurrency}`);
+                
+                const convertedAmount = await currencyService.convertCurrency(
+                    paymentData.amount,
+                    paymentData.currency,
+                    targetCurrency
+                );
+                
+                processedPaymentData.amount = convertedAmount;
+                processedPaymentData.currency = targetCurrency;
+                processedPaymentData.originalAmount = paymentData.amount;
+                processedPaymentData.originalCurrency = paymentData.currency;
+                
+                console.log(`[PaymentManager] Converted to ${convertedAmount} ${targetCurrency}`);
+            }
+
+            const result = await provider.createPayment(processedPaymentData);
             return {
                 success: true,
                 provider: providerName,
@@ -105,13 +100,6 @@ class PaymentManager {
         }
     }
 
-    /**
-     * Обрабатывает уведомление о платеже
-     * @param {string} providerName
-     * @param {Object} notificationData
-     * @param {Object} headers
-     * @returns {Promise<Object>}
-     */
     async handleNotification(providerName, notificationData, headers) {
         const provider = this.getProvider(providerName);
         if (!provider) {
@@ -126,12 +114,6 @@ class PaymentManager {
         }
     }
 
-    /**
-     * Проверяет статус платежа
-     * @param {string} providerName
-     * @param {string} externalId
-     * @returns {Promise<Object>}
-     */
     async checkPaymentStatus(providerName, externalId) {
         const provider = this.getProvider(providerName);
         if (!provider) {
@@ -146,13 +128,6 @@ class PaymentManager {
         }
     }
 
-    /**
-     * Получает инструкции для ручного платежа
-     * @param {string} providerName
-     * @param {Object} paymentData
-     * @param {string} language
-     * @returns {Array|null}
-     */
     getPaymentInstructions(providerName, paymentData, language = 'en') {
         const provider = this.getProvider(providerName);
         if (!provider || !provider.isManualProvider()) {
@@ -166,30 +141,16 @@ class PaymentManager {
         return null;
     }
 
-    /**
-     * Проверяет, является ли провайдер ручным
-     * @param {string} providerName
-     * @returns {boolean}
-     */
     isManualProvider(providerName) {
         const provider = this.getProvider(providerName);
         return provider ? provider.isManualProvider() : false;
     }
 
-    /**
-     * Добавляет новый провайдер
-     * @param {string} name
-     * @param {PaymentProvider} provider
-     */
     addProvider(name, provider) {
         this.providers.set(name.toLowerCase(), provider);
         console.log(`[PaymentManager] Added new provider: ${name}`);
     }
 
-    /**
-     * Удаляет провайдер
-     * @param {string} name
-     */
     removeProvider(name) {
         const removed = this.providers.delete(name.toLowerCase());
         if (removed) {

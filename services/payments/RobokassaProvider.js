@@ -54,7 +54,7 @@ class RobokassaProvider extends PaymentProvider {
 
         const orderId = this.generateOrderId();
         const amount = this.formatAmount(paymentData.amount);
-        const currency = paymentData.currency || 'RUB';
+        const currency = paymentData.currency || 'EUR'; // Используем EUR по умолчанию вместо RUB
         const description = paymentData.description || `Оплата ${paymentData.lessonsPurchased || 1} уроков`;
         
         // Creating Robokassa payment
@@ -73,6 +73,7 @@ class RobokassaProvider extends PaymentProvider {
             InvId: orderId,
             Description: description,
             SignatureValue: signature,
+            OutSumCurrency: currency, // Добавляем параметр валюты
             Culture: 'ru',
             Encoding: 'utf-8'
         };
