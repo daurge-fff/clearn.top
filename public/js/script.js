@@ -80,11 +80,31 @@ document.addEventListener('DOMContentLoaded', () => {
         currency: 'EUR',
         basePrices: { '25': 10, '50': 20 },
         discounts: { 1: 0, 5: 5, 10: 10, 15: 15, 20: 20 },
-        availableSystems: [
-            { id: 'paypal', name: 'PayPal' }, { id: 'payoneer', name: 'Payoneer' },
-            { id: 'cryptocloud', name: 'CryptoCloud' }, { id: 'robokassa', name: 'Robokassa' }
-        ]
+        availableSystems: []
     };
+    
+    async function loadPaymentProviders() {
+        try {
+            const response = await fetch('/api/payments/providers');
+            const data = await response.json();
+            if (data.success) {
+                paymentConfig.availableSystems = data.providers.map(provider => ({
+                    id: provider.name,
+                    name: provider.displayName,
+                    isManual: provider.isManual
+                }));
+            }
+        } catch (error) {
+            console.error('Failed to load payment providers:', error);
+            paymentConfig.availableSystems = [
+                { id: 'paypal', name: 'PayPal', isManual: true },
+                { id: 'payoneer', name: 'Payoneer', isManual: true },
+                { id: 'cryptocloud', name: 'CryptoCloud', isManual: false },
+                { id: 'robokassa', name: 'Robokassa', isManual: false },
+                { id: 'manual_bank', name: 'Bank Transfer', isManual: true }
+            ];
+        }
+    }
     let currentBasePrice = 0, currentTariffName = '', selectedPaymentSystem = null, manualPaymentRendered = false, isDonationMode = false;
 
     function setTheme(theme) {
@@ -158,6 +178,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if (savedLang === 'ua') { savedLang = 'uk'; }
     setTheme(savedTheme);
     setLanguage(savedLang);
+    
+    // Load payment providers
+    loadPaymentProviders();
 
     document.querySelectorAll('a[href^="#"]').forEach(link => {
         link.addEventListener('click', function(e) {
@@ -371,7 +394,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         selectedPaymentSystem = null;
         manualPaymentRendered = false;
-        paymentModal.querySelector('.systems').innerHTML = paymentConfig.availableSystems.map(sys => `<div class="payment-system-card disabled" data-system="${sys.id}">${sys.name}</div>`).join('');
+        paymentModal.querySelector('.systems').innerHTML = paymentConfig.availableSystems.map(sys => `<div class="payment-system-card" data-system="${sys.id}">${sys.name}</div>`).join('');
         document.getElementById('paypal-button-container').innerHTML = '';
         document.getElementById('final-pay-button').style.display = 'flex';
         
@@ -478,7 +501,8 @@ document.addEventListener('DOMContentLoaded', () => {
             paymentModal.querySelectorAll('.payment-system-card.active').forEach(c => c.classList.remove('active'));
             target.classList.add('active');
             selectedPaymentSystem = target.dataset.system;
-            const isManual = ['paypal', 'payoneer'].includes(selectedPaymentSystem);
+            const selectedProvider = paymentConfig.availableSystems.find(p => p.id === selectedPaymentSystem);
+            const isManual = selectedProvider ? selectedProvider.isManual : false;
             document.getElementById('final-pay-button').style.display = isManual ? 'none' : 'flex';
             document.getElementById('paypal-button-container').style.display = isManual ? 'block' : 'none';
             if (isManual && !manualPaymentRendered) {
