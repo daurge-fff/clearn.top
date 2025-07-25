@@ -510,7 +510,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (system === 'monobank') {
             instructionsHTML = `
                 <div class="manual-payment-instructions">
-                    <p>Transfer <strong>${amount} ${paymentConfig.currency}</strong> to card <span class="copyable-item inline" onclick="copyToClipboard('4441 1111 2641 9468', 'Card number copied!')"><span class="copyable-text">4441 1111 2641 9468</span><i class="copy-icon">📋</i></span> or use <a href="https://send.monobank.ua/jar/5LRNnQJPXQ" target="_blank" style="color: var(--accent-color-1); text-decoration: underline;">this link</a>. Specify order ID <span class="copyable-item inline" onclick="copyToClipboard('${Date.now()}', 'Order ID copied!')"><span class="copyable-text">${Date.now()}</span><i class="copy-icon">📋</i></span> in comment and confirm payment with Transaction ID below.</p>
+                    <p>Transfer <strong>${amount} ${paymentConfig.currency}</strong> to card <span class="copyable-item inline" onclick="copyToClipboard('4441 1111 2641 9468', 'Card number copied!')"><span class="copyable-text">4441 1111 2641 9468</span><i class="copy-icon">📋</i></span> or use <a href="https://send.monobank.ua/jar/5LRNnQJPXQ" target="_blank" style="color: var(--accent-color-1); text-decoration: underline;">this link</a> and confirm payment with Transaction ID below.</p>
                 </div>`;
         } else {
             instructionsHTML = `

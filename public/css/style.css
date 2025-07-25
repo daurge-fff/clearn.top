@@ -111,6 +111,8 @@
 [data-theme="light"] #payment-identifier + label {
     color: #666;
     background: #f8f9fa;
+    top: 50%;
+    transform: translateY(-50%);
 }
 
 [data-theme="light"] .form-hint {
@@ -1825,7 +1827,8 @@ section { padding: 100px 0; }
 
 /* --- Payment Modal --- */
 #payment-modal .modal-content { 
-    max-width: 650px; 
+    max-width: 750px; 
+    width: 90%; 
     display: flex; 
     flex-direction: column; 
     max-height: 95vh; 
@@ -1884,12 +1887,12 @@ input[type="range"] {
     -webkit-appearance: none; 
     appearance: none; 
     width: 100%; 
-    height: 10px; 
-    background: linear-gradient(to right, var(--accent-color-1) 0%, var(--accent-color-1) 5%, var(--card-border) 5%, var(--card-border) 100%); 
-    border-radius: 8px; 
+    height: 8px; 
+    background: rgba(255, 255, 255, 0.1); 
+    border-radius: 6px; 
     outline: none; 
     transition: all 0.3s ease; 
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2);
     backdrop-filter: blur(10px);
 }
 input[type="range"]:hover { 
@@ -1899,27 +1902,27 @@ input[type="range"]:hover {
 input[type="range"]::-webkit-slider-thumb { 
     -webkit-appearance: none; 
     appearance: none; 
-    width: 28px; 
-    height: 28px; 
+    width: 24px; 
+    height: 24px; 
     background: linear-gradient(135deg, var(--accent-color-1) 0%, #4facfe 100%); 
     border-radius: 50%; 
     cursor: pointer;
     transition: all 0.3s ease;
-    box-shadow: 0 4px 16px rgba(0, 242, 254, 0.3), 0 2px 8px rgba(0, 0, 0, 0.2);
-    border: 2px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 3px 12px rgba(0, 242, 254, 0.4), 0 1px 4px rgba(0, 0, 0, 0.3);
+    border: 3px solid rgba(255, 255, 255, 0.9);
 }
 input[type="range"]::-webkit-slider-thumb:hover {
     transform: scale(1.1);
     box-shadow: 0 6px 20px rgba(0, 242, 254, 0.4), 0 3px 12px rgba(0, 0, 0, 0.3);
 }
 input[type="range"]::-moz-range-thumb { 
-    width: 28px; 
-    height: 28px; 
+    width: 24px; 
+    height: 24px; 
     background: linear-gradient(135deg, var(--accent-color-1) 0%, #4facfe 100%); 
     border-radius: 50%; 
     cursor: pointer;
-    border: 2px solid rgba(255, 255, 255, 0.2);
-    box-shadow: 0 4px 16px rgba(0, 242, 254, 0.3);
+    border: 3px solid rgba(255, 255, 255, 0.9);
+    box-shadow: 0 3px 12px rgba(0, 242, 254, 0.4);
 }
 #quantity-value { font-size: 1.5rem; font-weight: 800; color: var(--accent-color-1); min-width: 40px; text-align: center; }
 .donation-input-container { 
@@ -2019,13 +2022,24 @@ input[type="range"]::-moz-range-thumb {
 }
 .payment-system-card.active { 
     border-color: var(--accent-color-1); 
-    background: rgba(0, 242, 254, 0.1); 
+    background: rgba(0, 242, 254, 0.15); 
     color: white; 
     box-shadow: 0 8px 32px rgba(0, 242, 254, 0.2); 
     font-weight: 700; 
     transform: translateY(-3px);
 }
-[data-theme="light"] .payment-system-card.active { color: #fff; }
+.payment-system-card.active .name {
+    color: white;
+    font-weight: 600;
+}
+[data-theme="light"] .payment-system-card.active { 
+    color: #fff; 
+    background: rgba(102, 126, 234, 0.2);
+}
+[data-theme="light"] .payment-system-card.active .name { 
+    color: #fff !important; 
+    font-weight: 700;
+}
 
 .payment-system-card .logo {
     width: 32px;
@@ -2101,7 +2115,7 @@ input[type="range"]::-moz-range-thumb {
 
 #final-pay-button:disabled { 
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.08));
-    color: rgba(255, 255, 255, 0.6);
+    color: rgba(255, 255, 255, 0.8) !important;
     cursor: not-allowed; 
     transform: none; 
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
@@ -2196,7 +2210,8 @@ input[type="range"]::-moz-range-thumb {
 
 #payment-identifier + label {
     position: absolute;
-    top: 14px;
+    top: 50%;
+    transform: translateY(-50%);
     left: 16px;
     color: var(--text-color);
     opacity: 0.7;
