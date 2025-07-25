@@ -1,23 +1,83 @@
-function copyToClipboard(text) {
-    const lang = localStorage.getItem('language') || 'en';
-    const t = (typeof translations !== 'undefined' && translations[lang]) ? translations[lang] : { notification_copy_success: 'Copied to clipboard!' };
-    const message = t.notification_copy_success;
+function copyToClipboard(text, message = 'Copied to clipboard!') {
+    // Remove trailing dot if present
+    const cleanText = text.replace(/\.$/, '');
+    
     if (navigator.clipboard && window.isSecureContext) {
-        navigator.clipboard.writeText(text).catch(err => console.error('Failed to copy: ', err));
+        navigator.clipboard.writeText(cleanText).then(() => {
+            showNotification(message, 'success');
+        }).catch(err => {
+            console.error('Failed to copy: ', err);
+            showNotification('Failed to copy', 'error');
+        });
     } else {
         const textArea = document.createElement('textarea');
-        textArea.value = text;
+        textArea.value = cleanText;
         Object.assign(textArea.style, { position: 'fixed', left: '-999999px', top: '-999999px' });
         document.body.appendChild(textArea);
         textArea.focus();
         textArea.select();
         try {
             document.execCommand('copy');
+            showNotification(message, 'success');
         } catch (err) {
             console.error('Fallback: Oops, unable to copy', err);
+            showNotification('Failed to copy', 'error');
         }
         document.body.removeChild(textArea);
     }
+}
+
+function showNotification(message, type = 'info') {
+    // Remove existing notifications
+    const existingNotifications = document.querySelectorAll('.notification');
+    existingNotifications.forEach(n => n.remove());
+    
+    const notification = document.createElement('div');
+    notification.className = `notification notification-${type}`;
+    notification.textContent = message;
+    
+    // Add styles
+    Object.assign(notification.style, {
+        position: 'fixed',
+        top: '20px',
+        right: '20px',
+        padding: '12px 20px',
+        borderRadius: '8px',
+        color: 'white',
+        fontWeight: '500',
+        fontSize: '14px',
+        zIndex: '10000',
+        transform: 'translateX(100%)',
+        transition: 'transform 0.3s ease',
+        maxWidth: '300px',
+        wordWrap: 'break-word'
+    });
+    
+    // Set background color based on type
+    const colors = {
+        success: '#10b981',
+        error: '#ef4444',
+        info: '#3b82f6',
+        warning: '#f59e0b'
+    };
+    notification.style.backgroundColor = colors[type] || colors.info;
+    
+    document.body.appendChild(notification);
+    
+    // Animate in
+    setTimeout(() => {
+        notification.style.transform = 'translateX(0)';
+    }, 10);
+    
+    // Auto remove after 3 seconds
+    setTimeout(() => {
+        notification.style.transform = 'translateX(100%)';
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.remove();
+            }
+        }, 300);
+    }, 3000);
 }
 
 function closeCardModal() {
@@ -82,7 +142,8 @@ document.addEventListener('DOMContentLoaded', () => {
         discounts: { 1: 0, 5: 5, 10: 10, 15: 15, 20: 20 },
         availableSystems: [
             { id: 'paypal', name: 'PayPal' }, { id: 'payoneer', name: 'Payoneer' },
-            { id: 'cryptocloud', name: 'CryptoCloud' }, { id: 'robokassa', name: 'Robokassa' }
+            { id: 'monobank', name: 'Monobank' }, { id: 'cryptocloud', name: 'CryptoCloud' }, 
+            { id: 'robokassa', name: 'Robokassa' }
         ]
     };
     let currentBasePrice = 0, currentTariffName = '', selectedPaymentSystem = null, manualPaymentRendered = false, isDonationMode = false;
@@ -316,9 +377,17 @@ document.addEventListener('DOMContentLoaded', () => {
         const termsCheckbox = document.getElementById('terms-checkbox');
         const identifierInput = document.getElementById('payment-identifier');
         const transactionIdInput = document.getElementById('paypal-transaction-id');
+        const paymentSystemsContainer = document.querySelector('.payment-system-chooser .systems');
         
         const hasIdentifier = identifierInput && identifierInput.value.trim() !== '';
         const hasTerms = termsCheckbox && termsCheckbox.checked;
+        const canShowPaymentSystems = hasIdentifier && hasTerms;
+
+        // Show/hide payment systems based on form completion
+        const paymentSystemChooser = document.querySelector('.payment-system-chooser');
+        if (paymentSystemChooser) {
+            paymentSystemChooser.style.display = canShowPaymentSystems ? 'block' : 'none';
+        }
 
         if (finalPayButton) {
             finalPayButton.disabled = !(selectedPaymentSystem && hasIdentifier && hasTerms);
@@ -327,27 +396,44 @@ document.addEventListener('DOMContentLoaded', () => {
             const hasTransactionId = transactionIdInput && transactionIdInput.value.trim() !== '';
             confirmManualButton.disabled = !(hasTransactionId && hasIdentifier && hasTerms);
         }
-        
-        paymentModal?.querySelectorAll('.payment-system-card').forEach(card => card.classList.toggle('disabled', !hasIdentifier));
     }
 
     function updatePaymentModalPrice() {
         let quantity, finalTotal;
         if (isDonationMode) {
             const donationInput = document.getElementById('donation-amount');
-            quantity = Math.max(1, parseFloat(donationInput.value) || 1);
-            donationInput.value = quantity;
-            finalTotal = quantity;
+            if (donationInput) {
+                quantity = Math.max(1, parseFloat(donationInput.value) || 1);
+                donationInput.value = quantity;
+                finalTotal = quantity;
+            } else {
+                quantity = 1;
+                finalTotal = 1;
+            }
         } else {
             const lessonSlider = document.getElementById('lesson-quantity');
-            quantity = parseInt(lessonSlider.value, 10);
-            document.getElementById('quantity-value').textContent = quantity;
-            const discount = paymentConfig.discounts[Object.keys(paymentConfig.discounts).sort((a,b)=>b-a).find(bp => quantity >= bp)] || 0;
-            finalTotal = (currentBasePrice * quantity) * (1 - discount / 100);
-            document.getElementById('modal-price-per-lesson').textContent = `${(finalTotal / quantity || 0).toFixed(2)} ${paymentConfig.currency}`;
-            document.getElementById('modal-discount').textContent = `${discount}%`;
+            if (lessonSlider) {
+                quantity = parseInt(lessonSlider.value, 10);
+                const quantityValue = document.getElementById('quantity-value');
+                if (quantityValue) quantityValue.textContent = quantity;
+                
+                const discount = paymentConfig.discounts[Object.keys(paymentConfig.discounts).sort((a,b)=>b-a).find(bp => quantity >= bp)] || 0;
+                finalTotal = (currentBasePrice * quantity) * (1 - discount / 100);
+                
+                const modalPricePerLesson = document.getElementById('modal-price-per-lesson');
+                const modalDiscount = document.getElementById('modal-discount');
+                
+                if (modalPricePerLesson) modalPricePerLesson.textContent = `${(finalTotal / quantity || 0).toFixed(2)} ${paymentConfig.currency}`;
+                if (modalDiscount) modalDiscount.textContent = `${discount}%`;
+            } else {
+                quantity = 1;
+                finalTotal = currentBasePrice || 0;
+            }
         }
-        document.getElementById('modal-total-price').textContent = `${finalTotal.toFixed(2)} ${paymentConfig.currency}`;
+        
+        const modalTotalPrice = document.getElementById('modal-total-price');
+        if (modalTotalPrice) modalTotalPrice.textContent = `${finalTotal.toFixed(2)} ${paymentConfig.currency}`;
+        
         updatePayButtonState();
     }
     
@@ -355,25 +441,55 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!paymentModal) return;
         isDonationMode = donationMode;
         
-        document.getElementById('lesson-quantity-selector').style.display = donationMode ? 'none' : 'block';
-        document.getElementById('donation-amount-selector').style.display = donationMode ? 'block' : 'none';
-        document.querySelector('.price-breakdown').style.display = donationMode ? 'none' : 'block';
+        const lessonQuantitySelector = document.getElementById('lesson-quantity-selector');
+        const donationAmountSelector = document.getElementById('donation-amount-selector');
+        const priceBreakdown = document.querySelector('.price-breakdown');
+        
+        if (lessonQuantitySelector) lessonQuantitySelector.style.display = donationMode ? 'none' : 'block';
+        if (donationAmountSelector) donationAmountSelector.style.display = donationMode ? 'block' : 'none';
+        if (priceBreakdown) priceBreakdown.style.display = donationMode ? 'none' : 'block';
 
         currentBasePrice = donationMode ? 1 : paymentConfig.basePrices[tariffDuration];
         currentTariffName = donationMode ? 'Donation' : `Lesson ${tariffDuration} min`;
 
-        document.getElementById('modal-tariff-name').textContent = currentTariffName;
-        document.getElementById('lesson-quantity').value = 1;
-        document.getElementById('donation-amount').value = 10;
-        document.getElementById('terms-checkbox').checked = false;
-        document.getElementById('payment-identifier').value = '';
-        document.getElementById('identifier-error').style.display = 'none';
+        const modalTariffName = document.getElementById('modal-tariff-name');
+        const lessonQuantity = document.getElementById('lesson-quantity');
+        const donationAmount = document.getElementById('donation-amount');
+        const termsCheckbox = document.getElementById('terms-checkbox');
+        const paymentIdentifier = document.getElementById('payment-identifier');
+        const identifierError = document.getElementById('identifier-error');
+        
+        if (modalTariffName) modalTariffName.textContent = currentTariffName;
+        if (lessonQuantity) lessonQuantity.value = 1;
+        if (donationAmount) donationAmount.value = 10;
+        if (termsCheckbox) termsCheckbox.checked = false;
+        if (paymentIdentifier) paymentIdentifier.value = '';
+        if (identifierError) identifierError.style.display = 'none';
         
         selectedPaymentSystem = null;
         manualPaymentRendered = false;
-        paymentModal.querySelector('.systems').innerHTML = paymentConfig.availableSystems.map(sys => `<div class="payment-system-card disabled" data-system="${sys.id}">${sys.name}</div>`).join('');
-        document.getElementById('paypal-button-container').innerHTML = '';
-        document.getElementById('final-pay-button').style.display = 'flex';
+        
+        const systemsContainer = paymentModal.querySelector('.systems');
+        if (systemsContainer) {
+            systemsContainer.innerHTML = paymentConfig.availableSystems.map(sys => {
+                const logoPath = `/images/payment-logos/${sys.id}.png`;
+                return `<div class="payment-system-card" data-system="${sys.id}">
+                    <img src="${logoPath}" alt="${sys.name}" class="logo" onerror="this.style.display='none'">
+                    <span class="name">${sys.name}</span>
+                </div>`;
+            }).join('');
+        }
+        
+        const paypalButtonContainer = document.getElementById('paypal-button-container');
+        const finalPayButton = document.getElementById('final-pay-button');
+        const paymentSystemsContainer = document.querySelector('.payment-system-chooser .systems');
+        
+        if (paypalButtonContainer) paypalButtonContainer.innerHTML = '';
+        if (finalPayButton) finalPayButton.style.display = 'flex';
+        
+        // Show payment systems chooser
+        const paymentSystemChooser = document.querySelector('.payment-system-chooser');
+        if (paymentSystemChooser) paymentSystemChooser.classList.add('show');
         
         updatePaymentModalPrice();
         paymentModal.classList.add('is-open');
@@ -388,23 +504,30 @@ document.addEventListener('DOMContentLoaded', () => {
     
         const amount = document.getElementById('modal-total-price').textContent.split(' ')[0];
         const systemName = system.charAt(0).toUpperCase() + system.slice(1);
+        
+        let instructionsHTML = '';
+        
+        if (system === 'monobank') {
+            instructionsHTML = `
+                <div class="manual-payment-instructions">
+                    <p>Transfer <strong>${amount} ${paymentConfig.currency}</strong> to card <span class="copyable-item inline" onclick="copyToClipboard('4441 1111 2641 9468', 'Card number copied!')"><span class="copyable-text">4441 1111 2641 9468</span><i class="copy-icon">📋</i></span> or use <a href="https://send.monobank.ua/jar/5LRNnQJPXQ" target="_blank" style="color: var(--accent-color-1); text-decoration: underline;">this link</a>. Specify order ID <span class="copyable-item inline" onclick="copyToClipboard('${Date.now()}', 'Order ID copied!')"><span class="copyable-text">${Date.now()}</span><i class="copy-icon">📋</i></span> in comment and confirm payment with Transaction ID below.</p>
+                </div>`;
+        } else {
+            instructionsHTML = `
+                <div class="manual-payment-instructions">
+                    <p>Send <strong>${amount} ${paymentConfig.currency}</strong> to <span class="copyable-item inline" onclick="copyToClipboard('admin@clearn.top', 'Email copied!')"><span class="copyable-text">admin@clearn.top</span><i class="copy-icon">📋</i></span> and confirm payment with Transaction ID below.</p>
+                </div>`;
+        }
     
         manualPaymentContainer.innerHTML = `
             <div class="manual-payment-container">
-                <h4 class="manual-payment-title">${t.manual_payment_title || 'Manual Payment via'} ${systemName}</h4>
-                <div class="manual-payment-instructions">
-                    <ol>
-                        <li>${t.manual_payment_instruction_1 || 'Please send'} <strong>${amount} ${paymentConfig.currency}</strong> ${t.manual_payment_instruction_2 || 'to our account:'} <strong><span class="copyable-email" onclick="copyToClipboard('admin@clearn.top')">admin@clearn.top</span></strong>. ${t.manual_payment_instruction_3 || 'After paying, copy the Transaction ID'}.</li>
-                        <li>${t.manual_payment_instruction_4 || 'Paste it below and confirm.'}</li>
-                        <li>${t.manual_payment_instruction_5 || 'Our manager will verify and credit the lessons.'}</li>
-                    </ol>
-                    <div class="form-group" style="margin-top: 20px;">
-                        <input type="text" id="paypal-transaction-id" placeholder=" " required>
-                        <label for="paypal-transaction-id">${t.manual_payment_placeholder || 'Paste Transaction ID here'}</label>
-                    </div>
-                    <button id="confirm-manual-payment" class="modern-submit-btn" disabled>${t.manual_payment_button || 'I Have Paid'}</button>
-                    <p class="payment-error" id="paypal-manual-error" style="display: none;"></p>
+                <h4 class="manual-payment-title">Manual Payment via ${systemName}</h4>
+                ${instructionsHTML}
+                <div class="transaction-id-group">
+                    <input type="text" id="paypal-transaction-id" class="transaction-input" placeholder="Paste Transaction ID here" required>
                 </div>
+                <button id="confirm-manual-payment" class="modern-submit-btn" disabled>I Have Paid</button>
+                <p class="payment-error" id="paypal-manual-error" style="display: none;"></p>
             </div>`;
         
         const confirmButton = document.getElementById('confirm-manual-payment');
@@ -423,8 +546,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const errorP = document.getElementById('paypal-manual-error');
             
             if (!transactionId || !identifier || !document.getElementById('terms-checkbox').checked) {
-                errorP.textContent = t.manual_payment_error_fields || 'Please fill all fields and agree to the terms.';
-                errorP.style.display = 'block';
+                showNotification('Please fill all fields and agree to the terms', 'error');
                 return;
             }
 
@@ -444,12 +566,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     window.location.href = '/successful-payment';
                 } else {
                     const errorData = await response.json();
-                    errorP.textContent = errorData.msg || 'An error occurred.';
-                    errorP.style.display = 'block';
+                    showNotification(errorData.msg || 'An error occurred', 'error');
                 }
             } catch (error) {
-                errorP.textContent = 'Network error. Please try again.';
-                errorP.style.display = 'block';
+                showNotification('Network error. Please try again', 'error');
             }
         });
     }
@@ -463,7 +583,16 @@ document.addEventListener('DOMContentLoaded', () => {
         ['input', 'change'].forEach(evt => {
             document.getElementById('lesson-quantity').addEventListener(evt, updatePaymentModalPrice);
             document.getElementById('donation-amount').addEventListener(evt, updatePaymentModalPrice);
-            document.getElementById('terms-checkbox').addEventListener(evt, updatePayButtonState);
+            document.getElementById('terms-checkbox').addEventListener(evt, (e) => {
+                updatePayButtonState();
+                // Hide manual payment container when checkbox is unchecked
+                if (!e.target.checked) {
+                    const manualPaymentContainer = document.querySelector('.manual-payment-container');
+                    if (manualPaymentContainer) {
+                        manualPaymentContainer.style.display = 'none';
+                    }
+                }
+            });
             document.getElementById('payment-identifier').addEventListener(evt, updatePayButtonState);
         });
         
@@ -472,13 +601,20 @@ document.addEventListener('DOMContentLoaded', () => {
             body.classList.remove('modal-open-scroll-lock');
         };
 
-        paymentModal.querySelector('.systems').addEventListener('click', (e) => {
+        paymentModal.querySelector('.systems')?.addEventListener('click', (e) => {
             const target = e.target.closest('.payment-system-card');
-            if (!target || target.classList.contains('disabled')) return;
+            if (!target) return;
+            
+            // Hide manual payment container when switching payment systems
+            const manualPaymentContainer = document.querySelector('.manual-payment-container');
+            if (manualPaymentContainer) {
+                manualPaymentContainer.style.display = 'none';
+            }
+            
             paymentModal.querySelectorAll('.payment-system-card.active').forEach(c => c.classList.remove('active'));
             target.classList.add('active');
             selectedPaymentSystem = target.dataset.system;
-            const isManual = ['paypal', 'payoneer'].includes(selectedPaymentSystem);
+            const isManual = ['paypal', 'payoneer', 'monobank'].includes(selectedPaymentSystem);
             document.getElementById('final-pay-button').style.display = isManual ? 'none' : 'flex';
             document.getElementById('paypal-button-container').style.display = isManual ? 'block' : 'none';
             if (isManual && !manualPaymentRendered) {
@@ -493,14 +629,30 @@ document.addEventListener('DOMContentLoaded', () => {
         
         document.getElementById('final-pay-button').addEventListener('click', async () => {
             const button = document.getElementById('final-pay-button');
+            const identifier = document.getElementById('payment-identifier').value.trim();
+            const termsChecked = document.getElementById('terms-checkbox').checked;
+            
+            // Validation with notifications
+            if (!identifier) {
+                showNotification('Please enter your email or Telegram', 'warning');
+                return;
+            }
+            if (!termsChecked) {
+                showNotification('Please agree to the terms', 'warning');
+                return;
+            }
+            if (!selectedPaymentSystem) {
+                showNotification('Please select a payment system', 'warning');
+                return;
+            }
+            
             const originalText = button.textContent;
             button.disabled = true;
             button.textContent = 'Creating invoice...';
             const amount = document.getElementById('modal-total-price').textContent.split(' ')[0];
             const quantity = isDonationMode ? 1 : document.getElementById('lesson-quantity').value;
             const description = isDonationMode ? "Donation" : `${currentTariffName} x${quantity}`;
-            const identifier = document.getElementById('payment-identifier').value;
-            const errorP = document.getElementById('identifier-error');
+            
             try {
                 const response = await fetch('/api/create-payment', {
                     method: 'POST',
@@ -511,14 +663,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (response.ok && data.paymentUrl) {
                     window.location.href = data.paymentUrl;
                 } else {
-                    errorP.textContent = 'Error: ' + (data.error || 'Failed to create payment invoice.');
-                    errorP.style.display = 'block';
+                    showNotification('Error: ' + (data.error || 'Failed to create payment invoice'), 'error');
                     button.textContent = originalText;
                     button.disabled = false;
                 }
             } catch (error) {
-                errorP.textContent = 'Network error. Please try again.';
-                errorP.style.display = 'block';
+                showNotification('Network error. Please try again', 'error');
                 button.textContent = originalText;
                 button.disabled = false;
             }

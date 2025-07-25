@@ -37,9 +37,7 @@ class PaymentManager {
             this.providers.set('payoneer', new PayoneerProvider(this.config.payoneer));
         }
         
-        if (enabledProviders.includes('manual_bank') && this.config.manual_bank.enabled) {
-            this.providers.set('manual_bank', new ManualBankProvider(this.config.manual_bank));
-        }
+        // manual_bank provider removed
 
         console.log(`[PaymentManager] Initialized ${this.providers.size} payment providers:`, 
             Array.from(this.providers.keys()).join(', '));
