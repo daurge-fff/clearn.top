@@ -22,7 +22,7 @@ class MonobankProvider extends PaymentProvider {
     }
 
     getSupportedCurrencies() {
-        return this.config.currencies || ['UAH', 'EUR', 'USD'];
+        return this.config.currencies || ['UAH'];
     }
 
     isManualProvider() {
@@ -44,15 +44,21 @@ class MonobankProvider extends PaymentProvider {
 
         // Для Monobank копилок мы просто возвращаем URL копилки
         // Пользователь должен будет вручную отправить деньги и указать reference
+        const amount = paymentData.amount;
+        const currency = paymentData.currency;
+        const originalInfo = paymentData.originalAmount && paymentData.originalCurrency 
+            ? ` (${paymentData.originalAmount} ${paymentData.originalCurrency})` 
+            : '';
+            
         return {
             paymentUrl: this.jarUrl,
             externalId: paymentData.orderId,
             cardNumber: this.cardNumber,
             email: this.email,
             instructions: {
-                ua: `Переведіть ${paymentData.amount} ${paymentData.currency} на карту Monobank або за посиланням та вкажіть в коментарі: ${paymentData.orderId}`,
-                en: `Transfer ${paymentData.amount} ${paymentData.currency} to Monobank card or via link and specify in comment: ${paymentData.orderId}`,
-                ru: `Переведите ${paymentData.amount} ${paymentData.currency} на карту Monobank или по ссылке и укажите в комментарии: ${paymentData.orderId}`
+                ua: `Переведіть ${amount} ${currency}${originalInfo} на карту Monobank або за посиланням та вкажіть в коментарі: ${paymentData.orderId}`,
+                en: `Transfer ${amount} ${currency}${originalInfo} to Monobank card or via link and specify in comment: ${paymentData.orderId}`,
+                ru: `Переведите ${amount} ${currency}${originalInfo} на карту Monobank или по ссылке и укажите в комментарии: ${paymentData.orderId}`
             }
         };
     }
@@ -76,9 +82,16 @@ class MonobankProvider extends PaymentProvider {
      * @returns {string}
      */
     getPaymentInstructions(paymentData, language = 'en') {
+        // Используем конвертированную сумму, если она есть, иначе исходную
+        const amount = paymentData.amount;
+        const currency = paymentData.currency;
+        const originalInfo = paymentData.originalAmount && paymentData.originalCurrency 
+            ? ` (${paymentData.originalAmount} ${paymentData.originalCurrency})` 
+            : '';
+        
         const instructions = {
             ua: [
-                `Переведіть ${paymentData.amount} ${paymentData.currency} на карту:`,
+                `Переведіть ${amount} ${currency}${originalInfo} на карту:`,
                 this.cardNumber,
                 `Або скористайтеся посиланням:`,
                 this.jarUrl,
@@ -86,7 +99,7 @@ class MonobankProvider extends PaymentProvider {
                 `Після переказу підтвердіть платіж, вказавши Transaction ID`
             ],
             en: [
-                `Transfer ${paymentData.amount} ${paymentData.currency} to card:`,
+                `Transfer ${amount} ${currency}${originalInfo} to card:`,
                 this.cardNumber,
                 `Or use the link:`,
                 this.jarUrl,
@@ -94,7 +107,7 @@ class MonobankProvider extends PaymentProvider {
                 `After the transfer, confirm the payment by specifying the Transaction ID`
             ],
             ru: [
-                `Переведите ${paymentData.amount} ${paymentData.currency} на карту:`,
+                `Переведите ${amount} ${currency}${originalInfo} на карту:`,
                 this.cardNumber,
                 `Или воспользуйтесь ссылкой:`,
                 this.jarUrl,

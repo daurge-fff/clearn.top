@@ -8,7 +8,7 @@ module.exports = {
         testMode: process.env.ROBOKASSA_IS_TEST === '1',
         enabled: true,
         type: 'automatic',
-        currencies: ['RUB', 'USD', 'EUR'],
+        currencies: ['RUB'], // Robokassa работает в рублях
         name: 'Robokassa',
         description: 'Оплата через Robokassa'
     },
@@ -31,7 +31,7 @@ module.exports = {
         email: 'admin@clearn.top',
         enabled: true,
         type: 'manual',
-        currencies: ['EUR', 'USD', 'UAH'],
+        currencies: ['UAH'], // Monobank работает в гривнах
         name: 'Monobank',
         description: 'Transfer via Monobank card or jar link'
     },

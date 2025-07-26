@@ -30,13 +30,9 @@ router.post('/create', async (req, res) => {
             });
         }
 
-        // Проверяем поддержку валюты
+        // Получаем информацию о провайдере
         const providerInfo = provider.getProviderInfo();
-        if (!providerInfo.supportedCurrencies.includes(currency.toUpperCase())) {
-            return res.status(400).json({ 
-                error: `Currency '${currency}' is not supported by ${providerInfo.displayName}` 
-            });
-        }
+        // Примечание: проверка валюты убрана, так как PaymentManager сам обрабатывает конвертацию
 
         // Создаем уникальный ID заказа
         const orderId = Date.now().toString();
@@ -93,9 +89,18 @@ router.post('/create', async (req, res) => {
         }
 
         if (providerInfo.isManual) {
+            // Используем конвертированные данные из paymentResult, если они есть
+            const instructionData = {
+                amount: paymentResult.convertedAmount || amount,
+                currency: paymentResult.convertedCurrency || currency,
+                orderId,
+                identifier,
+                originalAmount: amount,
+                originalCurrency: currency
+            };
             response.manualInstructions = paymentManager.getPaymentInstructions(
                 paymentSystem, 
-                { amount, currency, orderId, identifier },
+                instructionData,
                 'en' // TODO: определять язык из запроса
             );
         }

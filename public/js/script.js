@@ -371,6 +371,25 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    function updatePayButtonText() {
+        const finalPayButton = document.getElementById('final-pay-button');
+        if (!finalPayButton) return;
+        
+        let buttonText = 'Pay'; // Default text
+        
+        // Get current language from localStorage
+        const currentLanguage = localStorage.getItem('language') || 'en';
+        if (typeof translations !== 'undefined' && currentLanguage && translations[currentLanguage]) {
+            if (selectedPaymentSystem === 'robokassa') {
+                buttonText = translations[currentLanguage].payment_modal_pay_button || 'Pay';
+            } else {
+                buttonText = translations[currentLanguage].payment_modal_pay_button || 'Pay';
+            }
+        }
+        
+        finalPayButton.textContent = buttonText;
+    }
+
     function updatePayButtonState() {
         const finalPayButton = document.getElementById('final-pay-button');
         const confirmManualButton = document.getElementById('confirm-manual-payment');
@@ -396,6 +415,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const hasTransactionId = transactionIdInput && transactionIdInput.value.trim() !== '';
             confirmManualButton.disabled = !(hasTransactionId && hasIdentifier && hasTerms);
         }
+        
+        // Update button text
+        updatePayButtonText();
     }
 
     function updatePaymentModalPrice() {
@@ -492,6 +514,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (paymentSystemChooser) paymentSystemChooser.classList.add('show');
         
         updatePaymentModalPrice();
+        updatePayButtonText();
         paymentModal.classList.add('is-open');
         body.classList.add('modal-open-scroll-lock');
     }
@@ -625,6 +648,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 manualPaymentRendered = false;
             }
             updatePayButtonState();
+            updatePayButtonText();
         });
         
         document.getElementById('final-pay-button').addEventListener('click', async () => {
@@ -654,7 +678,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const description = isDonationMode ? "Donation" : `${currentTariffName} x${quantity}`;
             
             try {
-                const response = await fetch('/api/create-payment', {
+                const response = await fetch('/api/payments/create', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ amount: parseFloat(amount), currency: paymentConfig.currency, description, paymentSystem: selectedPaymentSystem, identifier })

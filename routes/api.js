@@ -44,9 +44,11 @@ router.post('/create-payment', async (req, res) => {
             const paymentUrl = `https://auth.robokassa.ru/Merchant/Index.aspx?` +
                 `MerchantLogin=${merchantLogin}&` +
                 `OutSum=${formattedAmount}&` +
-                `InvoiceID=${robokassaInvoiceId}&` +
+                `InvId=${robokassaInvoiceId}&` +
                 `Description=${encodeURIComponent(description)}&` +
-                `SignatureValue=${signature}` +
+                `SignatureValue=${signature}&` +
+                `Culture=ru&` +
+                `Encoding=utf-8` +
                 (isTest ? '&IsTest=1' : '');
             console.log(`[DEBUG] Payment URL: ${paymentUrl}`);
             return res.json({ paymentUrl });
@@ -452,7 +454,7 @@ router.get('/analytics', ensureAuth, ensureRole('admin'), async (req, res) => {
     try {
         const payments = await Payment.find({ status: 'completed' }).sort({ createdAt: 1 });
         if (payments.length === 0) {
-            return res.json({ totalRevenue: '0.00', paymentCount: 0, totalLessonsSold: 0, averageCheck: '0.00', chartData: { labels: [], data: [] } });
+            return res.json({ totalRevenue: 0, paymentCount: 0, totalLessonsSold: 0, averageCheck: 0, chartData: { labels: [], data: [] } });
         }
         const dailyRevenue = {};
         payments.forEach(p => {
@@ -463,10 +465,10 @@ router.get('/analytics', ensureAuth, ensureRole('admin'), async (req, res) => {
         const totalRevenue = payments.reduce((sum, p) => sum + p.amountPaid, 0);
         const totalLessonsSold = payments.reduce((sum, p) => sum + p.lessonsPurchased, 0);
         res.json({
-            totalRevenue: totalRevenue.toFixed(2),
+            totalRevenue: Math.round(totalRevenue),
             paymentCount: payments.length,
             totalLessonsSold: totalLessonsSold,
-            averageCheck: (totalRevenue / payments.length).toFixed(2),
+            averageCheck: Math.round(totalRevenue / payments.length),
             chartData: { labels: Object.keys(dailyRevenue), data: Object.values(dailyRevenue) }
         });
     } catch (err) {
@@ -556,7 +558,7 @@ router.get('/analytics', ensureAuth, ensureRole('admin'), async (req, res) => {
     try {
         const payments = await Payment.find({ status: 'completed' }).sort({ createdAt: 1 });
         if (payments.length === 0) {
-            return res.json({ totalRevenue: '0.00', paymentCount: 0, totalLessonsSold: 0, averageCheck: '0.00', chartData: { labels: [], data: [] } });
+            return res.json({ totalRevenue: 0, paymentCount: 0, totalLessonsSold: 0, averageCheck: 0, chartData: { labels: [], data: [] } });
         }
         const dailyRevenue = {};
         payments.forEach(p => {
@@ -567,10 +569,10 @@ router.get('/analytics', ensureAuth, ensureRole('admin'), async (req, res) => {
         const totalRevenue = payments.reduce((sum, p) => sum + p.amountPaid, 0);
         const totalLessonsSold = payments.reduce((sum, p) => sum + p.lessonsPurchased, 0);
         res.json({
-            totalRevenue: totalRevenue.toFixed(2),
+            totalRevenue: Math.round(totalRevenue),
             paymentCount: payments.length,
             totalLessonsSold: totalLessonsSold,
-            averageCheck: (totalRevenue / payments.length).toFixed(2),
+            averageCheck: Math.round(totalRevenue / payments.length),
             chartData: { labels: Object.keys(dailyRevenue), data: Object.values(dailyRevenue) }
         });
     } catch (err) {
@@ -811,5 +813,8 @@ router.post('/notify/telegram', ensureAuth, ensureRole('admin'), async (req, res
         res.status(500).json({ msg: "Failed to send Telegram message." });
     }
 });
+
+// Подключаем маршруты платежей
+router.use('/payments', require('./payments'));
 
 module.exports = router;

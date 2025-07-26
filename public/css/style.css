@@ -1831,13 +1831,14 @@ section { padding: 100px 0; }
     width: 90%; 
     display: flex; 
     flex-direction: column; 
-    max-height: 95vh; 
+    max-height: 90vh; 
     padding: 0; 
     background: rgba(255, 255, 255, 0.08);
     border-radius: 20px; 
     border: 1px solid rgba(255, 255, 255, 0.15);
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
     backdrop-filter: blur(20px);
+    margin: 5vh auto;
 }
 #payment-modal .modal-header { 
     padding: 20px 30px 12px; 
@@ -1857,7 +1858,7 @@ section { padding: 100px 0; }
     padding: 20px 30px;
     overflow-y: auto; 
     flex-grow: 1;
-    max-height: calc(95vh - 160px);
+    max-height: calc(90vh - 160px);
 }
 #payment-modal .modal-footer { padding: 8px 30px 12px; flex-shrink: 0; border-top: 1px solid var(--card-border); margin-top: auto; }
 .payment-details {
@@ -2065,7 +2066,7 @@ input[type="range"]::-moz-range-thumb {
 .payment-system-card[data-system="robokassa"] {
     grid-column: 1 / -1;
 }
-#final-pay-button, #paypal-button-container { margin-top: 25px; }
+#final-pay-button, #paypal-button-container { margin-top: 10px; }
 #final-pay-button { 
     width: 100%; 
     padding: 18px 24px; 
@@ -3675,8 +3676,8 @@ input[type="range"]::-moz-range-thumb {
 @media (max-width: 768px) {
     #payment-modal .modal-content {
         width: 95%;
-        margin: 5% auto;
-        max-height: 90vh;
+        margin: 2vh auto;
+        max-height: 96vh;
         border-radius: 16px;
     }
     #payment-modal .modal-header {
@@ -3687,7 +3688,7 @@ input[type="range"]::-moz-range-thumb {
     }
     #payment-modal .modal-body {
         padding: 15px 20px;
-        max-height: calc(90vh - 140px);
+        max-height: calc(96vh - 140px);
     }
     #payment-modal .modal-footer {
         padding: 6px 20px 10px;
@@ -3905,11 +3906,18 @@ input[type="range"]::-moz-range-thumb {
     .copy-icon {
         font-size: 0.9rem;
     }
+    #payment-modal .modal-content {
+        margin: 1vh auto;
+        max-height: 98vh;
+        width: 98%;
+        border-radius: 12px;
+    }
     #payment-modal .modal-header {
         padding: 12px 15px 8px;
     }
     #payment-modal .modal-body {
         padding: 12px 15px;
+        max-height: calc(98vh - 120px);
     }
     #payment-modal .modal-footer {
         padding: 5px 15px 8px;

@@ -70,6 +70,9 @@ class PaymentManager {
             const supportedCurrencies = provider.getSupportedCurrencies();
             let processedPaymentData = { ...paymentData };
             
+            console.log(`[PaymentManager] Provider ${providerName} supports currencies:`, supportedCurrencies);
+            console.log(`[PaymentManager] Payment currency: ${paymentData.currency}`);
+            
             if (!supportedCurrencies.includes(paymentData.currency)) {
                 const targetCurrency = supportedCurrencies[0];
                 
@@ -90,11 +93,21 @@ class PaymentManager {
             }
 
             const result = await provider.createPayment(processedPaymentData);
-            return {
+            const response = {
                 success: true,
                 provider: providerName,
                 ...result
             };
+            
+            // Добавляем информацию о конвертации, если она была выполнена
+            if (processedPaymentData.originalAmount && processedPaymentData.originalCurrency) {
+                response.convertedAmount = processedPaymentData.amount;
+                response.convertedCurrency = processedPaymentData.currency;
+                response.originalAmount = processedPaymentData.originalAmount;
+                response.originalCurrency = processedPaymentData.originalCurrency;
+            }
+            
+            return response;
         } catch (error) {
             console.error(`[PaymentManager] Error creating payment with ${providerName}:`, error.message);
             throw new Error(`Failed to create payment: ${error.message}`);

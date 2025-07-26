@@ -40,7 +40,7 @@ class RobokassaProvider extends PaymentProvider {
     }
 
     getSupportedCurrencies() {
-        return this.config.currencies || ['RUB', 'USD', 'EUR'];
+        return this.config.currencies || ['RUB'];
     }
 
     isManualProvider() {
@@ -52,10 +52,19 @@ class RobokassaProvider extends PaymentProvider {
             throw new Error('Invalid payment data');
         }
 
+        console.log(`[Robokassa] Received payment data:`, {
+            amount: paymentData.amount,
+            currency: paymentData.currency,
+            originalAmount: paymentData.originalAmount,
+            originalCurrency: paymentData.originalCurrency
+        });
+
         const orderId = this.generateOrderId();
         const amount = this.formatAmount(paymentData.amount);
-        const currency = paymentData.currency || 'EUR'; // Используем EUR по умолчанию вместо RUB
+        const currency = paymentData.currency || 'RUB'; // Используем RUB по умолчанию
         const description = paymentData.description || `Оплата ${paymentData.lessonsPurchased || 1} уроков`;
+        
+        console.log(`[Robokassa] Using amount: ${amount}, currency: ${currency}`);
         
         // Creating Robokassa payment
         
@@ -71,12 +80,16 @@ class RobokassaProvider extends PaymentProvider {
             MerchantLogin: this.merchantLogin,
             OutSum: amount,
             InvId: orderId,
-            Description: description,
+            Description: description, // Не кодируем здесь, будем кодировать при формировании URL
             SignatureValue: signature,
-            OutSumCurrency: currency, // Добавляем параметр валюты
             Culture: 'ru',
             Encoding: 'utf-8'
         };
+        
+        // Добавляем OutSumCurrency только если валюта не RUB (по умолчанию RUB)
+        if (currency && currency !== 'RUB') {
+            urlParams.OutSumCurrency = currency;
+        }
         
         // В боевом режиме НЕ добавляем IsTest
         // В тестовом режиме добавляем IsTest=1
@@ -84,7 +97,15 @@ class RobokassaProvider extends PaymentProvider {
             urlParams.IsTest = '1';
         }
         
-        const paymentUrl = `${this.baseUrl}/Index.aspx?` + new URLSearchParams(urlParams).toString();
+        // Формируем URL вручную для правильного кодирования
+        const params = Object.entries(urlParams)
+            .map(([key, value]) => {
+                // Кодируем значения, особенно Description
+                const encodedValue = key === 'Description' ? encodeURIComponent(value) : value;
+                return `${key}=${encodedValue}`;
+            })
+            .join('&');
+        const paymentUrl = `${this.baseUrl}/Index.aspx?${params}`;
         
         console.log(`[Robokassa] Payment URL: ${paymentUrl}`);
 
