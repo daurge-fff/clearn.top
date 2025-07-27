@@ -1,111 +1,118 @@
 <div class="container">
-    <div class="page-header">
-        <h1>Referral Program</h1>
-        <p class="page-subtitle">Invite friends and earn free lessons together!</p>
-    </div>
-
-    <div class="card">
-        <h2>Your Referral Link</h2>
-        <div class="referral-link-container">
-            <div class="form-group">
-                <div class="referral-link-wrapper">
-                    <input type="text" class="referral-link" id="referralLink" value="<%= referralLink %>" readonly>
-                    <button class="btn btn-primary copy-btn" onclick="copyToClipboard()">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                        </svg>
-                        Copy
-                    </button>
-                </div>
+    <!-- Header Section -->
+    <div class="referral-header">
+        <div class="header-content">
+            <div class="header-badge">
+                <span class="badge-icon">🎯</span>
+                <span class="badge-text">Referral Program</span>
             </div>
+            <h1 class="main-title">Invite Friends & Earn Together</h1>
+            <p class="main-subtitle">Share coding knowledge and get rewarded for growing our community</p>
         </div>
     </div>
 
-    <div class="stats-grid">
-        <div class="stat-card">
-            <div class="stat-info">
-                <span class="stat-number"><%= user.lessonsPaid || 0 %></span>
-                <span class="stat-label">Total Lessons</span>
+    <!-- Stats Cards -->
+    <div class="stats-section">
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">📚</div>
+                <div class="stat-number"><%= user.lessonsPaid || 0 %></div>
+                <div class="stat-text">Your Lessons</div>
             </div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-info">
-                <span class="stat-number"><%= referredUsers.length %></span>
-                <span class="stat-label">Referred Users</span>
+            <div class="stat-card">
+                <div class="stat-icon">👥</div>
+                <div class="stat-number"><%= referredUsers.length %></div>
+                <div class="stat-text">Friends Invited</div>
             </div>
-        </div>
-        <% if (user.referredBy) { %>
-        <div class="stat-card">
-            <div class="stat-info">
-                <span class="stat-number"><%= user.referredBy.name %></span>
-                <span class="stat-label">Referred By</span>
+            <% if (user.referredBy) { %>
+            <div class="stat-card special">
+                <div class="stat-icon">⭐</div>
+                <div class="stat-number">1</div>
+                <div class="stat-text">Invited by <%= user.referredBy.name %></div>
             </div>
+            <% } %>
         </div>
-        <% } %>
     </div>
 
-    <div class="card">
-        <h2>How It Works</h2>
-        <div class="referral-steps">
-            <div class="step-item">
-                <div class="step-icon">📋</div>
-                <div class="step-content">
-                    <h3>Share your link</h3>
-                    <p>Invite friends using your referral link</p>
-                </div>
+    <!-- Referral Link Section -->
+    <div class="referral-link-section">
+        <div class="link-header">
+            <h2>Your Magic Link</h2>
+            <p>Share this special link with friends to start earning together</p>
+        </div>
+        <div class="referral-link-wrapper" onclick="copyToClipboard()" title="Click to copy">
+            <div class="link-icon">🔗</div>
+            <div class="referral-link" id="referralLink"><%= referralLink %></div>
+            <div class="copy-indicator">
+                <span class="copy-text">Click to copy</span>
+                <span class="copy-success">Copied! ✨</span>
             </div>
-            <div class="step-item">
+        </div>
+    </div>
+
+    <!-- How It Works Section -->
+    <div class="how-it-works">
+        <div class="section-header">
+            <h2>How It Works</h2>
+            <p>Simple steps to start earning free lessons</p>
+        </div>
+        <div class="steps-container">
+            <div class="step-card">
+                <div class="step-number">1</div>
+                <div class="step-icon">📤</div>
+                <h3>Share Your Link</h3>
+                <p>Send your unique referral link to friends who want to learn coding</p>
+            </div>
+            <div class="step-card">
+                <div class="step-number">2</div>
                 <div class="step-icon">🎁</div>
-                <div class="step-content">
-                    <h3>New users get 1 free lesson</h3>
-                    <p>When someone joins via your link</p>
-                </div>
+                <h3>Friend Gets Free Lesson</h3>
+                <p>When they sign up, they receive 1 free lesson to get started</p>
             </div>
-            <div class="step-item">
-                <div class="step-icon">💰</div>
-                <div class="step-content">
-                    <h3>You get 1 free lesson</h3>
-                    <p>When they make their first payment</p>
-                </div>
+            <div class="step-card">
+                <div class="step-number">3</div>
+                <div class="step-icon">💎</div>
+                <h3>You Earn Rewards</h3>
+                <p>Get 1 free lesson when they make their first payment</p>
             </div>
-            <div class="step-item">
-                <div class="step-icon">🚀</div>
-                <div class="step-content">
-                    <h3>Bonus lesson</h3>
-                    <p>+1 extra if they buy 20+ lessons at once</p>
-                </div>
+            <div class="step-card bonus">
+                <div class="step-number">🚀</div>
+                <div class="step-icon">⭐</div>
+                <h3>Bonus Reward</h3>
+                <p>Extra lesson if they purchase 20+ lessons at once</p>
             </div>
         </div>
     </div>
 
-    <div class="card">
-        <h2>Users You Referred</h2>
-        <div class="table-responsive">
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Email</th>
-                        <th>Date Registered</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <% if (referredUsers.length > 0) { %>
-                        <% referredUsers.forEach(function(referredUser) { %>
-                            <tr>
-                                <td><%= referredUser.name %></td>
-                                <td><%= referredUser.email %></td>
-                                <td><%= referredUser.date_registered.toLocaleDateString() %></td>
-                            </tr>
-                        <% }); %>
-                    <% } else { %>
-                        <tr>
-                            <td colspan="3" class="text-center">No referred users yet. Start sharing your link!</td>
-                        </tr>
-                    <% } %>
-                </tbody>
-            </table>
+    <!-- Referred Users Section -->
+    <div class="referred-users-section">
+        <div class="section-header">
+            <h2>Your Coding Community</h2>
+            <p>Friends you've invited to join the programming journey</p>
+        </div>
+        <div class="users-container">
+            <% if (referredUsers.length > 0) { %>
+                <div class="users-grid">
+                    <% referredUsers.forEach(function(referredUser) { %>
+                        <div class="user-card">
+                            <div class="user-avatar">👤</div>
+                            <div class="user-info">
+                                <h4><%= referredUser.name %></h4>
+                                <p class="user-email"><%= referredUser.email %></p>
+                                <p class="user-date">Joined <%= referredUser.date_registered.toLocaleDateString() %></p>
+                            </div>
+                            <div class="user-status">✅</div>
+                        </div>
+                    <% }); %>
+                </div>
+            <% } else { %>
+                <div class="empty-state">
+                    <div class="empty-icon">🌟</div>
+                    <h3>Start Building Your Community</h3>
+                    <p>No friends invited yet. Share your link and watch your coding community grow!</p>
+                    <button class="share-btn" onclick="copyToClipboard()">Share Your Link</button>
+                </div>
+            <% } %>
         </div>
     </div>
 </div>
@@ -113,12 +120,45 @@
 <script>
 function copyToClipboard() {
     const referralLink = document.getElementById('referralLink');
-    const range = document.createRange();
-    range.selectNode(referralLink);
-    window.getSelection().removeAllRanges();
-    window.getSelection().addRange(range);
-    document.execCommand('copy');
-    window.getSelection().removeAllRanges();
-    alert('Referral link copied to clipboard!');
+    const copyText = document.querySelector('.copy-text');
+    const copySuccess = document.querySelector('.copy-success');
+    const wrapper = document.querySelector('.referral-link-wrapper');
+    
+    // Copy to clipboard using modern API
+    if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(referralLink.textContent).then(() => {
+            showCopySuccess();
+        }).catch(() => {
+            fallbackCopy();
+        });
+    } else {
+        fallbackCopy();
+    }
+    
+    function fallbackCopy() {
+        const range = document.createRange();
+        range.selectNode(referralLink);
+        window.getSelection().removeAllRanges();
+        window.getSelection().addRange(range);
+        document.execCommand('copy');
+        window.getSelection().removeAllRanges();
+        showCopySuccess();
+    }
+    
+    function showCopySuccess() {
+        // Hide copy text and show success message
+        copyText.style.opacity = '0';
+        copySuccess.style.opacity = '1';
+        
+        // Add success animation to wrapper
+        wrapper.classList.add('copied');
+        
+        // Reset after 2 seconds
+        setTimeout(() => {
+            copyText.style.opacity = '1';
+            copySuccess.style.opacity = '0';
+            wrapper.classList.remove('copied');
+        }, 2000);
+    }
 }
 </script>
