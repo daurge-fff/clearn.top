@@ -13,26 +13,7 @@ const upload = require('../middleware/upload');
 const Payment = require('../models/Payment');
 const paymentService = require('../services/paymentService');
 
-// Function to calculate stars based on grade
-function calculateStarsFromGrade(score, isProject) {
-    if (isProject) {
-        // For projects (max 25 points)
-        if (score >= 23) return 10; // Excellent (23-25)
-        if (score >= 20) return 8;  // Very good (20-22)
-        if (score >= 17) return 6;  // Good (17-19)
-        if (score >= 14) return 4;  // Satisfactory (14-16)
-        if (score >= 10) return 2;  // Basic (10-13)
-        return 1; // Participation (1-9)
-    } else {
-        // For regular lessons (max 10 points)
-        if (score >= 9) return 5;   // Excellent (9-10)
-        if (score >= 8) return 4;   // Very good (8)
-        if (score >= 7) return 3;   // Good (7)
-        if (score >= 6) return 2;   // Satisfactory (6)
-        if (score >= 4) return 1;   // Basic (4-5)
-        return 1; // Participation (1-3)
-    }
-}
+// Stars are now awarded directly based on the grade score (1:1 ratio)
 
 // @desc    Главная страница личного кабинета
 // @route   GET /dashboard
@@ -174,8 +155,64 @@ router.get('/users/edit/:id', ensureAuth, ensureRole('admin'), async (req, res) 
         };
       });
   })() }); } catch (err) { console.error(err); res.status(500).send('Server Error'); } });
-router.post('/users/edit/:id', ensureAuth, ensureRole('admin'), async (req, res) => { try { const userId = req.params.id; const { name, email, role, contact, lessonsPaid, status, teacher: newTeacherId, timeZone } = req.body; const userToUpdate = await User.findById(userId); if (!userToUpdate) return res.status(404).send('User not found'); const oldTeacherId = userToUpdate.teacher ? String(userToUpdate.teacher) : null; const newTeacherIdStr = newTeacherId || null; if (oldTeacherId !== newTeacherIdStr) { if (oldTeacherId) { await User.updateOne({ _id: oldTeacherId }, { $pull: { students: userId } }); } if (newTeacherIdStr && role === 'student') { await User.updateOne({ _id: newTeacherIdStr }, { $addToSet: { students: userId } }); } } userToUpdate.name = name; userToUpdate.email = email.toLowerCase(); userToUpdate.contact = contact;
-userToUpdate.timeZone = timeZone || userToUpdate.timeZone; userToUpdate.status = status; if (userToUpdate.role !== 'student' && role === 'student') { userToUpdate.teacher = newTeacherIdStr; } else if (userToUpdate.role === 'student' && role !== 'student') { if(oldTeacherId) { await User.updateOne({ _id: oldTeacherId }, { $pull: { students: userId } }); } userToUpdate.teacher = null; } userToUpdate.role = role; if (role === 'student') { userToUpdate.lessonsPaid = Number(lessonsPaid); userToUpdate.teacher = newTeacherIdStr; } else { userToUpdate.lessonsPaid = 0; userToUpdate.teacher = null; } if (req.body.password) { const salt = await bcrypt.genSalt(10); userToUpdate.password = await bcrypt.hash(req.body.password, salt); } await userToUpdate.save(); res.redirect('/dashboard/users'); } catch (err) { console.error(err); res.status(500).send('Server Error'); } });
+router.post('/users/edit/:id', ensureAuth, ensureRole('admin'), async (req, res) => {
+    try {
+        const userId = req.params.id;
+        const { name, email, role, contact, lessonsPaid, stars, status, teacher: newTeacherId, timeZone } = req.body;
+        const userToUpdate = await User.findById(userId);
+        if (!userToUpdate) return res.status(404).send('User not found');
+        
+        const oldTeacherId = userToUpdate.teacher ? String(userToUpdate.teacher) : null;
+        const newTeacherIdStr = newTeacherId || null;
+        
+        if (oldTeacherId !== newTeacherIdStr) {
+            if (oldTeacherId) {
+                await User.updateOne({ _id: oldTeacherId }, { $pull: { students: userId } });
+            }
+            if (newTeacherIdStr && role === 'student') {
+                await User.updateOne({ _id: newTeacherIdStr }, { $addToSet: { students: userId } });
+            }
+        }
+        
+        userToUpdate.name = name;
+        userToUpdate.email = email.toLowerCase();
+        userToUpdate.contact = contact;
+        userToUpdate.timeZone = timeZone || userToUpdate.timeZone;
+        userToUpdate.status = status;
+        
+        if (userToUpdate.role !== 'student' && role === 'student') {
+            userToUpdate.teacher = newTeacherIdStr;
+        } else if (userToUpdate.role === 'student' && role !== 'student') {
+            if(oldTeacherId) {
+                await User.updateOne({ _id: oldTeacherId }, { $pull: { students: userId } });
+            }
+            userToUpdate.teacher = null;
+        }
+        
+        userToUpdate.role = role;
+        
+        if (role === 'student') {
+            userToUpdate.lessonsPaid = Number(lessonsPaid) || 0;
+            userToUpdate.stars = Number(stars) || 0;
+            userToUpdate.teacher = newTeacherIdStr;
+        } else {
+            userToUpdate.lessonsPaid = 0;
+            userToUpdate.stars = 0;
+            userToUpdate.teacher = null;
+        }
+        
+        if (req.body.password) {
+            const salt = await bcrypt.genSalt(10);
+            userToUpdate.password = await bcrypt.hash(req.body.password, salt);
+        }
+        
+        await userToUpdate.save();
+        res.redirect('/dashboard/users');
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Server Error');
+    }
+});
 router.get('/users/delete/:id', ensureAuth, ensureRole('admin'), async (req, res) => { try { await User.findByIdAndDelete(req.params.id); res.redirect('/dashboard/users'); } catch (err) { console.error(err); res.status(500).send('Server Error'); } });
 
 // @desc    Редактирование записи в истории баланса
@@ -419,64 +456,47 @@ router.post('/lessons/manage/:id', ensureAuth, upload, async (req, res) => {
                 { upsert: true, new: true, setDefaultsOnInsert: true }
             );
 
-            // Award stars based on grade
-            const starsToAward = calculateStarsFromGrade(finalScore, lesson.isProject);
-            if (starsToAward > 0) {
-                const student = await User.findById(lesson.student);
-                if (student) {
-                    // Check if grade stars were already awarded for this specific lesson
-                    const gradeAlreadyAwarded = student.balanceHistory.some(entry => 
-                        entry.reason && entry.reason.includes('lesson grade') && 
-                        entry.reason.includes(`(ID: ${lesson._id})`)
-                    );
-                    
-                    if (!gradeAlreadyAwarded) {
-                        const newStarsBalance = (student.stars || 0) + starsToAward;
-                        student.stars = newStarsBalance;
-                        
-                        student.balanceHistory.push({
-                            date: new Date(),
-                            change: starsToAward,
-                            starsBalanceAfter: Number(newStarsBalance),
-                    lessonsBalanceAfter: Number(student.lessonsPaid || 0),
-                            reason: `Stars earned for lesson grade: ${finalScore}/${maxScore} (ID: ${lesson._id})`,
-                            isStarAdjustment: true
-                        });
-                        
-                        await student.save();
-                    }
-                }
-            }
-        }
-
-        // Award stars for completing lesson (if status changed to completed and not already awarded)
-        if (originalStatus !== 'completed' && status === 'completed') {
+            // Award stars equal to the grade score
+            const starsToAward = finalScore;
             const student = await User.findById(lesson.student);
             if (student) {
-                // Check if completion stars were already awarded for this specific lesson
-                const alreadyAwarded = student.balanceHistory.some(entry => 
-                    entry.reason && entry.reason.includes(`completing`) && 
+                // Check if grade stars were already awarded for this specific lesson
+                const existingGradeEntry = student.balanceHistory.find(entry => 
+                    entry.reason && entry.reason.includes('lesson grade') && 
                     entry.reason.includes(`(ID: ${lesson._id})`)
                 );
                 
-                if (!alreadyAwarded) {
-                    const completionStars = lesson.isProject ? 5 : 2; // More stars for project completion
-                    const newStarsBalance = (student.stars || 0) + completionStars;
+                if (existingGradeEntry) {
+                    // Update existing grade entry
+                    const starsDifference = starsToAward - existingGradeEntry.change;
+                    const newStarsBalance = (student.stars || 0) + starsDifference;
+                    student.stars = Math.max(0, newStarsBalance); // Prevent negative stars
+                    
+                    // Update the existing entry
+                    existingGradeEntry.change = starsToAward;
+                    existingGradeEntry.starsBalanceAfter = Number(student.stars);
+                    existingGradeEntry.reason = `Stars earned for lesson grade: ${finalScore}/${maxScore} (ID: ${lesson._id})`;
+                    existingGradeEntry.date = new Date();
+                } else {
+                    // Create new grade entry
+                    const newStarsBalance = (student.stars || 0) + starsToAward;
                     student.stars = newStarsBalance;
                     
                     student.balanceHistory.push({
                         date: new Date(),
-                        change: completionStars,
+                        change: starsToAward,
                         starsBalanceAfter: Number(newStarsBalance),
                         lessonsBalanceAfter: Number(student.lessonsPaid || 0),
-                        reason: `Stars earned for completing ${lesson.isProject ? 'project' : 'lesson'} (ID: ${lesson._id})`,
+                        reason: `Stars earned for lesson grade: ${finalScore}/${maxScore} (ID: ${lesson._id})`,
                         isStarAdjustment: true
                     });
-                    
-                    await student.save();
                 }
+                
+                await student.save();
             }
         }
+
+        // Stars are now only awarded through grading, not for lesson completion
 
         await lesson.save();
         res.redirect(req.user.role === 'admin' ? '/dashboard/lessons' : '/dashboard/schedule');
@@ -763,7 +783,7 @@ router.post('/user-profile/:id/adjust-balance', ensureAuth, ensureRole('admin'),
     }
 });
 router.post('/users/add', ensureAuth, ensureRole('admin'), async (req, res) => {
-    const { name, email, password, role, contact, lessonsPaid } = req.body;
+    const { name, email, password, role, contact, lessonsPaid, stars } = req.body;
     
     if (!name || !email || !password || !role) {
         return res.redirect('/dashboard/users/add');
@@ -806,7 +826,8 @@ router.post('/users/add', ensureAuth, ensureRole('admin'), async (req, res) => {
             password,
             role,
             contact,
-            lessonsPaid: role === 'student' ? Number(lessonsPaid) : 0,
+            lessonsPaid: role === 'student' ? Number(lessonsPaid) || 0 : 0,
+            stars: role === 'student' ? Number(stars) || 0 : 0,
             emojiAvatar: randomEmoji
         });
 

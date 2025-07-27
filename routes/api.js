@@ -679,33 +679,22 @@ router.put('/lessons/:id/status', ensureAuth, ensureRole('admin'), async (req, r
         const user = lesson.student;
         const oldStatus = lesson.status;
 
-        // Logic for stars and lessonsPaid based on status change
+        // Logic for lessonsPaid based on status change (stars are now only awarded through grading)
         if (newStatus !== oldStatus) {
             let lessonsPaidUpdate = 0;
-            let starsUpdate = 0;
 
-            // Case 1: Lesson is marked as completed
-            if (newStatus === 'completed' && oldStatus !== 'completed') {
-                starsUpdate = 1;
-            }
-            // Case 2: A completed lesson is changed to something else
-            else if (oldStatus === 'completed' && newStatus !== 'completed') {
-                starsUpdate = -1;
-            }
-
-            // Case 3: A scheduled lesson is cancelled
+            // Case 1: A scheduled lesson is cancelled
             if (oldStatus === 'scheduled' && newStatus.startsWith('cancelled_')) {
                 lessonsPaidUpdate = 1;
             }
-            // Case 4: A cancelled lesson is rescheduled
+            // Case 2: A cancelled lesson is rescheduled
             else if (oldStatus.startsWith('cancelled_') && newStatus === 'scheduled') {
                 lessonsPaidUpdate = -1;
             }
 
             // Apply updates if there are any changes
-            if (lessonsPaidUpdate !== 0 || starsUpdate !== 0) {
+            if (lessonsPaidUpdate !== 0) {
                 user.lessonsPaid += lessonsPaidUpdate;
-                user.stars += starsUpdate;
                 await user.save();
             }
 

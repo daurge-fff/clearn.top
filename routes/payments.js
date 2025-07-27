@@ -1,11 +1,19 @@
 const express = require('express');
 const router = express.Router();
-const paymentManager = require('../services/payments/PaymentManager');
 const { findUserByIdentifier, creditPaymentToUser } = require('../services/paymentService');
 const { notifyAdmin } = require('../services/notificationService');
 const Payment = require('../models/Payment');
 const bot = require('../bot');
 const { ensureAuth, ensureRole } = require('../middleware/auth');
+
+// Lazy load PaymentManager to ensure environment variables are loaded
+let paymentManager;
+function getPaymentManager() {
+    if (!paymentManager) {
+        paymentManager = require('../services/payments/PaymentManager');
+    }
+    return paymentManager;
+}
 
 /**
  * Создание платежа через любую платежную систему
@@ -14,16 +22,17 @@ const { ensureAuth, ensureRole } = require('../middleware/auth');
 router.post('/create', async (req, res) => {
     try {
         const { amount, currency, description, paymentSystem, identifier } = req.body;
+        const pm = getPaymentManager();
 
         // Валидация входных данных
-        if (!paymentManager.validatePaymentData({ amount, currency, description, identifier, orderId: 'temp' })) {
+        if (!pm.validatePaymentData({ amount, currency, description, identifier, orderId: 'temp' })) {
             return res.status(400).json({ 
                 error: 'Missing required fields: amount, currency, description, paymentSystem, identifier' 
             });
         }
 
         // Проверяем, что провайдер существует
-        const provider = paymentManager.getProvider(paymentSystem);
+        const provider = pm.getProvider(paymentSystem);
         if (!provider) {
             return res.status(400).json({ 
                 error: `Payment system '${paymentSystem}' is not available` 
@@ -58,7 +67,7 @@ router.post('/create', async (req, res) => {
         );
 
         // Создаем платеж через провайдер
-        const paymentResult = await paymentManager.createPayment(paymentSystem, {
+        const paymentResult = await pm.createPayment(paymentSystem, {
             amount,
             currency,
             description,
@@ -98,7 +107,7 @@ router.post('/create', async (req, res) => {
                 originalAmount: amount,
                 originalCurrency: currency
             };
-            response.manualInstructions = paymentManager.getPaymentInstructions(
+            response.manualInstructions = pm.getPaymentInstructions(
                 paymentSystem, 
                 instructionData,
                 'en' // TODO: определять язык из запроса
@@ -131,12 +140,13 @@ router.post('/create', async (req, res) => {
 router.get('/providers', (req, res) => {
     try {
         const { currency } = req.query;
+        const pm = getPaymentManager();
         
         let providers;
         if (currency) {
-            providers = paymentManager.getProvidersByCurrency(currency);
+            providers = pm.getProvidersByCurrency(currency);
         } else {
-            providers = paymentManager.getAvailableProviders();
+            providers = pm.getAvailableProviders();
         }
 
         res.json({
@@ -166,7 +176,8 @@ router.post('/robokassa/result', express.urlencoded({ extended: true }), async (
         console.log('[Robokassa] Received result notification:', req.body);
         
         // Обрабатываем уведомление через менеджер
-        const result = await paymentManager.handleNotification('robokassa', req.body, req.headers);
+        const pm = getPaymentManager();
+        const result = await pm.handleNotification('robokassa', req.body, req.headers);
         
         if (result.success && result.orderId) {
             // Находим платеж в базе данных
@@ -243,7 +254,8 @@ router.post('/webhook/:provider', express.raw({ type: 'application/json' }), asy
         console.log(`[Payments] Received webhook from ${providerName}:`, notificationData);
 
         // Обрабатываем уведомление через менеджер
-        const result = await paymentManager.handleNotification(providerName, notificationData, headers);
+        const pm = getPaymentManager();
+        const result = await pm.handleNotification(providerName, notificationData, headers);
 
         if (result.success && result.orderId) {
             // Находим платеж в базе данных
@@ -274,7 +286,7 @@ router.post('/webhook/:provider', express.raw({ type: 'application/json' }), asy
                     const creditResult = await creditPaymentToUser(payment);
                     if (creditResult.success) {
                         await notifyAdmin(
-                            `✅ *Successful Payment (${paymentManager.getProvider(providerName).getDisplayName()})*\n\n` +
+                            `✅ *Successful Payment (${pm.getProvider(providerName).getDisplayName()})*\n\n` +
                             `*Amount:* ${result.amount} ${result.currency || payment.currency}\n` +
                             `*Client:* \`${payment.pendingIdentifier}\`\n` +
                             `*User:* ${creditResult.user.name}\n` +
@@ -283,7 +295,7 @@ router.post('/webhook/:provider', express.raw({ type: 'application/json' }), asy
                     }
                 } else {
                     await notifyAdmin(
-                        `⚠️ *Successful Payment (${paymentManager.getProvider(providerName).getDisplayName()}) - Needs Linking*\n\n` +
+                        `⚠️ *Successful Payment (${pm.getProvider(providerName).getDisplayName()}) - Needs Linking*\n\n` +
                         `*Amount:* ${result.amount} ${result.currency || payment.currency}\n` +
                         `*Client:* \`${payment.pendingIdentifier}\`\n` +
                         `*Order:* \`${result.orderId}\`\n\n` +
@@ -314,7 +326,8 @@ router.post('/manual-confirm', async (req, res) => {
         }
 
         // Проверяем, что это ручной провайдер
-        if (!paymentManager.isManualProvider(paymentSystem)) {
+        const pm = getPaymentManager();
+        if (!pm.isManualProvider(paymentSystem)) {
             return res.status(400).json({ error: 'This payment system does not support manual confirmation' });
         }
 
@@ -351,7 +364,7 @@ router.post('/manual-confirm', async (req, res) => {
         await existingPayment.save();
 
         // Отправляем уведомление администратору
-        const provider = paymentManager.getProvider(paymentSystem);
+        const provider = pm.getProvider(paymentSystem);
         const providerName = provider ? provider.getDisplayName() : paymentSystem;
 
         try {
