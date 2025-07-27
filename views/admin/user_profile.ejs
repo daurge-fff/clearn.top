@@ -33,23 +33,6 @@
     </div>
 
     <div class="stats-grid">
-        <div class="stat-card status-card">
-            <div class="stat-info">
-                <span class="stat-number small">
-                    <span class="badge status-<%= userProfile.status %> status-badge">
-                        <i class="status-icon"></i>
-                        <%= userProfile.status.charAt(0).toUpperCase() + userProfile.status.slice(1) %>
-                    </span>
-                </span>
-                <span class="stat-label">Status</span>
-            </div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-info">
-                <span class="stat-number small"><%= userProfile.email %></span>
-                <span class="stat-label">Email</span>
-            </div>
-        </div>
         <% if (userProfile.role === 'student') { %>
             <div class="stat-card">
                 <div class="stat-info">
@@ -64,6 +47,12 @@
                 </div>
             </div>
         <% } %>
+        <div class="stat-card email-card">
+            <div class="stat-info">
+                <span class="stat-number small"><%= userProfile.email %></span>
+                <span class="stat-label">Email</span>
+            </div>
+        </div>
     </div>
     
     <% if (userProfile.role === 'student') { %>

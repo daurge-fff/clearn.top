@@ -1,57 +1,88 @@
-<link rel="stylesheet" href="/css/referral.css">
-
-<div class="referral-container">
-    <div class="referral-header">
+<div class="container">
+    <div class="page-header">
         <h1>Referral Program</h1>
-
+        <p class="page-subtitle">Invite friends and earn free lessons together!</p>
     </div>
 
-    <div class="referral-card">
+    <div class="card">
         <h2>Your Referral Link</h2>
         <div class="referral-link-container">
-            <div class="referral-link" id="referralLink"><%= referralLink %></div>
-            <div class="copy-btn-container">
-                <button class="copy-btn" onclick="copyToClipboard()">Copy</button>
+            <div class="form-group">
+                <div class="referral-link-wrapper">
+                    <input type="text" class="referral-link" id="referralLink" value="<%= referralLink %>" readonly>
+                    <button class="btn btn-primary copy-btn" onclick="copyToClipboard()">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                        </svg>
+                        Copy
+                    </button>
+                </div>
             </div>
         </div>
     </div>
 
-    <div class="referral-card">
-        <h2>Your Stats</h2>
-        <div class="referral-stats">
-            <div class="stat-item">
-                <h3><%= user.lessonsPaid || 0 %></h3>
-                <p>Total Lessons</p>
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-info">
+                <span class="stat-number"><%= user.lessonsPaid || 0 %></span>
+                <span class="stat-label">Total Lessons</span>
             </div>
-            <div class="stat-item">
-                <h3><%= referredUsers.length %></h3>
-                <p>Referred Users</p>
-            </div>
-            <% if (user.referredBy) { %>
-            <div class="stat-item">
-                <h3><%= user.referredBy.name %></h3>
-                <p>Referred By</p>
-            </div>
-            <% } %>
         </div>
+        <div class="stat-card">
+            <div class="stat-info">
+                <span class="stat-number"><%= referredUsers.length %></span>
+                <span class="stat-label">Referred Users</span>
+            </div>
+        </div>
+        <% if (user.referredBy) { %>
+        <div class="stat-card">
+            <div class="stat-info">
+                <span class="stat-number"><%= user.referredBy.name %></span>
+                <span class="stat-label">Referred By</span>
+            </div>
+        </div>
+        <% } %>
     </div>
 
-    <div class="referral-card">
+    <div class="card">
         <h2>How It Works</h2>
-        <div class="referral-info">
-            <ul style="list-style: none; padding: 0; margin: 0;">
-                <li style="margin-bottom: 10px; padding: 10px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #007bff;">📋 <strong>Share your link</strong> - Invite friends using your referral link</li>
-                <li style="margin-bottom: 10px; padding: 10px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #28a745;">🎁 <strong>New users get 1 free lesson</strong> - When someone joins via your link</li>
-                <li style="margin-bottom: 10px; padding: 10px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #ffc107;">💰 <strong>You get 1 free lesson</strong> - When they make their first payment</li>
-                <li style="margin-bottom: 10px; padding: 10px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #dc3545;">🚀 <strong>Bonus lesson</strong> - +1 extra if they buy 20+ lessons at once</li>
-            </ul>
+        <div class="referral-steps">
+            <div class="step-item">
+                <div class="step-icon">📋</div>
+                <div class="step-content">
+                    <h3>Share your link</h3>
+                    <p>Invite friends using your referral link</p>
+                </div>
+            </div>
+            <div class="step-item">
+                <div class="step-icon">🎁</div>
+                <div class="step-content">
+                    <h3>New users get 1 free lesson</h3>
+                    <p>When someone joins via your link</p>
+                </div>
+            </div>
+            <div class="step-item">
+                <div class="step-icon">💰</div>
+                <div class="step-content">
+                    <h3>You get 1 free lesson</h3>
+                    <p>When they make their first payment</p>
+                </div>
+            </div>
+            <div class="step-item">
+                <div class="step-icon">🚀</div>
+                <div class="step-content">
+                    <h3>Bonus lesson</h3>
+                    <p>+1 extra if they buy 20+ lessons at once</p>
+                </div>
+            </div>
         </div>
     </div>
 
-    <div class="referral-card">
+    <div class="card">
         <h2>Users You Referred</h2>
         <div class="table-responsive">
-            <table class="referred-users-table">
+            <table class="data-table">
                 <thead>
                     <tr>
                         <th>Name</th>
@@ -60,13 +91,19 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <% referredUsers.forEach(function(referredUser) { %>
+                    <% if (referredUsers.length > 0) { %>
+                        <% referredUsers.forEach(function(referredUser) { %>
+                            <tr>
+                                <td><%= referredUser.name %></td>
+                                <td><%= referredUser.email %></td>
+                                <td><%= referredUser.date_registered.toLocaleDateString() %></td>
+                            </tr>
+                        <% }); %>
+                    <% } else { %>
                         <tr>
-                            <td><%= referredUser.name %></td>
-                            <td><%= referredUser.email %></td>
-                            <td><%= referredUser.date_registered.toLocaleDateString() %></td>
+                            <td colspan="3" class="text-center">No referred users yet. Start sharing your link!</td>
                         </tr>
-                    <% }); %>
+                    <% } %>
                 </tbody>
             </table>
         </div>

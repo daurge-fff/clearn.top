@@ -174,7 +174,6 @@
     display: flex;
     align-items: center;
     gap: 15px;
-    margin-bottom: 10px;
 }
 
 .settings-card .card-icon-header i {
@@ -459,10 +458,11 @@
     padding: 16px 36px;
     border-radius: 15px;
     font-size: 1rem;
-    box-shadow: 0 6px 20px rgba(0, 242, 254, 0.25);
+    box-shadow: 0 8px 25px rgba(0, 242, 254, 0.35), 0 4px 15px rgba(0, 0, 0, 0.1);
     position: relative;
     overflow: hidden;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 2px solid transparent;
 }
 
 .btn-primary::before {
@@ -477,9 +477,10 @@
 }
 
 .btn-primary:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 12px 35px rgba(0, 242, 254, 0.4), 0 4px 15px rgba(0, 0, 0, 0.1);
+    transform: translateY(-4px);
+    box-shadow: 0 15px 40px rgba(0, 242, 254, 0.5), 0 8px 25px rgba(0, 0, 0, 0.15);
     background: linear-gradient(135deg, #00d4e6, #b83ad6);
+    border-color: rgba(255, 255, 255, 0.3);
 }
 
 .btn-primary:hover::before {
@@ -493,19 +494,37 @@
 .btn-secondary {
     background: var(--form-bg-color);
     color: var(--text-color);
-    border: 1px solid var(--form-border-color);
+    border: 2px solid var(--form-border-color);
     padding: 16px 36px;
     border-radius: 15px;
     font-weight: 600;
     transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.btn-secondary::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(0, 242, 254, 0.1), transparent);
+    transition: left 0.5s ease;
 }
 
 .btn-secondary:hover {
     background: var(--bg-color);
     border-color: var(--accent-color-1);
     color: var(--accent-color-1);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(0, 242, 254, 0.15);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0, 242, 254, 0.2), 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.btn-secondary:hover::before {
+    left: 100%;
 }
 
 /* === TABLE STYLES === */
@@ -661,9 +680,36 @@
     50% { opacity: 0.6; }
 }
 
-.badge.status-active { background: linear-gradient(135deg, rgba(46, 204, 113, 0.2), rgba(46, 204, 113, 0.1)); color: #27ae60; border: 1px solid rgba(46, 204, 113, 0.3); }
-.badge.status-inactive { background: linear-gradient(135deg, rgba(231, 76, 60, 0.2), rgba(231, 76, 60, 0.1)); color: #c0392b; border: 1px solid rgba(231, 76, 60, 0.3); }
-.badge.status-paused { background: linear-gradient(135deg, rgba(241, 196, 15, 0.2), rgba(241, 196, 15, 0.1)); color: #d68910; border: 1px solid rgba(241, 196, 15, 0.3); }
+.badge.status-active { 
+    background: linear-gradient(135deg, rgba(46, 204, 113, 1), rgba(46, 204, 113, 0.95)); 
+    color: white; 
+    border: 2px solid rgba(46, 204, 113, 1); 
+    font-weight: 700;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.7), 0 0 8px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(3px);
+    position: relative;
+    z-index: 15;
+}
+.badge.status-inactive { 
+    background: linear-gradient(135deg, rgba(231, 76, 60, 1), rgba(231, 76, 60, 0.95)); 
+    color: white; 
+    border: 2px solid rgba(231, 76, 60, 1); 
+    font-weight: 700;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.7), 0 0 8px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(3px);
+    position: relative;
+    z-index: 15;
+}
+.badge.status-paused { 
+    background: linear-gradient(135deg, rgba(241, 196, 15, 1), rgba(241, 196, 15, 0.95)); 
+    color: white; 
+    border: 2px solid rgba(241, 196, 15, 1); 
+    font-weight: 700;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.7), 0 0 8px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(3px);
+    position: relative;
+    z-index: 15;
+}
 .actions-cell {
     display: flex;
     gap: 10px;
@@ -1194,6 +1240,37 @@
 }
 .stat-number.small {
     font-size: 1.8rem;
+}
+
+/* Стили для карточки с email */
+.email-card .stat-number {
+    font-size: 0.9rem;
+    word-break: break-all;
+    line-height: 1.2;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+@media (max-width: 768px) {
+    .email-card .stat-number {
+        font-size: 0.5rem;
+        word-break: break-all;
+        overflow-wrap: break-word;
+        hyphens: auto;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+}
+
+@media (max-width: 480px) {
+    .email-card .stat-number {
+        font-size: 0.4rem;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        overflow: hidden;
+    }
 }
 
 /* === Password Toggle Button === */
@@ -3019,6 +3096,56 @@ body.auth-layout {
   background: rgba(0, 0, 0, 0.3);
 }
 
+/* Улучшенные стили для статусов в темной теме */
+[data-theme='dark'] .badge.status-active { 
+    background: linear-gradient(135deg, rgba(46, 204, 113, 0.95), rgba(46, 204, 113, 0.85)); 
+    color: white; 
+    border: 2px solid rgba(46, 204, 113, 0.7); 
+    font-weight: 700;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(15px);
+}
+[data-theme='dark'] .badge.status-inactive { 
+    background: linear-gradient(135deg, rgba(231, 76, 60, 0.95), rgba(231, 76, 60, 0.85)); 
+    color: white; 
+    border: 2px solid rgba(231, 76, 60, 0.7); 
+    font-weight: 700;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(15px);
+}
+[data-theme='dark'] .badge.status-paused { 
+    background: linear-gradient(135deg, rgba(241, 196, 15, 0.95), rgba(241, 196, 15, 0.85)); 
+    color: white; 
+    border: 2px solid rgba(241, 196, 15, 0.7); 
+    font-weight: 700;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(15px);
+}
+
+/* Улучшенные стили кнопок для темной темы */
+[data-theme='dark'] .btn-secondary {
+    background: rgba(40, 45, 70, 0.8);
+    color: #e0e0e0;
+    border: 2px solid rgba(0, 242, 254, 0.4);
+    box-shadow: 0 2px 12px rgba(0, 242, 254, 0.1);
+}
+
+[data-theme='dark'] .btn-secondary::before {
+    background: linear-gradient(90deg, transparent, rgba(0, 242, 254, 0.2), transparent);
+}
+
+[data-theme='dark'] .btn-secondary:hover {
+    background: rgba(30, 35, 58, 0.9);
+    border-color: var(--accent-color-1);
+    color: var(--accent-color-1);
+    box-shadow: 0 6px 25px rgba(0, 242, 254, 0.25);
+    transform: translateY(-2px);
+}
+
+[data-theme='dark'] .btn-secondary:hover::before {
+    left: 100%;
+}
+
 .google-signin-button:hover {
   background: var(--bg-color);
 }
@@ -4135,5 +4262,404 @@ input[name="telegramChatId"] ~ .floating-label {
         height: 48px;
         font-size: 20px;
     }
+}
+
+/* Дополнительные мобильные стили для улучшенной адаптации */
+@media (max-width: 768px) {
+    .stats-grid {
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: 12px;
+    }
+    
+    .stat-card {
+        padding: 16px 12px;
+        min-height: 100px;
+    }
+    
+    .stat-card h3 {
+        font-size: 1.8rem;
+    }
+    
+    .stat-card p {
+        font-size: 0.8rem;
+    }
+    
+    .page-actions {
+        flex-direction: column;
+        gap: 12px;
+        align-items: stretch;
+    }
+    
+    .page-actions .btn {
+        font-size: 0.85rem;
+        padding: 12px 20px;
+    }
+    
+    .btn-secondary {
+        padding: 12px 24px;
+        font-size: 0.85rem;
+        border-width: 2px;
+    }
+    
+    .data-table {
+        font-size: 0.85rem;
+    }
+    
+    .data-table th,
+    .data-table td {
+        padding: 10px 8px;
+    }
+    
+    .profile-actions {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .profile-actions .btn {
+        font-size: 0.85rem;
+        padding: 10px 16px;
+    }
+    
+    .badge {
+        font-size: 0.75rem;
+        padding: 5px 12px;
+    }
+    
+    .status-card .status-badge {
+        font-size: 0.8rem;
+        padding: 6px 14px;
+        min-width: 70px;
+    }
+    
+    .actions-cell {
+        flex-direction: row;
+        gap: 6px;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    
+    .actions-cell .btn {
+        font-size: 0.8rem;
+        padding: 8px 12px;
+        flex: 1;
+        min-width: 70px;
+        max-width: 90px;
+    }
+    
+    .table-responsive {
+        border-radius: 12px;
+    }
+    
+    .filter-form {
+        flex-direction: column;
+        gap: 12px;
+    }
+    
+    .filter-form .form-group {
+        margin-bottom: 0;
+    }
+    
+    .filter-form .btn {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .email-card {
+        grid-column: span 2;
+    }
+}
+
+@media (max-width: 480px) {
+    .btn-secondary {
+        padding: 10px 20px;
+        font-size: 0.8rem;
+    }
+    
+    .badge {
+        font-size: 0.7rem;
+        padding: 4px 10px;
+    }
+    
+    .status-card .status-badge {
+        font-size: 0.75rem;
+        padding: 5px 12px;
+        min-width: 60px;
+    }
+    
+    .data-table th,
+    .data-table td {
+        padding: 8px 6px;
+        font-size: 0.8rem;
+    }
+    
+    .actions-cell .btn {
+        font-size: 0.75rem;
+        padding: 6px 10px;
+        flex: 1;
+        min-width: 65px;
+        max-width: 85px;
+    }
+    
+    /* Мобильные стили для аналитики */
+    #analytics-stats {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
+    
+    #analytics-stats .stat-card {
+        padding: 12px 8px;
+        min-height: 80px;
+    }
+    
+    #analytics-stats .stat-number {
+        font-size: 1.4rem;
+    }
+    
+    #analytics-stats .stat-label {
+        font-size: 0.7rem;
+    }
+    
+    canvas {
+        max-height: 250px;
+    }
+    
+    .card h2 {
+        font-size: 1.2rem;
+        margin-bottom: 15px;
+    }
+    
+    /* Мобильные стили для страницы прогресса */
+    .container .card {
+        margin-bottom: 16px;
+        padding: 16px;
+    }
+    
+    .page-header h1 {
+        font-size: 1.8rem;
+        margin-bottom: 16px;
+    }
+    
+    #progressChart,
+    #projectProgressChart {
+        max-height: 200px;
+        width: 100%;
+    }
+    
+    .card canvas {
+        margin-top: 10px;
+    }
+    
+    /* Мобильные стили для рефералов */
+    .referral-link-wrapper {
+        flex-direction: column;
+        gap: 12px;
+    }
+    
+    .copy-btn {
+        width: 100%;
+        min-width: auto;
+    }
+    
+    .referral-steps {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+    
+    .step-item {
+        padding: 16px;
+    }
+    
+    .step-icon {
+        font-size: 1.5rem;
+        min-width: 40px;
+    }
+    
+    .step-content h3 {
+        font-size: 1rem;
+    }
+    
+    .step-content p {
+        font-size: 0.85rem;
+    }
+}
+
+@media (max-width: 480px) {
+    /* Дополнительные стили для очень маленьких экранов */
+    #analytics-stats {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+    
+    #analytics-stats .stat-card {
+        padding: 10px;
+        min-height: 70px;
+    }
+    
+    #analytics-stats .stat-number {
+        font-size: 1.2rem;
+    }
+    
+    #analytics-stats .stat-label {
+        font-size: 0.65rem;
+    }
+    
+    .page-header h1 {
+        font-size: 1.5rem;
+    }
+    
+    .card h2 {
+        font-size: 1rem;
+    }
+    
+    .container .card {
+        padding: 12px;
+    }
+    
+    canvas {
+        max-height: 180px;
+    }
+    
+    #progressChart,
+     #projectProgressChart {
+         max-height: 160px;
+     }
+ }
+
+/* === REFERRAL PAGE STYLES === */
+.page-subtitle {
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+    margin-top: 8px;
+    margin-bottom: 0;
+}
+
+.referral-link-wrapper {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+/* Полностью переделанные стили реферальной ссылки */
+.referral-link {
+    flex: 1;
+    width: 100%;
+    padding: 14px 16px;
+    border: 2px solid #ddd;
+    border-radius: 12px;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.9rem;
+    font-weight: 600;
+    background: #ffffff;
+    color: #2f3542;
+    outline: none;
+    box-sizing: border-box;
+}
+
+/* Темная тема */
+[data-theme="dark"] .referral-link {
+    background: #2a2a2a;
+    color: #e0e0e0;
+    border-color: #555;
+}
+
+/* Фокус */
+.referral-link:focus {
+    border-color: #00f2fe;
+    box-shadow: 0 0 0 4px rgba(0, 242, 254, 0.15);
+}
+
+/* Принудительные стили для всех устройств */
+.referral-link,
+.referral-link:active,
+.referral-link:focus,
+.referral-link:hover {
+    -webkit-text-fill-color: unset !important;
+    -webkit-appearance: none !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+/* Специальные стили для десктопа */
+@media (min-width: 769px) {
+    .referral-link {
+        background: #ffffff !important;
+        color: #2f3542 !important;
+        border: 2px solid #ddd !important;
+    }
+    
+    [data-theme="dark"] .referral-link {
+        background: #2a2a2a !important;
+        color: #e0e0e0 !important;
+        border: 2px solid #555 !important;
+    }
+}
+
+.referral-link:focus {
+    outline: none;
+    border-color: var(--accent-color-1);
+    box-shadow: 0 0 0 4px rgba(0, 242, 254, 0.15);
+}
+
+.copy-btn {
+    white-space: nowrap;
+    min-width: 100px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    justify-content: center;
+}
+
+.copy-btn svg {
+    flex-shrink: 0;
+}
+
+.referral-steps {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+}
+
+.step-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 20px;
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 12px;
+    transition: all 0.3s ease;
+}
+
+.step-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    border-color: var(--accent-color-1);
+}
+
+.step-icon {
+    font-size: 2rem;
+    min-width: 50px;
+    text-align: center;
+}
+
+.step-content h3 {
+    margin: 0 0 8px 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+.step-content p {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+.text-center {
+    text-align: center;
+    color: var(--text-secondary);
+    font-style: italic;
+    padding: 40px 20px;
 }
 
