@@ -23,9 +23,17 @@
         <p class="auth-subtitle">Log in to access your dashboard</p>
       </div>
 
+      <% if (typeof errors !== 'undefined' && errors.length > 0) { %>
+        <div class="flash-messages">
+          <% errors.forEach(error => { %>
+            <div class="flash-message flash-error"><%= error.msg %></div>
+          <% }) %>
+        </div>
+      <% } %>
+
             <form action="/users/login" method="POST">
                 <div class="form-group floating">
-          <input type="email" name="email" id="email" required placeholder=" " />
+          <input type="email" name="email" id="email" required placeholder=" " value="<%= typeof email !== 'undefined' ? email : '' %>" />
           <label for="email">Email <span class="required-asterisk">*</span></label>
         </div>
 

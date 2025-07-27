@@ -8,7 +8,7 @@ const { claimPendingPaymentsForUser } = require('../services/paymentService');
 
 // Login Page
 router.get('/login', ensureGuest, (req, res) => {
-    res.render('login', { layout: false });
+    res.render('login', { layout: false, errors: [], email: '' });
 });
 
 // Login Handle
@@ -16,7 +16,8 @@ router.post('/login', (req, res, next) => {
     passport.authenticate('local', (err, user, info) => {
         if (err) { return next(err); }
         if (!user) {
-            return res.redirect('/users/login');
+            const errors = [{ msg: 'Invalid email or password. Please try again.' }];
+            return res.render('login', { layout: false, errors, email: req.body.email || '' });
         }
         req.logIn(user, async (err) => {
             if (err) { return next(err); }
