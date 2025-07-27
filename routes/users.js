@@ -38,7 +38,7 @@ router.get('/register', ensureGuest, (req, res) => {
 
 // Register Handle
 router.post('/register', async (req, res) => {
-    const { name, email, password, password2, contact, referralCode } = req.body;
+    const { name, email, password, password2, contact, referralCode, timeZone } = req.body;
     let errors = [];
 
     if (!name || !email || !password || !password2) errors.push({ msg: 'Please enter all required fields' });
@@ -65,7 +65,13 @@ router.post('/register', async (req, res) => {
             }
         }
 
-        const newUser = new User({ name, email: email.toLowerCase(), password, contact });
+        const newUser = new User({ 
+            name, 
+            email: email.toLowerCase(), 
+            password, 
+            contact,
+            timeZone: timeZone || 'Europe/Moscow'
+        });
 
         if (referrer) {
             newUser.referredBy = referrer._id;

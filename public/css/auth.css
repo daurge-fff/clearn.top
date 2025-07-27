@@ -239,15 +239,15 @@ body {
 }
 
 .flash-success {
-    background-color: rgba(46, 204, 113, 0.2);
-    color: #2ecc71;
-    border: 1px solid rgba(46, 204, 113, 0.3);
+    background-color: rgba(46, 204, 113, 0.3);
+    color: #ffffff;
+    border: 1px solid rgba(46, 204, 113, 0.5);
 }
 
 .flash-error {
-    background-color: rgba(231, 76, 60, 0.2);
-    color: #e74c3c;
-    border: 1px solid rgba(231, 76, 60, 0.3);
+    background-color: rgba(231, 76, 60, 0.3);
+    color: #ffffff;
+    border: 1px solid rgba(231, 76, 60, 0.5);
 }
 
 @media (max-width: 767px) {

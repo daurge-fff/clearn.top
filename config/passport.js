@@ -38,6 +38,7 @@ module.exports = function(passport) {
                     googleId: profile.id,
                     name: profile.displayName,
                     email: profile.emails[0].value,
+                    timeZone: 'Europe/Moscow'
                 };
 
                 try {

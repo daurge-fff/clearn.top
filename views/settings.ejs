@@ -4,75 +4,119 @@
 
 <form action="/dashboard/settings" method="POST">
     <div class="settings-grid">
-        <div class="card settings-card">
-            <div class="card-icon-header">
-                <i class="icon-users"></i>
-                <h3>Profile</h3>
+        <div class="card settings-card modern-card">
+            <div class="card-icon-header modern-header">
+                <div class="header-icon">
+                    <i class="icon-users"></i>
+                </div>
+                <div class="header-content">
+                    <h3>Profile</h3>
+                    <p>Manage your personal information</p>
+                </div>
             </div>
 
-            
-            <div class="form-group">
-                <label for="name">Your Name</label>
-                <input type="text" id="name" name="name" value="<%= user.name %>" required>
-            </div>
-        </div>
-
-        <div class="card settings-card">
-            <div class="card-icon-header">
-                <i class="icon-key"></i>
-                <h3>Security</h3>
-            </div>
-
-
-            <div class="form-group">
-                <label for="password">New Password</label>
-                <div class="password-wrapper">
-                    <input type="password" id="password" name="password" placeholder="Leave blank to keep current">
-                    <button type="button" class="password-toggle"><i class="icon-eye"></i><i class="icon-eye-off"></i></button>
+            <div class="modern-form-group">
+                <div class="input-container">
+                    <label for="name" class="floating-label">Your Name</label>
+                    <input type="text" id="name" name="name" value="<%= user.name %>" required class="modern-input">
+                    <div class="input-highlight"></div>
                 </div>
             </div>
         </div>
 
-        <div class="card settings-card">
-            <div class="card-icon-header">
-                <i class="icon-calendar"></i>
-                <h3>Time Zone</h3>
+        <div class="card settings-card modern-card">
+            <div class="card-icon-header modern-header">
+                <div class="header-icon security-icon">
+                    <i class="icon-key"></i>
+                </div>
+                <div class="header-content">
+                    <h3>Security</h3>
+                    <p>Update your password and security settings</p>
+                </div>
             </div>
 
-
-            <div class="form-group">
-                <label for="timeZone">Time Zone</label>
-                <select id="timeZone" name="timeZone" required>
-                <% timeZones.forEach(group => { %>
-                    <optgroup label="<%= group.label %>">
-                        <% group.zones.forEach(tz => { %>
-                            <option value="<%= tz.value %>" <%= user.timeZone === tz.value ? 'selected' : '' %>><%= tz.label %></option>
-                        <% }); %>
-                    </optgroup>
-                <% }); %>
-            </select>
+            <div class="modern-form-group">
+                <div class="input-container password-container">
+                    <label for="password" class="floating-label">New Password</label>
+                    <input type="password" id="password" name="password" class="modern-input">
+                    <button type="button" class="modern-password-toggle"><i class="icon-eye"></i><i class="icon-eye-off"></i></button>
+                    <div class="input-highlight"></div>
+                </div>
             </div>
         </div>
 
-        <div class="card settings-card">
-            <div class="card-icon-header">
-                <i class="icon-telegram"></i>
-                <h3>Telegram Integration</h3>
+        <div class="card settings-card modern-card">
+            <div class="card-icon-header modern-header">
+                <div class="header-icon timezone-icon">
+                    <i class="icon-calendar"></i>
+                </div>
+                <div class="header-content">
+                    <h3>Time Zone</h3>
+                    <p>Set your preferred time zone for scheduling</p>
+                </div>
             </div>
 
-
-            <div class="form-group">
-                <label for="telegramChatId">Telegram Chat ID</label>
-                <input type="text" id="telegramChatId" name="telegramChatId" value="<%= user.telegramChatId || '' %>" placeholder="Enter your Telegram Chat ID">
-            </div>
-            <div class="form-group">
-                <label class="checkbox-label" for="lessonReminders">
-                    <span>Receive lesson reminders via Telegram</span>
-                    <div class="custom-checkbox">
-                        <input type="checkbox" id="lessonReminders" name="notifications[lessonReminders]" <%= user.notifications && user.notifications.lessonReminders ? 'checked' : '' %>>
-                        <span class="checkmark"></span>
+            <div class="modern-form-group">
+                <div class="select-container">
+                    <label for="timeZone" class="floating-label">Time Zone</label>
+                    <select id="timeZone" name="timeZone" required class="modern-select">
+                    <% timeZones.forEach(group => { %>
+                        <optgroup label="<%= group.label %>">
+                            <% group.zones.forEach(tz => { %>
+                                <option value="<%= tz.value %>" <%= user.timeZone === tz.value ? 'selected' : '' %>><%= tz.label %></option>
+                            <% }); %>
+                        </optgroup>
+                    <% }); %>
+                    </select>
+                    <div class="select-highlight"></div>
+                    <div class="select-arrow">
+                        <i class="icon-chevron-down"></i>
                     </div>
-                </label>
+                </div>
+            </div>
+        </div>
+
+        <div class="card settings-card modern-card telegram-card">
+            <div class="card-icon-header modern-header">
+                <div class="header-icon telegram-icon">
+                    <i class="icon-telegram"></i>
+                </div>
+                <div class="header-content">
+                    <h3>Telegram Integration</h3>
+                    <p>Connect your Telegram for notifications</p>
+                </div>
+            </div>
+
+            <div class="modern-form-group">
+                <div class="input-container">
+                    <label for="telegramChatId" class="floating-label">Telegram Chat ID</label>
+                    <input type="text" id="telegramChatId" name="telegramChatId" value="<%= user.telegramChatId || '' %>" class="modern-input">
+                    <div class="input-highlight"></div>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="notification-toggle-card">
+                    <div class="toggle-content">
+                        <div class="toggle-icon">
+                            <i class="icon-bell"></i>
+                        </div>
+                        <div class="toggle-text">
+                            <h4>Lesson Reminders</h4>
+                            <p>Get notified about upcoming lessons via Telegram</p>
+                        </div>
+                    </div>
+                    <div class="modern-toggle">
+                        <input type="checkbox" id="lessonReminders" name="notifications[lessonReminders]" <%= user.notifications && user.notifications.lessonReminders ? 'checked' : '' %>>
+                        <label for="lessonReminders" class="toggle-switch">
+                            <span class="toggle-slider">
+                                <span class="toggle-button">
+                                    <i class="toggle-icon-off icon-bell"></i>
+                                    <i class="toggle-icon-on icon-check"></i>
+                                </span>
+                            </span>
+                        </label>
+                    </div>
+                </div>
             </div>
         </div>
 

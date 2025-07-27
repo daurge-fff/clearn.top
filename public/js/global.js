@@ -11,6 +11,7 @@ function initializeThemeToggle() {
 
     const currentTheme = localStorage.getItem('theme') || 'light';
     document.documentElement.setAttribute('data-theme', currentTheme);
+    document.body.classList.toggle('dark-theme', currentTheme === 'dark');
     themeToggle.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
 
     themeToggle.addEventListener('click', () => {
@@ -18,9 +19,11 @@ function initializeThemeToggle() {
         if (theme === 'light') {
             theme = 'dark';
             themeToggle.textContent = '☀️';
+            document.body.classList.add('dark-theme');
         } else {
             theme = 'light';
             themeToggle.textContent = '🌙';
+            document.body.classList.remove('dark-theme');
         }
         document.documentElement.setAttribute('data-theme', theme);
         localStorage.setItem('theme', theme);
@@ -62,11 +65,28 @@ function initializeSidebar() {
 }
 
 function initializePasswordToggles() {
-    document.querySelectorAll('.password-toggle').forEach(button => {
+    document.querySelectorAll('.password-toggle, .modern-password-toggle').forEach(button => {
         button.addEventListener('click', function() {
             this.classList.toggle('is-showing');
             const input = this.previousElementSibling;
-            input.type = input.type === 'password' ? 'text' : 'password';
+            const eyeIcon = this.querySelector('.icon-eye');
+            const eyeOffIcon = this.querySelector('.icon-eye-off');
+            
+            if (input.type === 'password') {
+                input.type = 'text';
+                this.classList.add('active');
+                if (eyeIcon && eyeOffIcon) {
+                    eyeIcon.style.display = 'none';
+                    eyeOffIcon.style.display = 'inline';
+                }
+            } else {
+                input.type = 'password';
+                this.classList.remove('active');
+                if (eyeIcon && eyeOffIcon) {
+                    eyeIcon.style.display = 'inline';
+                    eyeOffIcon.style.display = 'none';
+                }
+            }
         });
     });
 }
@@ -119,6 +139,110 @@ function initializeProjectFieldsToggle() {
             if(projectFields) projectFields.style.display = e.target.checked ? 'block' : 'none';
         }
     });
+}
+
+function initializeModernInputs() {
+    // Modern floating labels functionality
+    const modernInputs = document.querySelectorAll('.modern-input, .modern-select');
+    
+    modernInputs.forEach(input => {
+        // Check if input has value on page load (including pre-filled values)
+        const hasValue = input.value && input.value.trim() !== '';
+        const isSelect = input.tagName === 'SELECT' && input.value !== '' && input.value !== null;
+        const hasAttribute = input.hasAttribute('value') && input.getAttribute('value') !== '' && input.getAttribute('value') !== null;
+        
+        // Принудительно проверяем все возможные случаи
+        if (hasValue || isSelect || hasAttribute) {
+            input.classList.add('has-value');
+            input.setAttribute('data-has-value', 'true');
+            
+            // Дополнительно устанавливаем атрибут value если его нет
+            if (hasValue && !input.hasAttribute('value')) {
+                input.setAttribute('value', input.value);
+            }
+        }
+        
+        // Специальная обработка для select элементов
+        if (input.tagName === 'SELECT' && input.selectedIndex > 0) {
+            input.classList.add('has-value');
+            input.setAttribute('data-has-value', 'true');
+        }
+        
+        // Handle focus and blur events
+        input.addEventListener('focus', function() {
+            this.classList.add('focused');
+        });
+        
+        input.addEventListener('blur', function() {
+            this.classList.remove('focused');
+            const currentHasValue = this.value && this.value.trim() !== '';
+            const currentIsSelect = this.tagName === 'SELECT' && this.value !== '';
+            
+            if (currentHasValue || currentIsSelect) {
+                this.classList.add('has-value');
+                this.setAttribute('data-has-value', 'true');
+            } else {
+                this.classList.remove('has-value');
+                this.removeAttribute('data-has-value');
+            }
+        });
+        
+        // Handle input events for real-time updates
+        input.addEventListener('input', function() {
+            const currentHasValue = this.value && this.value.trim() !== '';
+            const currentIsSelect = this.tagName === 'SELECT' && this.value !== '';
+            
+            if (currentHasValue || currentIsSelect) {
+                this.classList.add('has-value');
+                this.setAttribute('data-has-value', 'true');
+            } else {
+                this.classList.remove('has-value');
+                this.removeAttribute('data-has-value');
+            }
+        });
+        
+        // Handle change events for selects
+        if (input.tagName === 'SELECT') {
+            input.addEventListener('change', function() {
+                if (this.value !== '') {
+                    this.classList.add('has-value');
+                    this.setAttribute('data-has-value', 'true');
+                } else {
+                    this.classList.remove('has-value');
+                    this.removeAttribute('data-has-value');
+                }
+            });
+        }
+    });
+    
+    // Enhanced card hover effects
+    const modernCards = document.querySelectorAll('.modern-card, .notification-toggle-card');
+    
+    modernCards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.setProperty('--hover-intensity', '1');
+        });
+        
+        card.addEventListener('mouseleave', function() {
+            this.style.setProperty('--hover-intensity', '0');
+        });
+    });
+    
+    // Smooth scroll for form validation errors
+    const form = document.querySelector('form');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            const firstError = this.querySelector('input:invalid, select:invalid');
+            if (firstError) {
+                e.preventDefault();
+                firstError.scrollIntoView({ 
+                    behavior: 'smooth', 
+                    block: 'center' 
+                });
+                firstError.focus();
+            }
+        });
+    }
 }
 
 // ===================================
@@ -442,10 +566,117 @@ document.addEventListener('DOMContentLoaded', () => {
     initializeFileUploads();
     initializeMobileFilters();
     initializeProjectFieldsToggle();
+    initializeModernInputs();
 
 
     // Main handler for all CRM interactivity
     initializeDashboardActions();
+    
+    // ПРИНУДИТЕЛЬНАЯ ИНИЦИАЛИЗАЦИЯ FLOATING LABELS
+function initializeFloatingLabels() {
+    const modernInputs = document.querySelectorAll('.modern-input, .modern-select');
+    modernInputs.forEach(input => {
+        // Проверяем все возможные способы определения значения
+        const hasValue = input.value && input.value.trim() !== '' && input.value !== 'undefined';
+        const isSelect = input.tagName.toLowerCase() === 'select';
+        const selectHasValue = isSelect && input.selectedIndex > 0;
+        
+        if (hasValue || selectHasValue) {
+            input.setAttribute('data-has-value', 'true');
+            input.classList.add('has-value');
+            input.setAttribute('value', input.value);
+            
+            // Принудительно позиционируем лейбл
+            const label = input.parentNode.querySelector('.floating-label');
+            if (label) {
+                label.style.top = '-8px';
+                label.style.left = '16px';
+                label.style.fontSize = '12px';
+                label.style.color = 'var(--accent-color-1)';
+                label.style.fontWeight = '600';
+                label.style.background = 'linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(248, 249, 250, 0.9))';
+                label.style.borderRadius = '8px';
+                label.style.padding = '0 8px';
+                label.style.zIndex = '10';
+                label.style.transform = 'translateY(0) scale(1)';
+            }
+        }
+        
+        // Добавляем обработчики событий для всех полей ввода
+        input.addEventListener('input', function() {
+            const label = this.parentNode.querySelector('.floating-label');
+            if (this.value && this.value.trim() !== '') {
+                this.setAttribute('data-has-value', 'true');
+                this.classList.add('has-value');
+                if (label) {
+                    label.style.top = '-8px';
+                     label.style.left = '16px';
+                     label.style.fontSize = '12px';
+                     label.style.color = 'var(--accent-color-1)';
+                     label.style.fontWeight = '600';
+                     label.style.background = 'linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(248, 249, 250, 0.9))';
+                     label.style.borderRadius = '8px';
+                     label.style.padding = '0 8px';
+                     label.style.zIndex = '10';
+                     label.style.transform = 'translateY(0) scale(1)';
+                }
+            } else {
+                 this.removeAttribute('data-has-value');
+                 this.classList.remove('has-value');
+                 if (label) {
+                     label.style.top = '14px';
+                     label.style.left = '20px';
+                     label.style.fontSize = '16px';
+                     label.style.color = '#6c757d';
+                     label.style.fontWeight = 'normal';
+                     label.style.background = 'transparent';
+                     label.style.borderRadius = '';
+                     label.style.padding = '0 8px';
+                     label.style.zIndex = '2';
+                     label.style.transform = '';
+                 }
+             }
+        });
+        
+        // Добавляем обработчики focus и blur
+        input.addEventListener('focus', function() {
+            const label = this.parentNode.querySelector('.floating-label');
+            if (label && (!this.value || this.value.trim() === '')) {
+                 label.style.top = '-8px';
+                label.style.left = '16px';
+                label.style.fontSize = '12px';
+                label.style.color = 'var(--accent-color-1)';
+                label.style.fontWeight = '600';
+                label.style.background = 'linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(248, 249, 250, 0.9))';
+                label.style.borderRadius = '8px';
+                label.style.padding = '0 8px';
+                label.style.zIndex = '10';
+                label.style.transform = 'translateY(0) scale(1)';
+            }
+        });
+        
+        input.addEventListener('blur', function() {
+             const label = this.parentNode.querySelector('.floating-label');
+             if (label && (!this.value || this.value.trim() === '')) {
+                 label.style.top = '14px';
+                 label.style.left = '20px';
+                 label.style.fontSize = '16px';
+                 label.style.color = '#6c757d';
+                 label.style.fontWeight = 'normal';
+                 label.style.background = 'transparent';
+                 label.style.borderRadius = '';
+                 label.style.padding = '0 8px';
+                 label.style.zIndex = '2';
+                 label.style.transform = '';
+             }
+         });
+    });
+}
+
+// Запускаем инициализацию несколько раз для надежности
+setTimeout(initializeFloatingLabels, 50);
+setTimeout(initializeFloatingLabels, 200);
+setTimeout(initializeFloatingLabels, 500);
     
     // Modal initialization (logic and handlers)
     initializeLessonModal();

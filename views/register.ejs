@@ -54,6 +54,7 @@
           <label for="referralCode">Referral Code (optional)</label>
         </div>
 
+                <input type="hidden" name="timeZone" id="timeZone" />
                 <button type="submit" class="btn btn-primary">Create Account</button>
       </form>
 
@@ -73,5 +74,13 @@
   </div>
 
   <script src="/js/global.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const timeZoneInput = document.getElementById('timeZone');
+      if (timeZoneInput) {
+        timeZoneInput.value = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      }
+    });
+  </script>
 </body>
 </html>
