@@ -1,7 +1,7 @@
 <div class="container lesson-view-container">
     <div class="page-header lesson-view-header">
         <div>
-            <h1>Lesson: <%= lesson.course.name %></h1>
+            <h1>Lesson: <% if (lesson.lessonNumber) { %><span style="color: #666; font-size: 0.9em; margin-right: 8px;">#<%= lesson.lessonNumber %></span><% } %><%= lesson.course.name %></h1>
             <p class="section-subtitle">
                 <%= new Date(lesson.localLessonDate).toLocaleDateString('en-GB', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) %>
             </p>

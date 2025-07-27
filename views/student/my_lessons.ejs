@@ -64,6 +64,9 @@
                                     <% if (lesson.isProject) { %>
                                         <i class="icon-star" style="width: 1em; height: 1em; vertical-align: -0.125em; margin-right: 5px; color: #ffb92b;"></i>
                                     <% } %>
+                                    <% if (lesson.lessonNumber) { %>
+                                        <span style="color: #666; font-size: 0.9em; margin-right: 8px;">#<%= lesson.lessonNumber %></span>
+                                    <% } %>
                                     <%= lesson.course.name %>
                                 </a>
                             </td>

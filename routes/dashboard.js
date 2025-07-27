@@ -260,15 +260,18 @@ router.post('/users/balance/delete/:id', ensureAuth, ensureRole('admin'), async 
             return res.status(404).send('User not found');
         }
         
+        // Просто удаляем запись из истории без пересчета баланса
         user.balanceHistory.pull({ _id: req.params.id });
 
+        // Обновляем только поле balanceAfter для оставшихся записей для корректного отображения
         user.balanceHistory.sort((a, b) => a.date - b.date);
-        let currentBalance = 0;
+        let runningBalance = 0;
         user.balanceHistory.forEach(entry => {
-            currentBalance += entry.change;
-            entry.balanceAfter = currentBalance;
+            runningBalance += entry.change;
+            entry.balanceAfter = runningBalance;
         });
-        user.lessonsPaid = currentBalance;
+        
+        // НЕ изменяем lessonsPaid и stars - они остаются как есть
 
         await user.save();
         
@@ -566,12 +569,28 @@ router.get('/lessons/delete-attachment/:lessonId/:userType', ensureAuth, async (
 });
 router.get('/my-lessons', ensureAuth, ensureRole('student'), async (req, res) => {
     try {
-        const lessons = await Lesson.find({ student: req.user.id }).populate('teacher', 'name').populate('course', 'name').sort({ lessonDate: -1 }).lean();
+        const lessons = await Lesson.find({ student: req.user.id }).populate('teacher', 'name').populate('course', 'name').sort({ lessonDate: 1 }).lean();
         
         const payments = await Payment.find({ userId: req.user.id, status: 'completed' }).sort({ createdAt: -1 }).lean();
 
         const userTz = req.user.timeZone || 'Europe/Moscow';
-        const lessonsWithLocalTime = lessons.map(lesson => ({ ...lesson, localLessonDate: moment.utc(lesson.lessonDate).tz(userTz).toDate() }));
+        
+        // Добавляем номер урока для проведенных уроков
+        let completedLessonNumber = 0;
+        const lessonsWithLocalTime = lessons.map(lesson => {
+            const lessonWithTime = { ...lesson, localLessonDate: moment.utc(lesson.lessonDate).tz(userTz).toDate() };
+            
+            // Увеличиваем счетчик только для проведенных уроков
+            if (lesson.status === 'completed') {
+                completedLessonNumber++;
+                lessonWithTime.lessonNumber = completedLessonNumber;
+            }
+            
+            return lessonWithTime;
+        });
+        
+        // Сортируем обратно по убыванию даты для отображения
+        lessonsWithLocalTime.sort((a, b) => new Date(b.lessonDate) - new Date(a.lessonDate));
 
         res.render('student/my_lessons', {
             layout: 'layouts/dashboard',
@@ -619,6 +638,19 @@ router.get('/lessons/view/:id', ensureAuth, ensureRole('student'), async (req, r
         // Convert lesson date to user's local time
         const userTimeZone = req.user.timeZone || 'UTC';
         lesson.localLessonDate = moment.tz(lesson.lessonDate, userTimeZone).toDate();
+
+        // Add lesson number for completed lessons
+        if (lesson.status === 'completed') {
+            const completedLessons = await Lesson.find({
+                student: req.user.id,
+                status: 'completed'
+            }).sort({ lessonDate: 1 }).lean();
+            
+            const lessonIndex = completedLessons.findIndex(l => String(l._id) === String(lesson._id));
+            if (lessonIndex !== -1) {
+                lesson.lessonNumber = lessonIndex + 1;
+            }
+        }
 
         res.render('student/lesson_view', {
             layout: 'layouts/dashboard',

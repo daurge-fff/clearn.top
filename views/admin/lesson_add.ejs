@@ -59,3 +59,23 @@
     </form>
 </div>
 </div>
+
+<script>
+// Remember last topic input
+document.addEventListener('DOMContentLoaded', function() {
+    const topicInput = document.getElementById('topic');
+    
+    // Load saved topic on page load
+    const savedTopic = localStorage.getItem('lastLessonTopic');
+    if (savedTopic) {
+        topicInput.value = savedTopic;
+    }
+    
+    // Save topic on input change
+    topicInput.addEventListener('input', function() {
+        if (this.value.trim()) {
+            localStorage.setItem('lastLessonTopic', this.value);
+        }
+    });
+});
+</script>

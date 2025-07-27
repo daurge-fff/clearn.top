@@ -116,5 +116,28 @@
             scoreLabel.textContent = 'Grade (1-10)';
         }
     }
-    document.addEventListener('DOMContentLoaded', toggleProjectFields);
+    
+    // Remember input values
+    function saveInputValue(fieldId, storageKey) {
+        const field = document.getElementById(fieldId);
+        if (field) {
+            field.addEventListener('input', function() {
+                if (this.value.trim()) {
+                    localStorage.setItem(storageKey, this.value);
+                }
+            });
+            
+            // Load saved value if field is empty
+            const savedValue = localStorage.getItem(storageKey);
+            if (savedValue && !field.value.trim()) {
+                field.value = savedValue;
+            }
+        }
+    }
+    
+    document.addEventListener('DOMContentLoaded', function() {
+         toggleProjectFields();
+         saveInputValue('homework', 'lastHomeworkText');
+         saveInputValue('comment', 'lastGradeComment');
+     });
 </script>

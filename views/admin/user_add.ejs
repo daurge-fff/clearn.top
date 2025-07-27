@@ -55,5 +55,24 @@
             studentFields.style.display = 'none';
         }
     }
+    
+    // Remember contact input
+    document.addEventListener('DOMContentLoaded', function() {
+        const contactInput = document.getElementById('contact');
+        
+        // Load saved contact on page load
+        const savedContact = localStorage.getItem('lastUserContact');
+        if (savedContact) {
+            contactInput.value = savedContact;
+        }
+        
+        // Save contact on input change
+        contactInput.addEventListener('input', function() {
+            if (this.value.trim()) {
+                localStorage.setItem('lastUserContact', this.value);
+            }
+        });
+    });
+    
     toggleStudentFields();
 </script>
