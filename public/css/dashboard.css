@@ -4008,7 +4008,7 @@ input[type="checkbox"]:checked + .toggle-switch {
 }
 
 /* ДОПОЛНИТЕЛЬНЫЕ ПРАВИЛА ДЛЯ КОНКРЕТНЫХ ИКОНОК */
-.icon-key, .icon-calendar, .icon-telegram {
+.icon-key, .icon-telegram {
     background: var(--text-color) !important;
     background-color: var(--text-color) !important;
     background-image: none !important;
@@ -4028,7 +4028,6 @@ input[type="checkbox"]:checked + .toggle-switch {
 
 /* Специальные правила для светлой темы */
 [data-theme='light'] .icon-key,
-[data-theme='light'] .icon-calendar,
 [data-theme='light'] .icon-telegram {
     background: #2f3542 !important;
     background-color: #2f3542 !important;
@@ -4128,7 +4127,6 @@ input[type="checkbox"]:checked + .toggle-switch {
 
 /* Принудительные правила для иконок в настройках */
 .icon-key,
-.icon-calendar,
 .icon-telegram {
     background-color: var(--text-color) !important;
     color: var(--text-color) !important;
@@ -4147,7 +4145,6 @@ input[type="checkbox"]:checked + .toggle-switch {
 
 /* Дополнительные правила для контейнеров иконок */
 .header-icon .icon-key,
-.header-icon .icon-calendar,
 .header-icon .icon-telegram,
 .security-icon .icon-key,
 .timezone-icon .icon-calendar,
@@ -4155,6 +4152,21 @@ input[type="checkbox"]:checked + .toggle-switch {
     background-color: white !important;
     width: 24px !important;
     height: 24px !important;
+}
+
+/* Улучшенная видимость icon-list в темной теме */
+.icon-list {
+    opacity: 0.9;
+}
+
+[data-theme='dark'] .icon-list {
+    background-color: rgba(255, 255, 255, 0.9) !important;
+    opacity: 1;
+}
+
+[data-theme='light'] .icon-list {
+    background-color: rgba(47, 53, 66, 0.9) !important;
+    opacity: 1;
 }
 
 .header-content h3 {
