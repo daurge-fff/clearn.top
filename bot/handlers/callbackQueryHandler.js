@@ -258,6 +258,10 @@ async function handleAdminCallback(ctx, user, params) {
             await stateService.setState(chatId, 'awaiting_adjustment_amount', { userId: targetUserId });
             await ctx.editMessageText(`Enter the adjustment amount for this user (e.g., +5 or -1):`);
         }
+        if (rest[1] === 'notification') {
+            await stateService.setState(chatId, 'awaiting_notification_for_user', { targetUserId });
+            await ctx.editMessageText(`Enter the message you want to send to this user:`);
+        }
     }
 
     await ctx.answerCbQuery();
@@ -285,6 +289,55 @@ async function handlePaginationCallback(ctx, user, params) {
     await ctx.answerCbQuery();
 }
 
+
+async function handleConfirmMessage(ctx, user, params) {
+    try {
+        const [type, ...rest] = params;
+        
+        if (type === 'broadcast') {
+            const [role, encodedMessage] = rest;
+            const message = Buffer.from(encodedMessage, 'base64').toString('utf-8');
+            
+            let query = { telegramChatId: { $exists: true, $ne: null } };
+            if (role !== 'all') {
+                query.role = role;
+            }
+            
+            const users = await User.find(query, 'telegramChatId name').lean();
+            let successCount = 0;
+            let failCount = 0;
+            
+            for (const targetUser of users) {
+                try {
+                    await ctx.telegram.sendMessage(targetUser.telegramChatId, message);
+                    successCount++;
+                } catch (error) {
+                    failCount++;
+                    console.error(`Failed to send message to ${targetUser.name}:`, error.message);
+                }
+            }
+            
+            await ctx.editMessageText(`✅ Broadcast message sent!\n\n📊 Statistics:\n✅ Delivered: ${successCount}\n❌ Failed: ${failCount}\n👥 Total recipients: ${users.length}`);
+            
+        } else if (type === 'personal') {
+            const [userId, encodedMessage] = rest;
+            const message = Buffer.from(encodedMessage, 'base64').toString('utf-8');
+            
+            const targetUser = await User.findById(userId, 'telegramChatId name').lean();
+            if (!targetUser || !targetUser.telegramChatId) {
+                return ctx.editMessageText('❌ User not found or has no Telegram connection.');
+            }
+            
+            await ctx.telegram.sendMessage(targetUser.telegramChatId, message);
+            await ctx.editMessageText(`✅ Message sent successfully to ${targetUser.name}!`);
+        }
+        
+        await ctx.answerCbQuery();
+    } catch (error) {
+        console.error('Confirm message error:', error);
+        await ctx.answerCbQuery('❌ Error sending message.');
+    }
+}
 
 async function handleLessonGrade(ctx, user, lessonId, grade) {
     try {
@@ -364,6 +417,7 @@ async function handleLessonGrade(ctx, user, lessonId, grade) {
 function registerCallbackQueryHandler(bot, dependencies) {
     bot.on('callback_query', async (ctx) => {
         const chatId = ctx.callbackQuery.message?.chat.id;
+        const telegramUsername = ctx.from.username;
         
         if (!ctx.callbackQuery.data || !chatId) {
             return ctx.answerCbQuery().catch(e => console.error("Safe answerCbQuery failed:", e.message));
@@ -371,6 +425,15 @@ function registerCallbackQueryHandler(bot, dependencies) {
 
         try {
             const [action, ...params] = ctx.callbackQuery.data.split('_');
+            
+            // Update user's telegram username if they exist and have username
+            if (telegramUsername) {
+                await User.findOneAndUpdate(
+                    { telegramChatId: String(chatId) },
+                    { telegramUsername: telegramUsername },
+                    { new: true }
+                );
+            }
             
             const user = await User.findOne({ telegramChatId: String(chatId) });
             if (!user) {
@@ -386,6 +449,8 @@ function registerCallbackQueryHandler(bot, dependencies) {
                 case 'lesson':  await handleLessonCallback(ctx, user, params, dependencies); break;
                 case 'grade':   await handleLessonGrade(ctx, user, params[0], params[1]); break;
                 case 'refresh': await handleRefreshCallback(ctx, user, params); break;
+                case 'admin_select_user_notification': await handleAdminCallback(ctx, user, params); break;
+                case 'confirm': await handleConfirmMessage(ctx, user, params); break;
                 case 'payment':
                     const [actionType, paymentId] = params;
                     if (actionType === 'approve') {

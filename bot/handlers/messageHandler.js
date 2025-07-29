@@ -13,6 +13,17 @@ let undoStack;
 
 async function handleStartCommand(ctx) {
     const chatId = ctx.chat.id;
+    const telegramUsername = ctx.from.username;
+    
+    // Update user's telegram username if they exist
+    if (telegramUsername) {
+        await User.findOneAndUpdate(
+            { telegramChatId: String(chatId) },
+            { telegramUsername: telegramUsername },
+            { new: true }
+        );
+    }
+    
     const parts = ctx.message.text.split(' ');
     if (parts.length > 1) {
         const referralCode = parts[1];
@@ -54,7 +65,7 @@ async function handleMenuCommand(ctx) {
         welcomeText += '\n👑 Admin Panel:';
         keyboard = [
             [{ text: "📊 Reports" }, { text: "👤 Users" }],
-            [{ text: "💳 Balance Adjustment" }],
+            [{ text: "💳 Balance Adjustment" }, { text: "📢 Notifications" }],
             [{ text: "⚙️ Settings" }]
         ];
     } 
@@ -77,6 +88,12 @@ async function handleStatefulInput(ctx, user, text) {
     const state = await stateService.getState(chatId);
     if (!state || !state.name) return;
 
+    // Handle "Back to Menu" button
+    if (text === '↩️ Back to Menu') {
+        await stateService.clearState(chatId);
+        return handleMenuCommand(ctx);
+    }
+
     await stateService.clearState(chatId);
 
     switch (state.name) {
@@ -98,11 +115,33 @@ async function handleStatefulInput(ctx, user, text) {
         case 'awaiting_user_for_emoji_change':
             return findUserForEmojiChange(ctx, text);
         case 'awaiting_new_emoji_for_user':
-            const { targetUserId } = state.context;
-            return handleEmojiChange(ctx, targetUserId, text);
+            const { targetUserId: emojiTargetUserId } = state.context;
+            return handleEmojiChange(ctx, emojiTargetUserId, text);
         case 'awaiting_cancellation_reason':
             const { lessonId } = state.context;
             return handleLessonCancellation(ctx, user, lessonId, text);
+        
+        // Notification states
+        case 'awaiting_broadcast_message':
+            return sendBroadcastMessage(ctx, text, 'all');
+        case 'awaiting_students_message':
+            return sendBroadcastMessage(ctx, text, 'student');
+        case 'awaiting_teachers_message':
+            return sendBroadcastMessage(ctx, text, 'teacher');
+        case 'awaiting_specific_user_for_notification':
+            return findUserForNotification(ctx, text);
+        case 'awaiting_notification_message':
+            const { targetUserId: notificationTargetUserId } = state.context;
+            return sendNotificationToUser(ctx, notificationTargetUserId, text);
+        case 'awaiting_notification_for_user':
+            const { targetUserId: selectedUserId } = state.context;
+            return sendNotificationToUser(ctx, selectedUserId, text);
+        case 'awaiting_lesson_reminder_message':
+            return sendLessonReminderBroadcast(ctx, text);
+        case 'awaiting_promotion_message':
+            return sendBroadcastMessage(ctx, text, 'all', '🎉 PROMOTION');
+        case 'awaiting_announcement_message':
+            return sendBroadcastMessage(ctx, text, 'all', '📢 ANNOUNCEMENT');
     }
 }
 
@@ -212,8 +251,46 @@ async function handleMenuButton(ctx, user, text) {
             await stateService.setState(chatId, 'awaiting_user_for_adjustment');
             return ctx.reply("Enter name or email of the user to adjust their balance:");
 
+        case '📢 Notifications':
+            return showNotificationMenu(ctx);
+
         case '🎁 Partner Program':
             return referralService.showReferralInfo(ctx);
+
+        // Notification handlers
+        case '📤 Send to All Users':
+            await stateService.setState(chatId, 'awaiting_broadcast_message');
+            return ctx.reply("📝 Enter the message to send to all users:");
+
+        case '👤 Send to Specific User':
+            await stateService.setState(chatId, 'awaiting_specific_user_for_notification');
+            return ctx.reply("👤 Enter name or email of the user to send notification to:");
+
+        case '👨‍🎓 Send to All Students':
+            await stateService.setState(chatId, 'awaiting_students_message');
+            return ctx.reply("📝 Enter the message to send to all students:");
+
+        case '👨‍🏫 Send to All Teachers':
+            await stateService.setState(chatId, 'awaiting_teachers_message');
+            return ctx.reply("📝 Enter the message to send to all teachers:");
+
+        case '⚠️ Low Balance Alert':
+            return sendLowBalanceAlert(ctx);
+
+        case '📚 Lesson Reminder':
+            await stateService.setState(chatId, 'awaiting_lesson_reminder_message');
+            return ctx.reply("📝 Enter custom lesson reminder message (or type 'default' for standard message):");
+
+        case '🎉 Promotion Alert':
+            await stateService.setState(chatId, 'awaiting_promotion_message');
+            return ctx.reply("📝 Enter promotion message:");
+
+        case '📢 General Announcement':
+            await stateService.setState(chatId, 'awaiting_announcement_message');
+            return ctx.reply("📝 Enter general announcement message:");
+
+        case '↩️ Back to Menu':
+            return handleMenuCommand(ctx);
 
         case '↩️ Undo':
             const lastAction = undoStack.pop(chatId);
@@ -243,10 +320,20 @@ function registerMessageHandler(bot, dependencies) {
     bot.on('text', async (ctx) => {
         const chatId = ctx.chat.id;
         const text = ctx.message.text;
+        const telegramUsername = ctx.from.username;
 
         if (text.startsWith('/')) {
             // Command handling is now explicit, so we can ignore text that looks like a command
             return;
+        }
+
+        // Update user's telegram username if they exist and have username
+        if (telegramUsername) {
+            await User.findOneAndUpdate(
+                { telegramChatId: String(chatId) },
+                { telegramUsername: telegramUsername },
+                { new: true }
+            );
         }
 
         const user = await User.findOne({ telegramChatId: String(chatId) }).lean();
@@ -293,6 +380,15 @@ async function handleBalanceAdjustment(ctx, adminUser, state) {
 
     const newBalance = userToAdjust.lessonsPaid + amountNum;
     userToAdjust.lessonsPaid = newBalance;
+    
+    // Сбросить флаги уведомлений о низком балансе при увеличении баланса
+    if (amountNum > 0) {
+        userToAdjust.balanceReminders = {
+            twoLessonsRemaining: false,
+            oneLessonRemaining: false
+        };
+    }
+    
     userToAdjust.balanceHistory.push({
         change: amountNum, balanceAfter: newBalance, reason: `Manual Correction by ${adminUser.name}: ${reason}`, transactionType: 'Manual'
     });
@@ -418,6 +514,193 @@ function sendHelpMessage(ctx) {
         "If you encounter an issue, try using /start to refresh the bot.\n\n" +
         "For technical support, please contact the administrator.\n\n";
     ctx.reply(message, { parse_mode: 'Markdown', disable_web_page_preview: true });
+}
+
+async function showNotificationMenu(ctx) {
+    const keyboard = [
+        [{ text: "📤 Send to All Users" }, { text: "👤 Send to Specific User" }],
+        [{ text: "👨‍🎓 Send to All Students" }, { text: "👨‍🏫 Send to All Teachers" }],
+        [{ text: "⚠️ Low Balance Alert" }, { text: "📚 Lesson Reminder" }],
+        [{ text: "🎉 Promotion Alert" }, { text: "📢 General Announcement" }],
+        [{ text: "↩️ Back to Menu" }]
+    ];
+
+    await ctx.reply(
+        "📢 *Notification Center*\n\nChoose notification type:",
+        {
+            parse_mode: 'Markdown',
+            reply_markup: { keyboard, resize_keyboard: true }
+        }
+    );
+}
+
+async function sendBroadcastMessage(ctx, message, role = 'all', prefix = '') {
+    try {
+        let query = { telegramChatId: { $exists: true, $ne: null } };
+        if (role !== 'all') {
+            query.role = role;
+        }
+
+        const users = await User.find(query, 'telegramChatId name').lean();
+        const finalMessage = prefix ? `${prefix}\n\n${message}` : message;
+        
+        // Show confirmation before sending
+        const roleText = role === 'all' ? 'all users' : `all ${role}s`;
+        const confirmationMessage = `📋 *Message Preview*\n\n*Recipients:* ${roleText} (${users.length} users)\n\n*Message:*\n${finalMessage}\n\n✅ Confirm sending this message?`;
+        
+        const keyboard = {
+            inline_keyboard: [
+                [{ text: '✅ Send Message', callback_data: `confirm_broadcast_${role}_${Buffer.from(finalMessage).toString('base64')}` }],
+                [{ text: '❌ Cancel', callback_data: 'cancel_broadcast' }]
+            ]
+        };
+        
+        return ctx.reply(confirmationMessage, { parse_mode: 'Markdown', reply_markup: keyboard });
+        
+        let successCount = 0;
+        let failCount = 0;
+
+        for (const user of users) {
+            try {
+                await ctx.telegram.sendMessage(user.telegramChatId, finalMessage);
+                successCount++;
+            } catch (error) {
+                failCount++;
+                console.error(`Failed to send message to ${user.name}:`, error.message);
+            }
+        }
+
+        const deliveryRoleText = role === 'all' ? 'all users' : `all ${role}s`;
+        await ctx.reply(`✅ Message sent successfully!\n\n📊 Statistics:\n✅ Delivered: ${successCount}\n❌ Failed: ${failCount}\n👥 Total ${deliveryRoleText}: ${users.length}`);
+        
+        return handleMenuCommand(ctx);
+    } catch (error) {
+        console.error('Broadcast error:', error);
+        await ctx.reply('❌ Error sending broadcast message.');
+    }
+}
+
+async function findUserForNotification(ctx, searchString) {
+    const chatId = ctx.chat.id;
+    const users = await User.find({
+        $or: [{ name: new RegExp(searchString, 'i') }, { email: new RegExp(searchString, 'i') }]
+    }).limit(10).lean();
+
+    if (users.length === 0) {
+        return ctx.reply(`No users found matching "${searchString}".`);
+    }
+
+    if (users.length === 1) {
+        const targetUser = users[0];
+        await stateService.setState(chatId, 'awaiting_notification_message', { targetUserId: targetUser._id });
+        return ctx.reply(`Found user *${targetUser.name}*. Now enter the message to send:`, { parse_mode: 'Markdown' });
+    }
+
+    const keyboard = {
+        inline_keyboard: users.map(u => ([{
+            text: `${u.name} (${u.role})`,
+            callback_data: `admin_select_user_notification_${u._id}`
+        }]))
+    };
+    ctx.reply("Found multiple users. Please choose one:", { reply_markup: keyboard });
+}
+
+async function sendNotificationToUser(ctx, userId, message) {
+    try {
+        const user = await User.findById(userId, 'telegramChatId name').lean();
+        if (!user || !user.telegramChatId) {
+            return ctx.reply('❌ User not found or has no Telegram connection.');
+        }
+
+        const finalMessage = `📢 Personal notification:\n\n${message}`;
+        
+        // Show confirmation before sending
+        const confirmationMessage = `📋 *Message Preview*\n\n*Recipient:* ${user.name}\n\n*Message:*\n${finalMessage}\n\n✅ Confirm sending this message?`;
+        
+        const keyboard = {
+            inline_keyboard: [
+                [{ text: '✅ Send Message', callback_data: `confirm_personal_${userId}_${Buffer.from(finalMessage).toString('base64')}` }],
+                [{ text: '❌ Cancel', callback_data: 'cancel_personal' }]
+            ]
+        };
+        
+        return ctx.reply(confirmationMessage, { parse_mode: 'Markdown', reply_markup: keyboard });
+    } catch (error) {
+        console.error('Send notification error:', error);
+        await ctx.reply('❌ Error sending notification.');
+    }
+}
+
+async function sendLowBalanceAlert(ctx) {
+    try {
+        // Найти студентов с низким балансом, которым еще не отправлялись уведомления
+        const lowBalanceUsers = await User.find({
+            role: 'student',
+            lessonsPaid: { $lt: 2 },
+            telegramChatId: { $exists: true, $ne: null },
+            $or: [
+                { 'balanceReminders.twoLessonsRemaining': { $ne: true }, lessonsPaid: { $lt: 2, $gte: 0 } },
+                { 'balanceReminders.oneLessonRemaining': { $ne: true }, lessonsPaid: { $lt: 1 } }
+            ]
+        }, 'telegramChatId name lessonsPaid balanceReminders');
+
+        if (lowBalanceUsers.length === 0) {
+            return ctx.reply('ℹ️ No students with low balance (less than 2 lessons) found or all have already been notified.');
+        }
+
+        let successCount = 0;
+        let failCount = 0;
+
+        for (const user of lowBalanceUsers) {
+            try {
+                // Проверить, нужно ли отправлять уведомление
+                let shouldSend = false;
+                let reminderField = null;
+                
+                if (user.lessonsPaid < 1 && !user.balanceReminders?.oneLessonRemaining) {
+                    shouldSend = true;
+                    reminderField = 'balanceReminders.oneLessonRemaining';
+                } else if (user.lessonsPaid < 2 && user.lessonsPaid >= 0 && !user.balanceReminders?.twoLessonsRemaining) {
+                    shouldSend = true;
+                    reminderField = 'balanceReminders.twoLessonsRemaining';
+                }
+                
+                if (shouldSend) {
+                    const message = `⚠️ Low Balance Alert\n\nHi ${user.name}!\n\nYou have only ${user.lessonsPaid} lesson${user.lessonsPaid > 1 ? 's' : ''} remaining. Consider purchasing more lessons to continue your learning journey!\n\n💡 Contact your teacher or visit our website to top up your balance.`;
+                    await ctx.telegram.sendMessage(user.telegramChatId, message);
+                    
+                    // Отметить, что уведомление отправлено
+                    await User.findByIdAndUpdate(user._id, {
+                        $set: { [reminderField]: true }
+                    });
+                    
+                    successCount++;
+                }
+            } catch (error) {
+                failCount++;
+                console.error(`Failed to send low balance alert to ${user.name}:`, error.message);
+            }
+        }
+
+        await ctx.reply(`✅ Low balance alerts sent!\n\n📊 Statistics:\n✅ Delivered: ${successCount}\n❌ Failed: ${failCount}\n👥 Total students with low balance: ${lowBalanceUsers.length}`);
+        
+        return handleMenuCommand(ctx);
+    } catch (error) {
+        console.error('Low balance alert error:', error);
+        await ctx.reply('❌ Error sending low balance alerts.');
+    }
+}
+
+async function sendLessonReminderBroadcast(ctx, message) {
+    try {
+        const defaultMessage = "📚 Lesson Reminder\n\nDon't forget about your upcoming lessons! Check your schedule and be prepared.\n\nGood luck with your studies! 🎓";
+        const finalMessage = message.toLowerCase() === 'default' ? defaultMessage : `📚 Lesson Reminder\n\n${message}`;
+        
+        return sendBroadcastMessage(ctx, finalMessage, 'student', '📚 Lesson Reminder');
+    } catch (error) {
+        console.error('Lesson reminder error:', error);
+        await ctx.reply('❌ Error sending lesson reminders.');
+    }
 }
 
 module.exports = { registerMessageHandler, handleStartCommand, handleMenuCommand };

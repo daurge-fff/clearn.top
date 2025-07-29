@@ -31,7 +31,17 @@ async function listStudentsForTeacher(ctx, teacher, page = 1) {
         const studentName = escapeHtml(s.name);
         const emoji = s.emojiAvatar || getRoleEmoji('student');
         const statusIcon = getUserStatusEmoji(s.status);
-        response += `${emoji} <b>${studentName}</b> ${statusIcon}\n   Balance: ${s.lessonsPaid || 0} 📚 lessons, ${s.stars || 0} ⭐ stars\n\n`;
+        response += `${emoji} <b>${studentName}</b> ${statusIcon}
+   Balance: ${s.lessonsPaid || 0} 📚, ${s.stars || 0} ⭐`;
+        if (s.telegramUsername) {
+            response += `
+   Telegram: @${s.telegramUsername}`;
+        }
+        if (s.telegramChatId) {
+            response += ` (<a href="tg://user?id=${s.telegramChatId}">Direct Link</a>)`;
+            response += `\n   ID: <code>${s.telegramChatId}</code>`;
+        }
+        response += '\n\n';
         return { text: s.name, url: `${BASE_URL}/dashboard/student/${s._id}` };
     });
 
@@ -75,7 +85,15 @@ async function findUserForAdmin(ctx, searchString, page = 1) {
         const statusIcon = getUserStatusEmoji(u.status);
         response += `${emoji} <b>${u.name}</b> (${u.role}) ${statusIcon}`;
         if (u.role === 'student') {
-            response += `\n   Balance: ${u.stars || 0} ⭐`;
+            response += `
+   Balance: ${u.lessonsPaid || 0} 📚, ${u.stars || 0} ⭐`;
+        }
+        if (u.telegramUsername) {
+            response += `\n   Telegram: @${u.telegramUsername}`;
+        }
+        if (u.telegramChatId) {
+            response += ` (<a href="tg://user?id=${u.telegramChatId}">Direct Link</a>)`;
+            response += `\n   ID: <code>${u.telegramChatId}</code>`;
         }
         response += '\n';
         keyboardRows.push([{ text: `${u.name}`, url: `${BASE_URL}/dashboard/user-profile/${u._id}` }]);
@@ -120,7 +138,15 @@ async function findStudentForTeacher(ctx, teacher, studentName, page = 1) {
         const studentName = escapeHtml(s.name);
         const emoji = s.emojiAvatar || getRoleEmoji('student');
         const statusIcon = getUserStatusEmoji(s.status);
-        response += `${emoji} <b>${studentName}</b> ${statusIcon}\n   Balance: ${s.stars || 0} ⭐\n\n`;
+        response += `${emoji} <b>${studentName}</b> ${statusIcon}\n   Balance: ${s.lessonsPaid || 0} 📚, ${s.stars || 0} ⭐`;
+        if (s.telegramUsername) {
+            response += `\n   Telegram: @${s.telegramUsername}`;
+        }
+        if (s.telegramChatId) {
+            response += ` (<a href="tg://user?id=${s.telegramChatId}">Direct Link</a>)`;
+            response += `\n   ID: <code>${s.telegramChatId}</code>`;
+        }
+        response += '\n\n';
         keyboardRows.push([{ text: `${s.name}`, url: `${BASE_URL}/dashboard/user-profile/${s._id}` }]);
     });
 
@@ -158,7 +184,14 @@ async function listAllUsers(ctx, page = 1) {
         const statusIcon = getUserStatusEmoji(u.status);
         response += `${roleIcon} <b>${name}</b> (${u.role}) ${statusIcon}`;
         if (u.role === 'student') {
-            response += `\n   Balance: ${u.stars || 0} ⭐`;
+            response += `\n   Balance: ${u.lessonsPaid || 0} 📚, ${u.stars || 0} ⭐`;
+        }
+        if (u.telegramUsername) {
+            response += `\n   Telegram: @${u.telegramUsername}`;
+        }
+        if (u.telegramChatId) {
+            response += ` (<a href="tg://user?id=${u.telegramChatId}">Direct Link</a>)`;
+            response += `\n   ID: <code>${u.telegramChatId}</code>`;
         }
         response += '\n';
         return { text: u.name, url: `${BASE_URL}/dashboard/user-profile/${u._id}` };

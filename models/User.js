@@ -55,6 +55,9 @@ const UserSchema = new mongoose.Schema({
         unique: true,
         sparse: true
     },
+    telegramUsername: {
+        type: String
+    },
     botState: {
         name: { type: String },
         context: { type: mongoose.Schema.Types.Mixed, default: {} },
@@ -62,6 +65,10 @@ const UserSchema = new mongoose.Schema({
     },
     notifications: {
         lessonReminders: { type: Boolean, default: true }
+    },
+    balanceReminders: {
+        twoLessonsRemaining: { type: Boolean, default: false },
+        oneLessonRemaining: { type: Boolean, default: false }
     },
     emojiAvatar: {
         type: String

@@ -48,6 +48,15 @@ function startScheduler(bot) {
             console.error('Scheduler (post-lesson prompt) error:', error);
         }
     });
+
+    // Balance reminder check every hour
+    cron.schedule('0 * * * *', async () => {
+        try {
+            await processBalanceReminders(bot);
+        } catch (error) {
+            console.error('Scheduler (balance reminders) error:', error);
+        }
+    });
 }
 
 async function processReminders(bot, reminderType, minutesBefore) {
@@ -94,8 +103,52 @@ async function processReminders(bot, reminderType, minutesBefore) {
     }
 
     async function sendPostLessonPrompt(bot, lesson) {
-        // existing function
+    // existing function
+}
+
+async function processBalanceReminders(bot) {
+    try {
+        const students = await User.find({
+            role: 'student',
+            telegramChatId: { $exists: true, $ne: null },
+            lessonsPaid: { $in: [1, 2] }
+        });
+
+        for (const student of students) {
+            const lessonsPaid = student.lessonsPaid;
+            let shouldSend = false;
+            let reminderType = '';
+            let message = '';
+
+            if (lessonsPaid === 2 && !student.balanceReminders?.twoLessonsRemaining) {
+                shouldSend = true;
+                reminderType = 'twoLessonsRemaining';
+                message = '⚠️ *Reminder!* You have only *2 lessons* remaining.\n\n💡 Consider purchasing more lessons to continue your learning journey!';
+            } else if (lessonsPaid === 1 && !student.balanceReminders?.oneLessonRemaining) {
+                shouldSend = true;
+                reminderType = 'oneLessonRemaining';
+                message = '🚨 *Important!* You have only *1 lesson* remaining.\n\n📚 Don\'t let your learning stop - purchase more lessons today!';
+            }
+
+            if (shouldSend) {
+                try {
+                    await bot.telegram.sendMessage(student.telegramChatId, message, { parse_mode: 'Markdown' });
+                    
+                    // Mark reminder as sent
+                    const updateField = `balanceReminders.${reminderType}`;
+                    await User.updateOne(
+                        { _id: student._id },
+                        { $set: { [updateField]: true } }
+                    );
+                } catch (telegramError) {
+                    console.error(`Failed to send balance reminder to student ${student.name}:`, telegramError.message);
+                }
+            }
+        }
+    } catch (error) {
+        console.error('Balance reminders processing error:', error);
     }
+}
 
 async function sendPostLessonPrompt(bot, lesson) {
     const message = `📝 The lesson with *${lesson.student.name}* should be finished. Please update its status.`;

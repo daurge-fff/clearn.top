@@ -62,6 +62,12 @@ async function creditPaymentToUser(payment) {
     const newBalance = user.lessonsPaid + payment.lessonsPurchased;
     user.lessonsPaid = newBalance;
     
+    // Сбросить флаги уведомлений о низком балансе при пополнении
+    user.balanceReminders = {
+        twoLessonsRemaining: false,
+        oneLessonRemaining: false
+    };
+    
     user.balanceHistory.push({
         change: +payment.lessonsPurchased,
         balanceAfter: newBalance,
@@ -114,6 +120,14 @@ async function creditPaymentToUser(payment) {
                 console.log(`Credited referral lessons to ${referrer.email} for referring ${user.email}`);
             }
         }
+    }
+    
+    // Reset balance reminder flags when lessons are added
+    if (payment.lessonsPurchased > 0) {
+        user.balanceReminders = {
+            twoLessonsRemaining: false,
+            oneLessonRemaining: false
+        };
     }
     
     await user.save();

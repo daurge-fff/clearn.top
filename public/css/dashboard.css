@@ -4154,20 +4154,7 @@ input[type="checkbox"]:checked + .toggle-switch {
     height: 24px !important;
 }
 
-/* Улучшенная видимость icon-list в темной теме */
-.icon-list {
-    opacity: 0.9;
-}
 
-[data-theme='dark'] .icon-list {
-    background-color: rgba(255, 255, 255, 0.9) !important;
-    opacity: 1;
-}
-
-[data-theme='light'] .icon-list {
-    background-color: rgba(47, 53, 66, 0.9) !important;
-    opacity: 1;
-}
 
 .header-content h3 {
     margin: 0 0 8px 0;

@@ -798,6 +798,15 @@ router.post('/user-profile/:id/adjust-balance', ensureAuth, ensureRole('admin'),
         const newBalance = user.lessonsPaid + amount;
 
         user.lessonsPaid = newBalance;
+        
+        // Сбросить флаги уведомлений о низком балансе при увеличении баланса
+        if (amount > 0) {
+            user.balanceReminders = {
+                twoLessonsRemaining: false,
+                oneLessonRemaining: false
+            };
+        }
+        
         user.balanceHistory.push({
             change: amount,
             balanceAfter: newBalance,
