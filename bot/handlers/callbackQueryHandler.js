@@ -22,7 +22,7 @@ async function handleRefreshCallback(ctx, user, params) {
         await ctx.answerCbQuery("Refreshing...");
         const updatedUser = await User.findById(user._id).lean();
         try {
-            await ctx.editMessageText(`You have *${updatedUser.lessonsPaid}* paid lessons remaining.`, {
+            await ctx.editMessageText(`You have *${updatedUser.lessonsPaid || 0}* 📚 lessons remaining and *${updatedUser.stars || 0}* ⭐ stars.`, {
                 parse_mode: 'Markdown',
                 reply_markup: ctx.callbackQuery.message.reply_markup
             });

@@ -31,7 +31,7 @@ async function listStudentsForTeacher(ctx, teacher, page = 1) {
         const studentName = escapeHtml(s.name);
         const emoji = s.emojiAvatar || getRoleEmoji('student');
         const statusIcon = getUserStatusEmoji(s.status);
-        response += `${emoji} <b>${studentName}</b> ${statusIcon}\n   Balance: ${s.stars || 0} ⭐\n\n`;
+        response += `${emoji} <b>${studentName}</b> ${statusIcon}\n   Balance: ${s.lessonsPaid || 0} 📚 lessons, ${s.stars || 0} ⭐ stars\n\n`;
         return { text: s.name, url: `${BASE_URL}/dashboard/student/${s._id}` };
     });
 
