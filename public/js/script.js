@@ -494,7 +494,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const systemsContainer = paymentModal.querySelector('.systems');
         if (systemsContainer) {
             systemsContainer.innerHTML = paymentConfig.availableSystems.map(sys => {
-                const logoPath = `/images/payment-logos/${sys.id}.png`;
+                const logoPath = `/images/payment-logos/${sys.id}.svg`;
                 return `<div class="payment-system-card" data-system="${sys.id}">
                     <img src="${logoPath}" alt="${sys.name}" class="logo" onerror="this.style.display='none'">
                     <span class="name">${sys.name}</span>
