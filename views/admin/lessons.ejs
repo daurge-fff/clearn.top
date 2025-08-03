@@ -91,7 +91,9 @@
                     <tbody>
                         <% lessons.forEach(lesson => { %>
                             <tr data-lesson-id="<%= lesson._id %>">
-                                <td><%= lesson.student.name %></td>
+                                <td>
+                                    <a href="/dashboard/user-profile/<%= lesson.student._id %>" class="link-discreet"><%= lesson.student.name %></a>
+                                </td>
                                 <td><%= lesson.teacher.name %></td>
                                 <td><%= lesson.course.name %></td>
                                 <td><%= new Date(lesson.localLessonDate).toLocaleString('en-GB') %></td>
