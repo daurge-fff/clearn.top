@@ -31,7 +31,7 @@ function initializeThemeToggle() {
 }
 
 // Application initialization state
-let APP_STATE = {
+const APP_STATE = {
     initialized: false,
     dashboardInitialized: false,
     lessonModalInitialized: false
@@ -252,143 +252,99 @@ function initializeDashboardActions() {
     if (APP_STATE.dashboardInitialized) return;
     APP_STATE.dashboardInitialized = true;
 
-    // Function to create and show status modal
-    const showStatusModal = (statusCell) => {
-        const currentStatus = statusCell.dataset.currentStatus;
-        const lessonId = statusCell.dataset.lessonId;
-        const paymentId = statusCell.dataset.paymentId;
-        
-        // Remove existing modal if any
-        const existingModal = document.querySelector('.status-modal-overlay');
-        if (existingModal) {
-            existingModal.remove();
+    let activeDropdown = null;
+
+    // Function to close all active dropdowns
+    const closeActiveDropdown = () => {
+        if (activeDropdown) {
+            activeDropdown.classList.remove('show');
+            if (activeDropdown.closest('.status-cell')) {
+                activeDropdown.closest('.status-cell').classList.remove('is-open');
+            }
+            activeDropdown = null;
         }
-        
-        // Create modal overlay
-        const overlay = document.createElement('div');
-        overlay.className = 'status-modal-overlay';
-        
-        // Create modal content
-        const modal = document.createElement('div');
-        modal.className = 'status-modal';
-        
-        // Modal header
-        const header = document.createElement('div');
-        header.className = 'status-modal-header';
-        header.textContent = 'Change Status';
-        
-        // Close button
-        const closeBtn = document.createElement('button');
-        closeBtn.className = 'status-modal-close';
-        closeBtn.innerHTML = '×';
-        closeBtn.onclick = () => overlay.remove();
-        
-        // Modal body
-        const body = document.createElement('div');
-        body.className = 'status-modal-body';
-        
-        // Status options
-        const statusOptions = [
-            { value: 'scheduled', label: 'Scheduled' },
-            { value: 'completed', label: 'Completed' },
-            { value: 'cancelled_by_student', label: 'Cancelled (Student)' },
-            { value: 'cancelled_by_teacher', label: 'Cancelled (Teacher)' },
-            { value: 'no_show', label: 'No Show' }
-        ];
-        
-        statusOptions.forEach(option => {
-            const item = document.createElement('button');
-            item.className = 'status-modal-item';
-            if (option.value === currentStatus) {
-                item.classList.add('current');
-            }
-            item.textContent = option.label;
-            item.onclick = () => handleStatusChange(option.value, statusCell, overlay);
-            body.appendChild(item);
-        });
-        
-        // Assemble modal
-        modal.appendChild(header);
-        modal.appendChild(closeBtn);
-        modal.appendChild(body);
-        overlay.appendChild(modal);
-        
-        // Add to page
-        document.body.appendChild(overlay);
-        
-        // Show modal
-        setTimeout(() => overlay.classList.add('show'), 10);
-        
-        // Close on overlay click
-        overlay.onclick = (e) => {
-            if (e.target === overlay) {
-                overlay.remove();
-            }
-        };
     };
     
-    // Handle status change
-    const handleStatusChange = async (newStatus, statusCell, overlay) => {
-        const currentStatus = statusCell.dataset.currentStatus;
-        if (newStatus === currentStatus) {
-            overlay.remove();
-            return;
+    // Global click to close menus
+    document.body.addEventListener('click', (e) => {
+        if (!e.target.closest('.status-cell')) {
+            closeActiveDropdown();
         }
-        
-        const lessonId = statusCell.dataset.lessonId;
-        const paymentId = statusCell.dataset.paymentId;
-        let url, body;
-        
-        if (lessonId) {
-            url = `/api/lessons/${lessonId}/status`;
-            body = { status: newStatus };
-        } else if (paymentId) {
-            url = `/api/payments/${paymentId}/status`;
-            body = { status: newStatus };
-        } else {
-            overlay.remove();
-            return;
-        }
-        
-        try {
-            const response = await fetch(url, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(body)
-            });
-            
-            if (response.ok) {
-                // Update UI
-                statusCell.dataset.currentStatus = newStatus;
-                const badge = statusCell.querySelector('.current-status-badge');
-                if (badge) {
-                    badge.className = `badge status-${newStatus} current-status-badge`;
-                    badge.textContent = newStatus.replace(/_/g, ' ');
-                }
-                overlay.remove();
-            } else {
-                console.error('Failed to update status');
-                overlay.remove();
-            }
-        } catch (error) {
-            console.error('Error updating status:', error);
-            overlay.remove();
-        }
-    };
+    });
 
     // Delegated handler for all actions
     document.body.addEventListener('click', async (e) => {
         const target = e.target;
 
-        // Handle status cell click
+        // 1. Handle status cell click (to open/close)
         const statusCell = target.closest('.status-cell');
-        if (statusCell) {
+        if (statusCell && !target.closest('.status-dropdown-item')) {
             e.stopPropagation();
-            showStatusModal(statusCell);
+            const dropdown = statusCell.querySelector('.status-dropdown');
+            if (dropdown) {
+                if (dropdown.classList.contains('show')) {
+                    closeActiveDropdown();
+                } else {
+                    closeActiveDropdown(); // Close the previous one if it exists
+                    dropdown.classList.add('show');
+                    statusCell.classList.add('is-open');
+                    activeDropdown = dropdown;
+                }
+            }
             return;
         }
 
-        // Handle other dashboard actions here if needed
+        // 2. Handle new status selection
+        const statusDropdownItem = target.closest('.status-dropdown-item');
+        if (statusDropdownItem) {
+            e.stopPropagation();
+            const cell = statusDropdownItem.closest('.status-cell');
+            if (!cell) return;
+            
+            closeActiveDropdown(); // Close the menu after selection
+
+            const newStatus = statusDropdownItem.dataset.status;
+            const currentStatus = cell.dataset.currentStatus;
+            if (newStatus === currentStatus) return;
+
+            const lessonId = cell.dataset.lessonId;
+            const paymentId = cell.dataset.paymentId;
+            let url, body;
+
+            if (lessonId) {
+                url = `/api/lessons/${lessonId}/status`;
+                body = { status: newStatus };
+            } else if (paymentId) {
+                url = `/api/payments/${paymentId}/status`;
+                body = { status: newStatus };
+            } else {
+                return;
+            }
+
+            try {
+                const response = await fetch(url, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+                const result = await response.json();
+                if (!response.ok) throw new Error(result.msg || 'Failed to update status');
+                
+                const entity = result.lesson || result.payment;
+                
+                const badge = cell.querySelector('.current-status-badge');
+                if (badge) {
+                    badge.textContent = entity.status.replace(/_/g, ' ');
+                    badge.className = `badge status-${entity.status.replace(/ /g, '_')} current-status-badge`;
+                }
+                cell.dataset.currentStatus = entity.status;
+
+                if (paymentId) { // If it's a payment, update the available actions
+                    const dropdown = cell.querySelector('.status-dropdown');
+                    if (dropdown) dropdown.innerHTML = `<div class="status-dropdown-item">No actions available</div>`;
+                }
+
+            } catch (error) { 
+                alert(`Error: ${error.message}`); 
+            }
+            return;
+        }
 
         // 3. Handle user deletion
         const deleteUserLink = target.closest('a[href*="/users/delete/"]');

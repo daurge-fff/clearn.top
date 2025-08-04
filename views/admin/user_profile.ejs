@@ -115,7 +115,21 @@
                         <% lessons.forEach(lesson => { %>
                             <tr data-lesson-id="<%= lesson._id %>">
                                 <td><%= new Date(lesson.localLessonDate).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) %></td>
-                                <td><%= userProfile.role === 'student' ? (lesson.teacher ? lesson.teacher.name : 'N/A') : (lesson.student ? lesson.student.name : 'N/A') %></td>
+                                <td>
+                                    <% if (userProfile.role === 'student') { %>
+                                        <% if (lesson.teacher) { %>
+                                            <a href="/dashboard/user-profile/<%= lesson.teacher._id %>" class="link-discreet"><%= lesson.teacher.name %></a>
+                                        <% } else { %>
+                                            N/A
+                                        <% } %>
+                                    <% } else { %>
+                                        <% if (lesson.student) { %>
+                                            <a href="/dashboard/user-profile/<%= lesson.student._id %>" class="link-discreet"><%= lesson.student.name %></a>
+                                        <% } else { %>
+                                            N/A
+                                        <% } %>
+                                    <% } %>
+                                </td>
                                 <td><%= lesson.topic %></td>
                                 <td class="status-cell" data-lesson-id="<%= lesson._id %>" data-current-status="<%= lesson.status %>">
                                     <span class="badge status-<%= lesson.status %> current-status-badge"><%= lesson.status.replace(/_/g, ' ') %></span>
@@ -150,8 +164,6 @@
                             <th>Date</th>
                             <th>Details</th>
                             <th>Change</th>
-                            <th>Stars After</th>
-                            <th>Lessons After</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -173,12 +185,6 @@
                                     <span class="badge <%= entry.change > 0 ? 'status-completed' : 'status-cancelled_by_teacher' %>">
                                         <%= entry.change > 0 ? '+' : '' %><%= entry.change %>
                                     </span>
-                                </td>
-                                <td>
-                                    <%= (entry.starsBalanceAfter !== undefined && entry.starsBalanceAfter !== null && !isNaN(entry.starsBalanceAfter)) ? Number(entry.starsBalanceAfter) : 'N/A' %>
-                                </td>
-                                <td>
-                                    <%= (entry.lessonsBalanceAfter !== undefined && entry.lessonsBalanceAfter !== null && !isNaN(entry.lessonsBalanceAfter)) ? Number(entry.lessonsBalanceAfter) : 'N/A' %>
                                 </td>
                                 <td class="actions-cell">
                                     <form action="/dashboard/users/balance/delete/<%= entry._id %>?userId=<%= userProfile._id %>" method="POST" style="display:inline;">

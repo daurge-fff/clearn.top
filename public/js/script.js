@@ -577,19 +577,48 @@ document.addEventListener('DOMContentLoaded', () => {
             const description = isDonationMode ? "Donation" : `${currentTariffName} x${quantity}`;
 
             try {
-                const response = await fetch('/api/manual-payment/submit', {
+                // First create a payment, then confirm it
+                const createResponse = await fetch('/api/payments/create', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        transactionId, paymentSystem: system, amount: parseFloat(amount),
-                        currency: paymentConfig.currency, lessonsPurchased: quantity, description, identifier
+                        amount: parseFloat(amount),
+                        currency: paymentConfig.currency,
+                        description,
+                        paymentSystem: system,
+                        identifier
+                    })
+                });
+                
+                if (!createResponse.ok) {
+                    const createError = await createResponse.json();
+                    throw new Error(createError.error || 'Failed to create payment');
+                }
+                
+                const createResult = await createResponse.json();
+                
+                // Now confirm the payment
+                const response = await fetch('/api/payments/manual-confirm', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        transactionId, 
+                        paymentSystem: system, 
+                        amount: parseFloat(amount),
+                        currency: paymentConfig.currency, 
+                        orderId: createResult.orderId, 
+                        identifier
                     })
                 });
                 if (response.ok) {
-                    window.location.href = '/successful-payment';
+                    const result = await response.json();
+                    showNotification(result.message || 'Payment confirmation submitted successfully!', 'success');
+                    setTimeout(() => {
+                        window.location.href = '/successful-payment';
+                    }, 2000);
                 } else {
                     const errorData = await response.json();
-                    showNotification(errorData.msg || 'An error occurred', 'error');
+                    showNotification(errorData.error || 'An error occurred', 'error');
                 }
             } catch (error) {
                 showNotification('Network error. Please try again', 'error');

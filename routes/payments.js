@@ -335,7 +335,8 @@ router.post('/manual-confirm', async (req, res) => {
         const existingPayment = await Payment.findOne({
             $or: [
                 { robokassaInvoiceId: orderId },
-                { externalId: orderId }
+                { externalId: orderId },
+                { orderId: orderId }
             ]
         });
 

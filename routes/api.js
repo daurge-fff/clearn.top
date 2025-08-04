@@ -439,7 +439,12 @@ router.get('/lessons', ensureAuth, async (req, res) => {
                 url: isStudentRole ? `/dashboard/lessons/view/${lesson._id}` : `/dashboard/lessons/manage/${lesson._id}`,
                 status: lesson.status,
                 topic: lesson.topic,
-                student: lesson.student ? { name: lesson.student.name, emojiAvatar: lesson.student.emojiAvatar } : { name: 'N/A' },
+                student: lesson.student ? { 
+                    name: lesson.student.name, 
+                    emojiAvatar: lesson.student.emojiAvatar,
+                    id: lesson.student._id,
+                    profileUrl: `/dashboard/user-profile/${lesson.student._id}`
+                } : { name: 'N/A' },
                 course: lesson.course ? { name: lesson.course.name } : { name: 'N/A' }
             };
         });

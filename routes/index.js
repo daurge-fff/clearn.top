@@ -56,16 +56,31 @@ router.get('/successful-payment', (req, res) => {
     });
 });
 
+// @route   GET /failed-payment
+// @desc    Display failed payment page
+// @access  Public
 router.get('/failed-payment', (req, res) => {
-     res.render('failed-payment', {
-        layout: false,
-        currentLang: 'en',
-        lang: {
-            dir: 'ltr',
-            paymentFailTitle: 'Payment Failed',
-            paymentFailMsg: 'Unfortunately, the payment could not be processed. Please try again or use a different payment method.',
-            paymentRetry: 'Try Again'
-        }
+    const lang = req.query.lang || 'en';
+    const currentLang = lang;
+    const translations = require('../public/js/translations');
+    
+    res.render('failed-payment', {
+        lang: translations[lang],
+        currentLang
+    });
+});
+
+// @route   GET /successful-payment
+// @desc    Display successful payment page
+// @access  Public
+router.get('/successful-payment', (req, res) => {
+    const lang = req.query.lang || 'en';
+    const currentLang = lang;
+    const translations = require('../public/js/translations');
+    
+    res.render('successful-payment', {
+        lang: translations[lang],
+        currentLang
     });
 });
 

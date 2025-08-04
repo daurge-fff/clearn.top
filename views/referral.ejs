@@ -42,7 +42,7 @@
         </div>
         <div class="referral-link-wrapper" onclick="copyToClipboard()" title="Click to copy">
             <div class="link-icon">🔗</div>
-            <div class="referral-link" id="referralLink"><%= referralLink %></div>
+            <div class="referral-link" id="referralLink"><%= referralLink.split('=')[1] || referralLink %></div>
             <div class="copy-indicator">
                 <span class="copy-text">Click to copy</span>
                 <span class="copy-success">Copied! ✨</span>
@@ -84,6 +84,24 @@
         </div>
     </div>
 
+    <!-- Earned Lessons Summary -->
+    <% if (totalEarnedLessons > 0) { %>
+    <div class="earned-lessons-section">
+        <div class="section-header">
+            <h2>Your Earned Lessons</h2>
+            <p>Lessons you've earned through successful referrals</p>
+        </div>
+        <div class="earned-summary">
+            <div class="earned-card">
+                <div class="earned-icon">🎉</div>
+                <div class="earned-number"><%= totalEarnedLessons %></div>
+                <div class="earned-text">Total Earned Lessons</div>
+                <div class="earned-note">1 lesson per referral's first payment + 1 bonus for 20+ lesson purchases</div>
+            </div>
+        </div>
+    </div>
+    <% } %>
+
     <!-- Referred Users Section -->
     <div class="referred-users-section">
         <div class="section-header">
@@ -100,6 +118,16 @@
                                 <h4><%= referredUser.name %></h4>
                                 <p class="user-email"><%= referredUser.email %></p>
                                 <p class="user-date">Joined <%= referredUser.date_registered.toLocaleDateString() %></p>
+                                <div class="user-status-info">
+                                    <% if (referredUser.status === 'new') { %>
+                                        <span class="status-badge new">New</span>
+                                    <% } else { %>
+                                        <span class="status-badge active"><%= referredUser.status %></span>
+                                    <% } %>
+                                    <% if (referredUser.earnedLessons > 0) { %>
+                                        <span class="earned-badge">+<%= referredUser.earnedLessons %> lessons</span>
+                                    <% } %>
+                                </div>
                             </div>
                             <div class="user-status">✅</div>
                         </div>
@@ -119,14 +147,14 @@
 
 <script>
 function copyToClipboard() {
-    const referralLink = document.getElementById('referralLink');
     const copyText = document.querySelector('.copy-text');
     const copySuccess = document.querySelector('.copy-success');
     const wrapper = document.querySelector('.referral-link-wrapper');
+    const fullReferralLink = '<%= referralLink %>';
     
     // Copy to clipboard using modern API
     if (navigator.clipboard && window.isSecureContext) {
-        navigator.clipboard.writeText(referralLink.textContent).then(() => {
+        navigator.clipboard.writeText(fullReferralLink).then(() => {
             showCopySuccess();
         }).catch(() => {
             fallbackCopy();
@@ -136,12 +164,12 @@ function copyToClipboard() {
     }
     
     function fallbackCopy() {
-        const range = document.createRange();
-        range.selectNode(referralLink);
-        window.getSelection().removeAllRanges();
-        window.getSelection().addRange(range);
+        const textArea = document.createElement('textarea');
+        textArea.value = fullReferralLink;
+        document.body.appendChild(textArea);
+        textArea.select();
         document.execCommand('copy');
-        window.getSelection().removeAllRanges();
+        document.body.removeChild(textArea);
         showCopySuccess();
     }
     
