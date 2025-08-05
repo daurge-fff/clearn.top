@@ -116,7 +116,19 @@ document.addEventListener('DOMContentLoaded', function() {
             center: 'title',
             right: 'dayGridMonth,timeGridWeek,listWeek'
         },
-        events: '/api/lessons',
+        events: {
+            url: '/api/lessons',
+            success: function(events) {
+                console.log('Events loaded:', events.length, 'events');
+                // Color day cells after events are loaded
+                requestAnimationFrame(function() {
+                    colorDayCells();
+                });
+            },
+            failure: function() {
+                console.error('Failed to load events');
+            }
+        },
         allDaySlot: false,
         editable: false,
         selectable: false,
@@ -127,15 +139,21 @@ document.addEventListener('DOMContentLoaded', function() {
             applyEventColors(info);
         },
         datesSet: function(dateInfo) {
-            // Reapply colors when month changes
-            setTimeout(function() {
+            console.log('datesSet triggered, new date range:', dateInfo.startStr, 'to', dateInfo.endStr);
+            
+            // Use requestAnimationFrame for better timing
+            requestAnimationFrame(function() {
+                // Reapply event colors
                 calendar.getEvents().forEach(function(event) {
                     const eventEl = event.el;
                     if (eventEl) {
                         applyEventColors({ event: event, el: eventEl });
                     }
                 });
-            }, 100);
+                
+                // Color the day cells
+                colorDayCells();
+            });
         },
         eventClick: function(info) {
             if (info.event.url) {
@@ -145,6 +163,17 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     calendar.render();
+    
+    // Color day cells after initial render
+    calendar.on('viewDidMount', function() {
+        console.log('Calendar view mounted, applying colors...');
+        colorDayCells();
+    });
+    
+    // Also color immediately after render
+    requestAnimationFrame(function() {
+        colorDayCells();
+    });
     
     // Function to apply event colors
     function applyEventColors(info) {
@@ -162,6 +191,63 @@ document.addEventListener('DOMContentLoaded', function() {
             info.el.style.borderColor = '#3498db';
             info.el.style.color = '#ffffff';
         }
+    }
+    
+    // Function to color day cells based on lesson status
+    function colorDayCells() {
+        console.log('Coloring day cells...');
+        
+        // Reset all day cells to default
+        document.querySelectorAll('.fc-daygrid-day').forEach(function(dayEl) {
+            dayEl.style.backgroundColor = '';
+            dayEl.classList.remove('has-scheduled', 'has-completed', 'has-cancelled');
+        });
+        
+        // Get all events and group by date
+        const eventsByDate = {};
+        calendar.getEvents().forEach(function(event) {
+            const eventDate = new Date(event.start);
+            const dateStr = eventDate.getFullYear() + '-' + 
+                           String(eventDate.getMonth() + 1).padStart(2, '0') + '-' + 
+                           String(eventDate.getDate()).padStart(2, '0');
+            
+            if (!eventsByDate[dateStr]) {
+                eventsByDate[dateStr] = [];
+            }
+            eventsByDate[dateStr].push(event.extendedProps.status);
+        });
+        
+        console.log('Events by date:', eventsByDate);
+        
+        // Apply colors to day cells
+        Object.keys(eventsByDate).forEach(function(dateStr) {
+            const statuses = eventsByDate[dateStr];
+            
+            // Find day cell using FullCalendar's date format
+            const dayElements = document.querySelectorAll('.fc-daygrid-day');
+            
+            dayElements.forEach(function(dayEl) {
+                const dayDate = dayEl.getAttribute('data-date');
+                if (dayDate === dateStr) {
+                    console.log('Found day element for', dateStr, 'with statuses:', statuses);
+                    
+                    // Priority: scheduled > cancelled > completed
+                    if (statuses.includes('scheduled')) {
+                        dayEl.style.backgroundColor = 'rgba(52, 152, 219, 0.3)';
+                        dayEl.classList.add('has-scheduled');
+                        console.log('Applied scheduled color to', dateStr);
+                    } else if (statuses.some(s => s && s.startsWith('cancelled'))) {
+                        dayEl.style.backgroundColor = 'rgba(231, 76, 60, 0.3)';
+                        dayEl.classList.add('has-cancelled');
+                        console.log('Applied cancelled color to', dateStr);
+                    } else if (statuses.includes('completed')) {
+                        dayEl.style.backgroundColor = 'rgba(46, 204, 113, 0.3)';
+                        dayEl.classList.add('has-completed');
+                        console.log('Applied completed color to', dateStr);
+                    }
+                }
+            });
+        });
     }
 });
 </script>

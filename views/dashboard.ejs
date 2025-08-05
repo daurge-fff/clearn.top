@@ -146,28 +146,59 @@ document.addEventListener('DOMContentLoaded', async function() {
         }).join('') + `</div>`;
     }
 
+    function colorDayCells() {
+        console.log('Dashboard: Coloring day cells...');
+        
+        // Reset all day cells
+        document.querySelectorAll('.fc-daygrid-day').forEach(function(dayEl) {
+            dayEl.classList.remove('fc-day-has-scheduled', 'fc-day-has-cancelled', 'fc-day-has-completed');
+        });
+        
+        // Group events by date
+        const eventsByDate = {};
+        allEvents.forEach(function(event) {
+            const dateStr = getLocalDateString(event.start);
+            if (!eventsByDate[dateStr]) {
+                eventsByDate[dateStr] = [];
+            }
+            eventsByDate[dateStr].push(event.status);
+        });
+        
+        console.log('Dashboard: Events by date:', eventsByDate);
+        
+        // Apply colors to day cells
+        Object.keys(eventsByDate).forEach(function(dateStr) {
+            const statuses = eventsByDate[dateStr];
+            const dayEl = document.querySelector(`[data-date="${dateStr}"]`);
+            
+            if (dayEl) {
+                console.log('Dashboard: Found day element for', dateStr, 'with statuses:', statuses);
+                
+                // Priority: scheduled > cancelled > completed
+                if (statuses.includes('scheduled')) {
+                    dayEl.classList.add('fc-day-has-scheduled');
+                    console.log('Dashboard: Applied scheduled class to', dateStr);
+                } else if (statuses.some(s => s && (s.startsWith('cancelled') || s === 'no_show'))) {
+                    dayEl.classList.add('fc-day-has-cancelled');
+                    console.log('Dashboard: Applied cancelled class to', dateStr);
+                } else if (statuses.includes('completed')) {
+                    dayEl.classList.add('fc-day-has-completed');
+                    console.log('Dashboard: Applied completed class to', dateStr);
+                }
+            }
+        });
+    }
+
     const calendar = new FullCalendar.Calendar(calendarEl, {
         initialView: 'dayGridMonth',
         headerToolbar: false,
-        dayCellDidMount: function(arg) {
-            const dateStr = getLocalDateString(arg.date);
-            const eventsOnDay = allEvents.filter(event => getLocalDateString(event.start) === dateStr);
+        datesSet: function(dateInfo) {
+            console.log('Dashboard: datesSet triggered, new date range:', dateInfo.startStr, 'to', dateInfo.endStr);
             
-            if (eventsOnDay.length > 0) {
-                let cellClass = '';
-                // Логика приоритетов: scheduled > cancelled > completed
-                if (eventsOnDay.some(e => e.status === 'scheduled')) {
-                    cellClass = 'fc-day-has-scheduled';
-                } else if (eventsOnDay.some(e => e.status.startsWith('cancelled') || e.status === 'no_show')) {
-                    cellClass = 'fc-day-has-cancelled';
-                } else if (eventsOnDay.every(e => e.status === 'completed')) {
-                    cellClass = 'fc-day-has-completed';
-                }
-                
-                if (cellClass) {
-                    arg.el.classList.add(cellClass);
-                }
-            }
+            // Use requestAnimationFrame for better timing
+            requestAnimationFrame(function() {
+                colorDayCells();
+            });
         },
         dateClick: function(info) {
             if (selectedDateEl) {
@@ -194,11 +225,28 @@ document.addEventListener('DOMContentLoaded', async function() {
         titleEl.innerText = calendar.view.title;
     }
 
-    document.getElementById('cal-prev').addEventListener('click', () => { calendar.prev(); updateTitle(); });
-    document.getElementById('cal-next').addEventListener('click', () => { calendar.next(); updateTitle(); });
+    document.getElementById('cal-prev').addEventListener('click', () => { 
+        calendar.prev(); 
+        updateTitle(); 
+        requestAnimationFrame(function() {
+            colorDayCells();
+        });
+    });
+    document.getElementById('cal-next').addEventListener('click', () => { 
+        calendar.next(); 
+        updateTitle(); 
+        requestAnimationFrame(function() {
+            colorDayCells();
+        });
+    });
     
     calendar.render();
     updateTitle();
+    
+    // Color day cells after initial render
+    requestAnimationFrame(function() {
+        colorDayCells();
+    });
 
     const todayStr = getLocalDateString(new Date());
     const todayEl = document.querySelector(`.fc-day[data-date="${todayStr}"]`);
