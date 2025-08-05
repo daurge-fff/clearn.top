@@ -1600,43 +1600,91 @@
     .dashboard-content { padding: 70px 20px 20px 20px; }
     .page-header { flex-direction: column; align-items: flex-start; gap: 15px; }
     .page-actions { width: 100%; }
+    
+    /* Компактные карточки на планшетах */
+    .card {
+        padding: 20px;
+        border-radius: 16px;
+        margin-bottom: 20px;
+    }
+    
+    .page-header {
+        padding: 15px 0;
+        margin-bottom: 25px;
+    }
+    
+    .page-header h1 {
+        font-size: 1.8rem;
+    }
 }
 
 @media (max-width: 767.98px) {
     .stats-grid {
         display: grid;
         grid-template-columns: repeat(2, 1fr);
-        gap: 12px;
+        gap: 10px;
     }
     
     .stats-grid > .stat-card:last-child:nth-child(odd) {
         grid-column: 1 / -1;
-        max-width: 200px;
+        max-width: 180px;
         margin: 0 auto;
     }
     
     .stat-card {
-        padding: 15px 10px;
+        padding: 16px 12px;
         text-align: center;
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
+        border-radius: 16px;
+        min-height: 120px;
     }
     
     .stat-icon {
-        margin: 0 auto 15px auto;
+        width: 45px;
+        height: 45px;
+        margin: 0 auto 12px auto;
         display: flex;
         align-items: center;
         justify-content: center;
+        border-radius: 12px;
+    }
+    
+    .stat-icon i {
+        width: 22px;
+        height: 22px;
     }
     
     .stat-number {
-        font-size: 1.8rem;
+        font-size: 1.6rem;
+        margin-bottom: 6px;
     }
     
     .stat-label {
-        font-size: 0.75rem;
+        font-size: 0.7rem;
+        line-height: 1.2;
+    }
+    
+    /* Компактные основные карточки на мобильных */
+    .card {
+        padding: 18px;
+        border-radius: 14px;
+        margin-bottom: 18px;
+    }
+    
+    .dashboard-content {
+        padding: 70px 15px 15px 15px;
+    }
+    
+    .page-header {
+        padding: 12px 0;
+        margin-bottom: 20px;
+    }
+    
+    .page-header h1 {
+        font-size: 1.6rem;
     }
 }
 
@@ -1648,32 +1696,74 @@
     
     .stats-grid > .stat-card:last-child:nth-child(odd) {
         grid-column: 1 / -1;
-        max-width: 180px;
+        max-width: 160px;
         margin: 0 auto;
     }
     
     .stat-card {
-        padding: 12px 8px;
+        padding: 14px 10px;
         text-align: center !important;
         display: flex !important;
         flex-direction: column !important;
         align-items: center !important;
         justify-content: center !important;
+        border-radius: 14px;
+        min-height: 110px;
     }
     
     .stat-icon {
+        width: 40px !important;
+        height: 40px !important;
         margin: 0 auto 10px auto !important;
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
+        border-radius: 10px;
+    }
+    
+    .stat-icon i {
+        width: 20px !important;
+        height: 20px !important;
     }
     
     .stat-number {
-        font-size: 1.5rem;
+        font-size: 1.4rem;
+        margin-bottom: 4px;
     }
     
     .stat-label {
-        font-size: 0.7rem;
+        font-size: 0.65rem;
+        line-height: 1.1;
+    }
+    
+    /* Ультра-компактные основные карточки */
+    .card {
+        padding: 16px;
+        border-radius: 12px;
+        margin-bottom: 16px;
+    }
+    
+    .dashboard-content {
+        padding: 70px 12px 12px 12px;
+    }
+    
+    .page-header {
+        padding: 10px 0;
+        margin-bottom: 18px;
+    }
+    
+    .page-header h1 {
+        font-size: 1.4rem;
+    }
+    
+    .btn-primary {
+        padding: 12px 24px;
+        font-size: 0.9rem;
+    }
+    
+    .btn-secondary {
+        padding: 12px 24px;
+        font-size: 0.9rem;
     }
 }
 
@@ -1685,34 +1775,74 @@
     
     .stats-grid > .stat-card:last-child:nth-child(odd) {
         grid-column: 1 / -1 !important;
-        max-width: 160px !important;
+        max-width: 140px !important;
         margin: 0 auto !important;
     }
     
     .stat-card {
-        padding: 10px 6px !important;
+        padding: 12px 8px !important;
         text-align: center !important;
         display: flex !important;
         flex-direction: column !important;
         align-items: center !important;
         justify-content: center !important;
+        border-radius: 12px !important;
+        min-height: 100px !important;
     }
     
     .stat-icon {
+        width: 36px !important;
+        height: 36px !important;
         margin: 0 auto 8px auto !important;
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
-        width: 50px !important;
-        height: 50px !important;
+        border-radius: 8px !important;
+    }
+    
+    .stat-icon i {
+        width: 18px !important;
+        height: 18px !important;
     }
     
     .stat-number {
-        font-size: 1.3rem !important;
+        font-size: 1.2rem !important;
+        margin-bottom: 3px !important;
     }
     
     .stat-label {
-        font-size: 0.65rem !important;
+        font-size: 0.6rem !important;
+        line-height: 1 !important;
+    }
+    
+    /* Минимальные карточки для очень маленьких экранов */
+    .card {
+        padding: 14px !important;
+        border-radius: 10px !important;
+        margin-bottom: 14px !important;
+    }
+    
+    .dashboard-content {
+        padding: 70px 10px 10px 10px !important;
+    }
+    
+    .page-header {
+        padding: 8px 0 !important;
+        margin-bottom: 16px !important;
+    }
+    
+    .page-header h1 {
+        font-size: 1.3rem !important;
+    }
+    
+    .btn-primary {
+        padding: 10px 20px !important;
+        font-size: 0.85rem !important;
+    }
+    
+    .btn-secondary {
+        padding: 10px 20px !important;
+        font-size: 0.85rem !important;
     }
 }
 
@@ -1728,6 +1858,52 @@
     border-radius: 15px;
     padding: 15px 20px;
     border: 1px solid var(--form-border-color);
+}
+
+@media (max-width: 767.98px) {
+    #calendar-nav {
+        padding: 12px 15px;
+        margin-bottom: 20px;
+        border-radius: 12px;
+    }
+    
+    #calendar-title {
+        font-size: 1.3em !important;
+    }
+    
+    #calendar-nav button {
+        width: 38px !important;
+        height: 38px !important;
+        padding: 10px !important;
+    }
+    
+    #calendar-nav button i {
+        width: 16px !important;
+        height: 16px !important;
+    }
+}
+
+@media (max-width: 480px) {
+    #calendar-nav {
+        padding: 10px 12px;
+        margin-bottom: 15px;
+        border-radius: 10px;
+    }
+    
+    #calendar-title {
+        font-size: 1.1em !important;
+    }
+    
+    #calendar-nav button {
+        width: 34px !important;
+        height: 34px !important;
+        padding: 8px !important;
+    }
+    
+    #calendar-nav button i {
+        width: 14px !important;
+        height: 14px !important;
+    }
 }
 
 #calendar-title {
