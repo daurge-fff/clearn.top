@@ -305,27 +305,49 @@ router.get('/lessons', ensureAuth, ensureRole('admin'), async (req, res) => {
             
             const matchingUsers = await User.find({ name: searchRegex }).select('_id');
             const userIds = matchingUsers.map(u => u._id);
+            
+            const matchingCourses = await Course.find({ name: searchRegex }).select('_id');
+            const courseIds = matchingCourses.map(c => c._id);
 
             filter.$or = [
                 { topic: searchRegex },
                 { teacher: { $in: userIds } },
-                { student: { $in: userIds } }
+                { student: { $in: userIds } },
+                { course: { $in: courseIds } }
             ];
         }
 
         let sort = {};
         if (req.query.sort) {
-            sort[req.query.sort] = req.query.order === 'desc' ? -1 : 1;
+            if (req.query.sort === 'course.name') {
+                // Handle course name sorting separately
+                sort = {}; // Will be handled after population
+            } else {
+                sort[req.query.sort] = req.query.order === 'desc' ? -1 : 1;
+            }
         } else {
             sort.lessonDate = -1;
         }
 
-        const lessons = await Lesson.find(filter)
+        let lessons = await Lesson.find(filter)
             .populate('student', 'name')
             .populate('teacher', 'name')
             .populate('course', 'name')
             .sort(sort)
             .lean();
+
+        // Handle course name sorting after population
+        if (req.query.sort === 'course.name') {
+            lessons.sort((a, b) => {
+                const courseA = a.course ? a.course.name : '';
+                const courseB = b.course ? b.course.name : '';
+                if (req.query.order === 'desc') {
+                    return courseB.localeCompare(courseA);
+                } else {
+                    return courseA.localeCompare(courseB);
+                }
+            });
+        }
 
         const userTz = req.user.timeZone || 'Europe/Moscow';
         const lessonsWithLocalTime = lessons.map(lesson => ({
@@ -985,26 +1007,118 @@ router.get('/progress', ensureAuth, ensureRole('student'), async (req, res) => {
 });
 router.get('/payments', ensureAuth, ensureRole('admin'), async (req, res) => {
     try {
-        const { status } = req.query;
+        const { status, search, period, user, amountMin, amountMax } = req.query;
         let filter = {};
+        
+        // Status filter
         if (status) filter.status = status;
+        
+        // User filter
+        if (user) filter.userId = user;
+        
+        // Amount range filter
+        if (amountMin || amountMax) {
+            filter.amount = {};
+            if (amountMin) filter.amount.$gte = parseFloat(amountMin);
+            if (amountMax) filter.amount.$lte = parseFloat(amountMax);
+        }
+        
+        // Period filter
+        if (period) {
+            const now = new Date();
+            let startDate, endDate;
+            
+            switch (period) {
+                case 'today':
+                    startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                    endDate = new Date(startDate.getTime() + 24 * 60 * 60 * 1000);
+                    break;
+                case 'week':
+                    startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+                    endDate = now;
+                    break;
+                case 'month':
+                    startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+                    endDate = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+                    break;
+                case 'quarter':
+                    const quarter = Math.floor(now.getMonth() / 3);
+                    startDate = new Date(now.getFullYear(), quarter * 3, 1);
+                    endDate = new Date(now.getFullYear(), quarter * 3 + 3, 1);
+                    break;
+                case 'year':
+                    startDate = new Date(now.getFullYear(), 0, 1);
+                    endDate = new Date(now.getFullYear() + 1, 0, 1);
+                    break;
+                case 'custom':
+                    if (req.query.dateFrom) startDate = new Date(req.query.dateFrom);
+                    if (req.query.dateTo) {
+                        endDate = new Date(req.query.dateTo);
+                        endDate.setDate(endDate.getDate() + 1); // Include the end date
+                    }
+                    break;
+            }
+            
+            if (startDate || endDate) {
+                filter.createdAt = {};
+                if (startDate) filter.createdAt.$gte = startDate;
+                if (endDate) filter.createdAt.$lt = endDate;
+            }
+        }
 
         let sort = {};
         if (req.query.sort) {
-            sort[req.query.sort] = req.query.order === 'desc' ? -1 : 1;
+            if (req.query.sort === 'userId') {
+                // Handle user sorting separately after population
+                sort = {};
+            } else {
+                sort[req.query.sort] = req.query.order === 'desc' ? -1 : 1;
+            }
         } else {
             sort.createdAt = -1;
         }
 
-        const payments = await Payment.find(filter)
+        let payments = await Payment.find(filter)
             .populate('userId', 'name email')
             .sort(sort)
             .lean();
+        
+        // Handle user name sorting after population
+        if (req.query.sort === 'userId') {
+            payments.sort((a, b) => {
+                const nameA = a.userId ? a.userId.name : '';
+                const nameB = b.userId ? b.userId.name : '';
+                if (req.query.order === 'desc') {
+                    return nameB.localeCompare(nameA);
+                } else {
+                    return nameA.localeCompare(nameB);
+                }
+            });
+        }
+        
+        // Search filter (applied after population)
+        if (search) {
+            const searchRegex = new RegExp(search, 'i');
+            payments = payments.filter(payment => {
+                return (
+                    (payment.userId && payment.userId.name && searchRegex.test(payment.userId.name)) ||
+                    (payment.userId && payment.userId.email && searchRegex.test(payment.userId.email)) ||
+                    (payment.paymentId && searchRegex.test(payment.paymentId)) ||
+                    (payment.status && searchRegex.test(payment.status)) ||
+                    (payment.amount && searchRegex.test(payment.amount.toString())) ||
+                    (payment.currency && searchRegex.test(payment.currency))
+                );
+            });
+        }
+        
+        // Get all users for filter dropdown
+        const allUsers = await User.find({ role: 'student' }).sort({ name: 1 }).lean();
 
         res.render('admin/payments', {
             layout: 'layouts/dashboard',
             user: req.user,
             payments: payments,
+            allUsers: allUsers,
             query: req.query,
             page_name: 'payments'
         });

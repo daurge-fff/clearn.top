@@ -82,7 +82,8 @@
                         <tr>
                             <th>Student</th>
                             <th>Teacher</th>
-                            <th><%- sortableLink('topic', 'Course / Topic') %></th>
+                            <th><%- sortableLink('course.name', 'Course / Subject') %></th>
+                            <th><%- sortableLink('topic', 'Topic') %></th>
                             <th><%- sortableLink('lessonDate', 'Date & Time') %></th>
                             <th><%- sortableLink('status', 'Status') %></th>
                             <th>Actions</th>
@@ -93,7 +94,8 @@
                             <tr data-lesson-id="<%= lesson._id %>">
                                 <td><a href="/dashboard/user-profile/<%= lesson.student._id %>" class="user-link"><%= lesson.student.name %></a></td>
                                 <td><a href="/dashboard/user-profile/<%= lesson.teacher._id %>" class="user-link"><%= lesson.teacher.name %></a></td>
-                                <td><%= lesson.course.name %></td>
+                                <td><span class="badge role-teacher"><%= lesson.course.name %></span></td>
+                                <td><%= lesson.topic || 'General' %></td>
                                 <td><%= new Date(lesson.localLessonDate).toLocaleString('en-GB') %></td>
 
                                 <td class="status-cell" data-lesson-id="<%= lesson._id %>" data-current-status="<%= lesson.status %>">

@@ -798,6 +798,149 @@
     align-items: end;
 }
 
+/* === FILTER STYLES === */
+.filter-card {
+    background: var(--form-bg-color);
+    border: 1px solid var(--form-border-color);
+    border-radius: 15px;
+    padding: 25px;
+    margin-bottom: 25px;
+}
+
+.filter-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    align-items: end;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    min-width: 150px;
+    flex: 1;
+}
+
+.filter-group.main-search {
+    flex: 2;
+    min-width: 250px;
+}
+
+.input-with-icon {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.input-with-icon i {
+    position: absolute;
+    left: 12px;
+    color: var(--text-color);
+    opacity: 0.6;
+    z-index: 2;
+}
+
+.input-with-icon input {
+    padding-left: 40px;
+}
+
+.mobile-only {
+    display: none;
+}
+
+.collapsible-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    align-items: end;
+    width: 100%;
+}
+
+.custom-date-range {
+    display: none;
+}
+
+.amount-range {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.amount-range input {
+    flex: 1;
+    min-width: 80px;
+    padding: 8px 12px;
+    border: 1px solid var(--form-border-color);
+    border-radius: 6px;
+    font-size: 14px;
+    background: var(--bg-color);
+    color: var(--text-color);
+    transition: all 0.3s ease;
+}
+
+.amount-range input:focus {
+    outline: none;
+    border-color: var(--accent-color-1);
+    box-shadow: 0 0 0 3px rgba(0, 242, 254, 0.1);
+}
+
+.amount-range input::placeholder {
+    color: var(--text-color);
+    opacity: 0.6;
+}
+
+.filter-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-top: 10px;
+}
+
+@media (max-width: 767.98px) {
+    .mobile-only {
+        display: inline-flex;
+    }
+    
+    .collapsible-filters {
+        display: none;
+        flex-direction: column;
+        width: 100%;
+        margin-top: 20px;
+        padding-top: 20px;
+        border-top: 1px solid var(--card-border);
+    }
+    
+    .collapsible-filters.show {
+        display: flex;
+    }
+    
+    .filter-group {
+        min-width: 100%;
+        margin-bottom: 15px;
+    }
+    
+    .filter-form {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 15px;
+    }
+    
+    .amount-range {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .amount-range input {
+        width: 100%;
+        min-width: unset;
+    }
+    
+    .filter-actions {
+        justify-content: center;
+        margin-top: 20px;
+    }
+}
+
 .adjustment-form .form-group {
     margin-bottom: 0;
 }
