@@ -316,7 +316,6 @@
     mask-image: var(--icon-url);
 }
 
-/* --- Определяем URL для каждой иконки --- */
 .icon-dashboard { --icon-url: url(/images/icon-dashboard.svg); }
 .icon-calendar { --icon-url: url(/images/icon-calendar.svg); }
 .icon-chart { --icon-url: url(/images/icon-chart.svg); }
@@ -327,6 +326,7 @@
 .icon-logout { --icon-url: url(/images/icon-logout.svg); }
 .icon-add { --icon-url: url(/images/icon-add.svg); }
 .icon-edit { --icon-url: url(/images/icon-edit.svg); }
+.icon-close { --icon-url: url(/images/icon-close.svg); }
 .icon-delete { --icon-url: url(/images/icon-delete.svg); }
 .icon-sun { --icon-url: url(/images/icon-sun.svg); }
 .icon-moon { --icon-url: url(/images/icon-moon.svg); }
@@ -1215,7 +1215,6 @@ select.form-control {
     animation: fadeIn 0.3s ease;
 }
 
-/* === МОДЕРНЫЙ РЕДАКТОР ПЛАТЕЖЕЙ === */
 .payment-edit-card {
     max-width: 600px;
     margin: 0 auto;
@@ -1661,13 +1660,6 @@ select.form-control {
     text-decoration: underline;
 }
 
-/* Fix for cancel button icon */
-.cancel-btn i.icon-close:before {
-    content: '\2715';
-    font-family: 'Arial Unicode MS', sans-serif;
-    font-style: normal;
-}
-
 /* Responsive adjustments */
 @media (max-width: 768px) {
     .payment-details-card {
@@ -1840,13 +1832,6 @@ select.form-control {
 
 .status-modal.show {
     display: flex !important;
-}
-
-/* Fix missing cancel button icon */
-.cancel-btn i.icon-close:before {
-    content: "✕";
-    font-weight: bold;
-    font-style: normal;
 }
 
 /* Responsive for payment details */

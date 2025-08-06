@@ -17,7 +17,6 @@
                 <div class="form-group">
                     <label for="amount">Amount (€)</label>
                     <div class="input-group">
-                        <span class="input-prefix">€</span>
                         <input type="number" id="amount" name="amount" value="<%= payment.amountPaid %>" step="0.01" required>
                     </div>
                 </div>
@@ -36,7 +35,6 @@
                     <label for="paymentSystem">Payment System</label>
                     <select id="paymentSystem" name="paymentSystem" required class="payment-system-select">
                         <option value="paypal" <%= payment.paymentSystem === 'paypal' ? 'selected' : '' %>>🅿️ PayPal</option>
-                        <option value="stripe" <%= payment.paymentSystem === 'stripe' ? 'selected' : '' %>>💳 Stripe</option>
                         <option value="bank_transfer" <%= payment.paymentSystem === 'bank_transfer' ? 'selected' : '' %>>🏦 Bank Transfer</option>
                         <option value="cryptocloud" <%= payment.paymentSystem === 'cryptocloud' ? 'selected' : '' %>>🪙 CryptoCloud</option>
                         <option value="monobank" <%= payment.paymentSystem === 'monobank' ? 'selected' : '' %>>💙 Monobank</option>
