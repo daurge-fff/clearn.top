@@ -1,0 +1,97 @@
+<div class="container">
+    <div class="page-header">
+        <h1>Edit Payment</h1>
+        <div class="page-actions">
+            <a href="/dashboard/payments" class="btn btn-secondary">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px;">
+                    <polyline points="15 18 9 12 15 6"></polyline>
+                </svg>
+                Back to Payments
+            </a>
+        </div>
+    </div>
+
+    <div class="card payment-edit-card">
+        <form action="/dashboard/payments/<%= payment._id %>?_method=PUT" method="POST" class="payment-form">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="amount">Amount (€)</label>
+                    <div class="input-group">
+                        <span class="input-prefix">€</span>
+                        <input type="number" id="amount" name="amount" value="<%= payment.amountPaid %>" step="0.01" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="status">Status</label>
+                    <select id="status" name="status" required class="status-select">
+                        <option value="pending" <%= payment.status === 'pending' ? 'selected' : '' %>>⏳ Pending</option>
+                        <option value="completed" <%= payment.status === 'completed' ? 'selected' : '' %>>✅ Completed</option>
+                        <option value="failed" <%= payment.status === 'failed' ? 'selected' : '' %>>❌ Failed</option>
+                        <option value="refunded" <%= payment.status === 'refunded' ? 'selected' : '' %>>↩️ Refunded</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="paymentSystem">Payment System</label>
+                    <select id="paymentSystem" name="paymentSystem" required class="payment-system-select">
+                        <option value="paypal" <%= payment.paymentSystem === 'paypal' ? 'selected' : '' %>>🅿️ PayPal</option>
+                        <option value="stripe" <%= payment.paymentSystem === 'stripe' ? 'selected' : '' %>>💳 Stripe</option>
+                        <option value="bank_transfer" <%= payment.paymentSystem === 'bank_transfer' ? 'selected' : '' %>>🏦 Bank Transfer</option>
+                        <option value="cryptocloud" <%= payment.paymentSystem === 'cryptocloud' ? 'selected' : '' %>>🪙 CryptoCloud</option>
+                        <option value="monobank" <%= payment.paymentSystem === 'monobank' ? 'selected' : '' %>>💙 Monobank</option>
+                        <option value="robokassa" <%= payment.paymentSystem === 'robokassa' ? 'selected' : '' %>>🔒 Robokassa</option>
+                        <option value="payoneer" <%= payment.paymentSystem === 'payoneer' ? 'selected' : '' %>>💼 Payoneer</option>
+                    </select>
+                </div>
+
+                <div class="form-group full-width">
+                    <label for="pendingIdentifier">Client ID / Transaction ID</label>
+                    <input type="text" id="pendingIdentifier" name="pendingIdentifier" value="<%= payment.pendingIdentifier || '' %>" placeholder="Enter transaction or client ID" class="modern-input">
+                </div>
+
+                <div class="form-group full-width">
+                    <label for="description">Description</label>
+                    <textarea id="description" name="description" rows="3" class="modern-textarea" placeholder="Add any relevant notes..."><%= payment.description || '' %></textarea>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary save-btn">
+                    <i class="icon-check"></i>
+                    Save Changes
+                </button>
+                <a href="/dashboard/payments" class="btn btn-secondary cancel-btn">
+                    <i class="icon-close"></i>
+                    Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <div class="payment-details-card">
+        <h3>Payment Details</h3>
+        <div class="details-grid">
+            <div class="detail-item">
+                <label>Payment ID:</label>
+                <span><%= payment._id %></span>
+            </div>
+            <div class="detail-item">
+                <label>User:</label>
+                <span><a href="/dashboard/user-profile/<%= payment.userId._id %>" class="user-link"><%= payment.userId.name %></a></span>
+            </div>
+            <div class="detail-item">
+                <label>Email:</label>
+                <span><%= payment.userId.email %></span>
+            </div>
+            <div class="detail-item">
+                <label>Created:</label>
+                <span><%= new Date(payment.createdAt).toLocaleString() %></span>
+            </div>
+            <div class="detail-item">
+                <label>Updated:</label>
+                <span><%= new Date(payment.updatedAt).toLocaleString() %></span>
+            </div>
+        </div>
+    </div>
+</div>

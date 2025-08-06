@@ -353,6 +353,8 @@
 .icon-credit-card { --icon-url: url(/images/icon-credit-card.svg); }
 .icon-star { --icon-url: url(/images/icon-star.svg); }
 .icon-download { --icon-url: url(/images/icon-download.svg); }
+.icon-pen { --icon-url: url(/images/icon-pen.svg); }
+.icon-trash { --icon-url: url(/images/icon-trash.svg); }
 
 .nav-link i, .header-btn i, .password-toggle i {
     width: 20px;
@@ -562,7 +564,7 @@
     border: 1px solid var(--card-border);
 }
 .data-table th {
-    padding: 15px 20px;
+    padding: 12px 15px;
     font-family: var(--font-headings);
     font-weight: 800;
     background: linear-gradient(135deg, var(--accent-color-1), var(--accent-color-2));
@@ -587,7 +589,7 @@
     left: 100%;
 }
 .data-table td {
-    padding: 18px 20px;
+    padding: 12px 15px;
     vertical-align: middle;
     border-bottom: 1px solid var(--card-border);
     transition: all 0.3s ease;
@@ -743,6 +745,37 @@
     background: var(--form-bg-color);
     transition: all 0.3s ease;
     overflow: hidden;
+    text-decoration: none;
+    font-size: 16px;
+}
+
+.btn-icon i {
+    width: 16px;
+    height: 16px;
+    background-color: currentColor;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    -webkit-mask-position: center;
+    mask-position: center;
+    -webkit-mask-size: contain;
+    mask-size: contain;
+    flex-shrink: 0;
+}
+
+.btn-icon .icon-pen {
+    -webkit-mask-image: url(/images/icon-pen.svg);
+    mask-image: url(/images/icon-pen.svg);
+}
+
+.btn-icon .icon-trash {
+    -webkit-mask-image: url(/images/icon-trash.svg);
+    mask-image: url(/images/icon-trash.svg);
+}
+
+.btn-icon.btn-danger:hover {
+    color: #e74c3c;
+    border-color: #e74c3c;
+    box-shadow: 0 4px 12px rgba(231, 76, 60, 0.2);
 }
 
 .btn-icon::before {
@@ -796,6 +829,167 @@
     grid-template-columns: 1fr 1fr auto;
     gap: 20px;
     align-items: end;
+}
+
+/* === STATUS DROPDOWN STYLES === */
+.status-cell {
+    position: relative;
+    cursor: pointer;
+}
+
+.status-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 100;
+    margin-top: 4px;
+}
+
+.status-cell:hover .status-dropdown {
+    display: block;
+}
+
+.status-dropdown-item {
+    padding: 10px 12px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    font-size: 0.9rem;
+}
+
+.status-dropdown-item:hover {
+    background-color: var(--accent-color-1);
+    color: var(--bg-color);
+}
+
+.status-dropdown-item:first-child {
+    border-radius: 8px 8px 0 0;
+}
+
+.status-dropdown-item:last-child {
+    border-radius: 0 0 8px 8px;
+}
+
+/* Remove dropdown arrows from select elements */
+select {
+    -webkit-appearance: none !important;
+    -moz-appearance: none !important;
+    appearance: none !important;
+    background-image: none !important;
+    background-repeat: no-repeat !important;
+    background-position: right center !important;
+    padding-right: 16px !important;
+}
+
+/* Ensure no arrows on all select elements */
+.form-group select,
+.filter-group select,
+select.form-control {
+    -webkit-appearance: none !important;
+    -moz-appearance: none !important;
+    appearance: none !important;
+    background-image: none !important;
+}
+
+/* === MODAL STYLES === */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1050;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    outline: 0;
+}
+
+.modal.show {
+    display: block;
+}
+
+.modal-dialog {
+    position: relative;
+    width: auto;
+    margin: 1.75rem;
+    pointer-events: none;
+    max-width: 500px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.modal-content {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    pointer-events: auto;
+    background-color: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    outline: 0;
+}
+
+.modal-header {
+    background-color: var(--accent-color-1);
+    color: var(--bg-color);
+    border-bottom: 1px solid var(--card-border);
+    border-radius: 12px 12px 0 0;
+    padding: 1rem 1.5rem;
+}
+
+.modal-title {
+    color: var(--bg-color);
+    font-weight: 600;
+    margin: 0;
+}
+
+.modal-body {
+    padding: 1.5rem;
+    background-color: var(--card-bg);
+    color: var(--text-color);
+}
+
+.modal-footer {
+    background-color: var(--form-bg-color);
+    border-top: 1px solid var(--card-border);
+    border-radius: 0 0 12px 12px;
+    padding: 1rem 1.5rem;
+}
+
+.modal .form-control {
+    background-color: var(--form-bg-color);
+    border: 1px solid var(--form-border-color);
+    color: var(--text-color);
+    border-radius: 8px;
+    padding: 0.75rem;
+}
+
+.modal .form-control:focus {
+    border-color: var(--accent-color-1);
+    box-shadow: 0 0 0 0.2rem rgba(var(--accent-color-1-rgb), 0.25);
+    background-color: var(--form-bg-color);
+}
+
+.modal .close {
+    color: var(--bg-color);
+    opacity: 0.8;
+    text-shadow: none;
+}
+
+.modal .close:hover {
+    color: var(--bg-color);
+    opacity: 1;
+}
+
+.modal-backdrop {
+    background-color: rgba(0, 0, 0, 0.6);
 }
 
 /* === FILTER STYLES === */
@@ -938,6 +1132,26 @@
     .filter-actions {
         justify-content: center;
         margin-top: 20px;
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .filter-actions .btn {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .actions-cell {
+        flex-direction: row;
+        gap: 8px;
+        justify-content: center;
+        min-width: 80px;
+    }
+    
+    .btn-icon {
+        width: 36px;
+        height: 36px;
+        padding: 6px;
     }
 }
 
@@ -984,7 +1198,669 @@
     border: 1px solid var(--card-border);
     background-color: var(--bg-color);
     border-radius: 4px;
+}
+
+/* === НОВОЕ МОДАЛЬНОЕ ОКНО === */
+.status-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    z-index: 10000;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    animation: fadeIn 0.3s ease;
+}
+
+/* === МОДЕРНЫЙ РЕДАКТОР ПЛАТЕЖЕЙ === */
+.payment-edit-card {
+    max-width: 600px;
+    margin: 0 auto;
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.payment-form {
+    padding: 32px;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 24px;
+    margin-bottom: 32px;
+}
+
+.form-group.full-width {
+    grid-column: 1 / -1;
+}
+
+.input-group {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.input-prefix {
+    position: absolute;
+    left: 16px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: var(--accent-color-1);
+    z-index: 1;
+}
+
+.input-group input {
+    padding-left: 40px;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.modern-input, .modern-textarea {
+    width: 100%;
+    padding: 16px;
+    border: 2px solid var(--card-border);
+    border-radius: 12px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    background: var(--bg-color);
+}
+
+.modern-input:focus, .modern-textarea:focus {
+    outline: none;
+    border-color: var(--accent-color-1);
+    box-shadow: 0 0 0 3px rgba(0, 242, 254, 0.2);
+}
+
+.modern-textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+.status-select, .payment-system-select {
+    width: 100%;
+    padding: 16px;
+    border: 2px solid var(--card-border);
+    border-radius: 12px;
+    font-size: 1rem;
+    background: var(--bg-color);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.status-select:focus, .payment-system-select:focus {
+    outline: none;
+    border-color: var(--accent-color-1);
+    box-shadow: 0 0 0 3px rgba(0, 242, 254, 0.2);
+}
+
+.save-btn, .cancel-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    font-size: 1rem;
+    font-weight: 600;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+}
+
+.save-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 242, 254, 0.3);
+}
+
+.cancel-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* === АДАПТИВНОСТЬ === */
+@media (max-width: 768px) {
+    .payment-edit-card {
+        margin: 16px;
+    }
+    
+    .payment-form {
+        padding: 24px 16px;
+    }
+    
+    .form-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+        gap: 12px;
+    }
+    
+    .save-btn, .cancel-btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .payment-form {
+        padding: 16px;
+    }
+}
+
+.status-modal.show {
+    display: flex;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-30px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.status-modal-content {
+    background: var(--card-bg);
+    border-radius: 16px;
+    padding: 0;
+    max-width: 450px;
+    width: 90%;
+    max-height: 80vh;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+    animation: slideIn 0.3s ease;
+    border: 1px solid var(--card-border);
+}
+
+.status-modal-header {
+    background: linear-gradient(135deg, var(--accent-color-1), var(--accent-color-2));
+    color: white;
+    padding: 20px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-radius: 16px 16px 0 0;
+}
+
+.status-modal-title {
+    margin: 0;
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: white;
+}
+
+.status-modal-close {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 28px;
+    cursor: pointer;
+    padding: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
     transition: all 0.2s ease;
+    opacity: 0.8;
+}
+
+.status-modal-close:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+.status-modal-body {
+    padding: 24px;
+    background: var(--card-bg);
+}
+
+.status-modal-footer {
+    padding: 16px 24px;
+    background: var(--form-bg-color);
+    border-top: 1px solid var(--card-border);
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    border-radius: 0 0 16px 16px;
+}
+
+.status-select {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid var(--card-border);
+    border-radius: 8px;
+    background: var(--bg-color);
+    color: var(--text-color);
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-image: none;
+}
+
+.status-select:focus {
+    outline: none;
+    border-color: var(--accent-color-1);
+    box-shadow: 0 0 0 3px rgba(0, 242, 254, 0.2);
+}
+
+/* === ЦВЕТНЫЕ БЕЙДЖИ СТАТУСОВ === */
+.badge {
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.badge:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+/* Статусы уроков */
+.badge.lesson-scheduled {
+    background: linear-gradient(135deg, #3498db, #2980b9);
+    color: white;
+    box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+}
+
+.badge.lesson-in-progress {
+    background: linear-gradient(135deg, #9b59b6, #8e44ad);
+    color: white;
+    box-shadow: 0 4px 15px rgba(155, 89, 182, 0.3);
+}
+
+.badge.lesson-completed {
+    background: linear-gradient(135deg, #2ecc71, #27ae60);
+    color: white;
+    box-shadow: 0 4px 15px rgba(46, 204, 113, 0.3);
+}
+
+.badge.lesson-cancelled {
+    background: linear-gradient(135deg, #e74c3c, #c0392b);
+    color: white;
+    box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3);
+}
+
+/* Status dropdown styles for user profile */
+.status-cell {
+    position: relative;
+    cursor: pointer;
+}
+
+.status-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+    min-width: 150px;
+    display: none;
+}
+
+.status-dropdown-item {
+    padding: 8px 12px;
+    cursor: pointer;
+    border-bottom: 1px solid var(--card-border);
+    transition: background-color 0.2s ease;
+    font-size: 0.9rem;
+}
+
+.status-dropdown-item:last-child {
+    border-bottom: none;
+}
+
+.status-dropdown-item:hover {
+    background-color: var(--bg-color);
+}
+
+.current-status-badge {
+    transition: all 0.3s ease;
+}
+
+.current-status-badge.updating {
+    opacity: 0.5;
+    transform: scale(0.95);
+}
+
+.badge.lesson-rescheduled {
+    background: linear-gradient(135deg, #f39c12, #e67e22);
+    color: white;
+    box-shadow: 0 4px 15px rgba(243, 156, 18, 0.3);
+}
+
+/* Статусы платежей */
+.badge.payment-pending {
+    background: linear-gradient(135deg, #f1c40f, #f39c12);
+    color: #2c3e50;
+    box-shadow: 0 4px 15px rgba(241, 196, 15, 0.3);
+}
+
+.badge.payment-completed {
+    background: linear-gradient(135deg, #2ecc71, #27ae60);
+    color: white;
+}
+
+/* Payment Details Card Styling */
+.payment-details-card {
+    max-width: 800px;
+    margin: 2rem auto 0;
+    background: linear-gradient(135deg, var(--card-bg) 0%, rgba(255, 255, 255, 0.05) 100%);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 2rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+    backdrop-filter: blur(12px);
+    position: relative;
+    overflow: hidden;
+}
+
+.payment-details-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--accent-color-1), var(--accent-color-2));
+    border-radius: 16px 16px 0 0;
+}
+
+.payment-details-card h3 {
+    margin: 0 0 1.5rem 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.payment-details-card h3::before {
+    content: '📋';
+    font-size: 1.2rem;
+}
+
+.details-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1rem;
+}
+
+.detail-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    transition: all 0.3s ease;
+}
+
+.detail-item:hover {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.1);
+    transform: translateY(-1px);
+}
+
+.detail-item label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin: 0;
+}
+
+.detail-item span {
+    font-size: 0.95rem;
+    color: var(--text-primary);
+    font-family: 'Courier New', monospace;
+    word-break: break-all;
+}
+
+.detail-item .user-link {
+    color: var(--accent-color-1);
+    text-decoration: none;
+    font-family: inherit;
+    font-weight: 500;
+    transition: color 0.3s ease;
+}
+
+.detail-item .user-link:hover {
+    color: var(--accent-color-2);
+    text-decoration: underline;
+}
+
+/* Fix for cancel button icon */
+.cancel-btn i.icon-close:before {
+    content: '\2715';
+    font-family: 'Arial Unicode MS', sans-serif;
+    font-style: normal;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .payment-details-card {
+        margin: 1rem;
+        padding: 1.5rem;
+    }
+    
+    .details-grid {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+    
+    .detail-item {
+        padding: 0.75rem;
+    }
+    
+    .detail-item span {
+        font-size: 0.875rem;
+    }
+}
+
+/* Improved input group styling for currency symbols */
+.input-group {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.input-prefix {
+    position: absolute;
+    left: 12px;
+    color: var(--text-secondary);
+    font-weight: 500;
+    z-index: 1;
+    pointer-events: none;
+}
+
+.input-prefix + input {
+    padding-left: 35px;
+    padding-right: 12px;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 12px 16px 12px 35px;
+    border: 2px solid var(--card-border);
+    border-radius: 8px;
+    background: var(--bg-color);
+    color: var(--text-color);
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+.input-group input:focus {
+    outline: none;
+    border-color: var(--accent-color-1);
+    box-shadow: 0 0 0 3px rgba(0, 242, 254, 0.2);
+}
+    box-shadow: 0 4px 15px rgba(46, 204, 113, 0.3);
+}
+
+.badge.payment-failed {
+    background: linear-gradient(135deg, #e74c3c, #c0392b);
+    color: white;
+    box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3);
+}
+
+.badge.payment-refunded {
+    background: linear-gradient(135deg, #95a5a6, #7f8c8d);
+    color: white;
+    box-shadow: 0 4px 15px rgba(149, 165, 166, 0.3);
+}
+
+/* Анимация пульса для активных статусов */
+.badge.lesson-scheduled::before,
+.badge.payment-pending::before {
+    content: '●';
+    font-size: 8px;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+    transition: all 0.2s ease;
+}
+
+/* Modern Payment Details Card */
+.payment-details-card {
+    margin-top: 30px;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+}
+
+.payment-details-card h3 {
+    background: linear-gradient(135deg, var(--accent-color-1), var(--accent-color-2));
+    color: white;
+    margin: 0;
+    padding: 20px 24px;
+    font-size: 1.3rem;
+    font-weight: 700;
+}
+
+.details-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+    padding: 24px;
+}
+
+.detail-item {
+    display: flex;
+    flex-direction: column;
+    padding: 16px;
+    background: var(--bg-color);
+    border: 1px solid var(--card-border);
+    border-radius: 12px;
+    transition: all 0.3s ease;
+}
+
+.detail-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.detail-item label {
+    font-weight: 700;
+    color: var(--accent-color-1);
+    margin-bottom: 8px;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.detail-item span {
+    color: var(--text-color);
+    font-weight: 500;
+    font-size: 1.1rem;
+    word-break: break-all;
+}
+
+.detail-item .user-link {
+    color: var(--accent-color-1);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.detail-item .user-link:hover {
+    text-decoration: underline;
+}
+
+/* Fix for modal centering */
+.status-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    z-index: 10000;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    animation: fadeIn 0.3s ease;
+}
+
+.status-modal.show {
+    display: flex !important;
+}
+
+/* Fix missing cancel button icon */
+.cancel-btn i.icon-close:before {
+    content: "✕";
+    font-weight: bold;
+    font-style: normal;
+}
+
+/* Responsive for payment details */
+@media (max-width: 768px) {
+    .details-grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+        padding: 16px;
+    }
+    
+    .payment-details-card h3 {
+        padding: 16px 20px;
+        font-size: 1.2rem;
+    }
 }
 
 .form-group-checkbox label:hover::before {
@@ -1762,12 +2638,12 @@
     
     /* Таблицы на планшетах */
     .data-table th {
-        padding: 12px 15px;
+        padding: 8px 10px;
         font-size: 0.85rem;
     }
     
     .data-table td {
-        padding: 12px 15px;
+        padding: 8px 10px;
         font-size: 0.9rem;
     }
     
@@ -1864,14 +2740,30 @@
     }
     
     .data-table th {
-        padding: 10px 12px;
+        padding: 8px 8px;
         font-size: 0.8rem;
         letter-spacing: 0.5px;
     }
     
     .data-table td {
-        padding: 12px;
+        padding: 8px 8px;
         font-size: 0.85rem;
+    }
+    
+    .actions-cell {
+        display: flex;
+        flex-direction: row !important;
+        gap: 6px;
+        justify-content: center;
+        align-items: center;
+        min-width: 70px;
+    }
+    
+    .btn-icon {
+        width: 32px;
+        height: 32px;
+        padding: 4px;
+        border-radius: 8px;
     }
     
     .badge {

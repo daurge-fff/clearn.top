@@ -91,7 +91,7 @@
                         const sortableLink = (field, text) => {
                             const isCurrentSort = query.sort === field;
                             const order = isCurrentSort && query.order === 'asc' ? 'desc' : 'asc';
-                            const icon = isCurrentSort ? (query.order === 'asc' ? '▲' : '▼') : '';
+                            const icon = isCurrentSort ? (query.order === 'asc' ? '↑' : '↓') : '';
                             const params = new URLSearchParams(query);
                             params.set('sort', field);
                             params.set('order', order);
@@ -103,7 +103,6 @@
                         <th><%- sortableLink('pendingIdentifier', 'Client ID') %></th>
                         <th><%- sortableLink('userId.name', 'User') %></th>
                         <th><%- sortableLink('amountPaid', 'Amount') %></th>
-                        <th><%- sortableLink('currency', 'Currency') %></th>
                         <th><%- sortableLink('status', 'Status') %></th>
                         <th>Actions</th>
                     </tr>
@@ -112,7 +111,7 @@
                     <% if (payments && payments.length > 0) { %>
                         <% payments.forEach(payment => { %>
                             <tr data-payment-id="<%= payment._id %>">
-                                <td><%= new Date(payment.createdAt).toLocaleString('en-GB') %></td>
+                                <td><%= new Date(payment.createdAt).toLocaleString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) %></td>
                                 <td><code><%= payment.pendingIdentifier %></code></td>
                                 <td>
                                     <% if (payment.userId) { %>
@@ -123,33 +122,29 @@
                                         </button>
                                     <% } %>
                                 </td>
-                                <td><strong><%= payment.amountPaid.toFixed(2) %></strong></td>
-                                <td><span class="badge role-student"><%= payment.currency %></span></td>
+                                <td><strong>€<%= payment.amountPaid.toFixed(2) %></strong></td>
                                 
-                                <td class="status-cell" data-payment-id="<%= payment._id %>" data-current-status="<%= payment.status %>">
-                                    <span class="badge status-<%= payment.status.replace(/ /g, '_') %> current-status-badge">
-                                        <%= payment.status.replace('_', ' ') %>
+                                <td class="status-cell" onclick="openPaymentStatusModal('<%= payment._id %>', '<%= payment.status %>')">
+                                    <span class="badge payment-<%= payment.status %>">
+                                        <%= payment.status === 'pending' ? 'Pending' : payment.status === 'completed' ? 'Completed' : payment.status === 'failed' ? 'Failed' : 'Refunded' %>
                                     </span>
-                                    <div class="status-dropdown">
-                                        <% if (payment.status === 'manual_review' || payment.status === 'pending') { %>
-                                            <div class="status-dropdown-item" data-status="completed">Approve (Completed)</div>
-                                            <div class="status-dropdown-item" data-status="failed">Decline (Failed)</div>
-                                        <% } else { %>
-                                            <div class="status-dropdown-item" data-status="<%= payment.status %>">No actions available</div>
-                                        <% } %>
-                                    </div>
                                 </td>
 
                                 <td class="actions-cell">
-                                    <button class="btn-icon btn-danger delete-payment-btn" data-id="<%= payment._id %>" data-tooltip="Delete Record">
-                                        <i class="icon-delete"></i>
-                                    </button>
+                                    <a href="/dashboard/payments/<%= payment._id %>/edit" class="btn btn-sm btn-outline-primary btn-icon" title="Edit">
+                                        <i class="icon-pen"></i>
+                                    </a>
+                                    <form action="/dashboard/payments/<%= payment._id %>?_method=DELETE" method="POST" style="display: inline;">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger btn-icon" onclick="return confirm('Are you sure you want to delete this payment?')" title="Delete">
+                                            <i class="icon-trash"></i>
+                                        </button>
+                                    </form>
                                 </td>
                             </tr>
                         <% }); %>
                     <% } else { %>
                         <tr>
-                            <td colspan="6">
+                            <td colspan="5">
                                 <div class="empty-state">
                                     <h3>No Payments Found</h3>
                                     <p>No payments match your current filters.</p>
@@ -197,4 +192,143 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 });
+
+// Payment Status Modal Functions
+let currentPaymentId = null;
+
+let isPaymentModalOpen = false;
+
+function openPaymentStatusModal(paymentId, currentStatus) {
+    if (isPaymentModalOpen) return;
+    
+    currentPaymentId = paymentId;
+    const statusSelect = document.getElementById('paymentStatusSelect');
+    if (statusSelect) {
+        statusSelect.value = currentStatus;
+    }
+    
+    const modal = document.getElementById('paymentStatusModal');
+    if (!modal) {
+        console.error('Payment modal not found');
+        return;
+    }
+    
+    // Show modal with new CSS classes
+    modal.classList.add('show');
+    isPaymentModalOpen = true;
+    
+    // Close on backdrop click
+    modal.addEventListener('click', function(e) {
+        if (e.target === modal) {
+            closePaymentStatusModal();
+        }
+    });
+}
+
+function closePaymentStatusModal() {
+    if (!isPaymentModalOpen) return;
+    
+    const modal = document.getElementById('paymentStatusModal');
+    if (modal) {
+        modal.classList.remove('show');
+    }
+    
+    isPaymentModalOpen = false;
+    currentPaymentId = null;
+}
+
+function updatePaymentStatus() {
+    if (!currentPaymentId) {
+        alert('No payment selected');
+        return;
+    }
+    
+    const statusSelect = document.getElementById('paymentStatusSelect');
+    if (!statusSelect) {
+        alert('Status select not found');
+        return;
+    }
+    
+    const newStatus = statusSelect.value;
+    if (!newStatus) {
+        alert('Please select a status');
+        return;
+    }
+    
+    // Show loading state
+    const updateBtn = document.querySelector('#paymentStatusModal .btn-primary');
+    const originalText = updateBtn.textContent;
+    updateBtn.textContent = 'Updating...';
+    updateBtn.disabled = true;
+    
+    fetch(`/dashboard/payments/${currentPaymentId}/status`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ status: newStatus })
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            closePaymentStatusModal();
+            location.reload();
+        } else {
+            throw new Error(data.message || 'Unknown error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error updating status: ' + error.message);
+    })
+    .finally(() => {
+        updateBtn.textContent = originalText;
+        updateBtn.disabled = false;
+    });
+}
+
+// Close modal with Escape key
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape' && isPaymentModalOpen) {
+        closePaymentStatusModal();
+    }
+});
+
+// Ensure modal is hidden on page load
+document.addEventListener('DOMContentLoaded', function() {
+    const modal = document.getElementById('paymentStatusModal');
+    if (modal) {
+        modal.classList.remove('show');
+    }
+});
 </script>
+
+<!-- Новое модальное окно статуса платежа -->
+<div class="status-modal" id="paymentStatusModal">
+    <div class="status-modal-content">
+        <div class="status-modal-header">
+            <h3 class="status-modal-title">Change Payment Status</h3>
+            <button class="status-modal-close" onclick="closePaymentStatusModal()">&times;</button>
+        </div>
+        <div class="status-modal-body">
+            <div class="form-group">
+                <label for="paymentStatusSelect">Select Status:</label>
+                <select class="status-select" id="paymentStatusSelect">
+                    <option value="pending">Pending</option>
+                    <option value="completed">Completed</option>
+                    <option value="failed">Failed</option>
+                    <option value="refunded">Refunded</option>
+                </select>
+            </div>
+        </div>
+        <div class="status-modal-footer">
+            <button type="button" class="btn btn-secondary" onclick="closePaymentStatusModal()">Cancel</button>
+            <button type="button" class="btn btn-primary" onclick="updatePaymentStatus()">Update</button>
+        </div>
+    </div>
+</div>

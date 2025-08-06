@@ -62,11 +62,14 @@
                     <% if (lessons && lessons.length > 0) { %>
                         <% lessons.forEach(lesson => { %>
                             <tr>
-                                <td><%= new Date(lesson.localLessonDate).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) %></td>
+                                <td><%= new Date(lesson.localLessonDate).toLocaleString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) %></td>
                                 <td><%= lesson.topic %></td>
-                                <td><span class="badge status-<%= lesson.status %>"><%= lesson.status.replace(/_/g, ' ') %></span></td>
+                                <td><span class="badge lesson-<%= lesson.status %>" onclick="openLessonStatusModal('<%= lesson._id %>', '<%= lesson.status %>')" style="cursor: pointer;" data-tooltip="Click to change status"><%= lesson.status.replace(/_/g, ' ').toUpperCase() %></span></td>
                                 <td class="actions-cell">
                                     <a href="/dashboard/lessons/manage/<%= lesson._id %>" class="btn-icon" data-tooltip="Manage"><i class="icon-edit"></i></a>
+                                    <button class="btn-icon" onclick="openLessonStatusModal('<%= lesson._id %>', '<%= lesson.status %>')" data-tooltip="Change Status">
+                                        <i class="icon-pen"></i>
+                                    </button>
                                 </td>
                             </tr>
                         <% }); %>
@@ -80,3 +83,116 @@
         </div>
     </div>
 </div>
+
+<!-- Lesson Status Modal -->
+<div id="lessonStatusModal" class="status-modal" style="display: none;">
+    <div class="status-modal-content">
+        <div class="status-modal-header">
+            <h3>Change Lesson Status</h3>
+            <button class="status-modal-close" onclick="closeLessonStatusModal()">&times;</button>
+        </div>
+        <div class="status-modal-body">
+            <form id="lessonStatusForm">
+                <input type="hidden" id="lessonId" name="lessonId">
+                <div class="form-group">
+                    <label for="lessonStatus">Status</label>
+                    <select id="lessonStatus" name="status" class="status-select">
+                        <option value="scheduled">Scheduled</option>
+                        <option value="in-progress">In Progress</option>
+                        <option value="completed">Completed</option>
+                        <option value="cancelled">Cancelled</option>
+                        <option value="cancelled_by_student">Cancelled by Student</option>
+                        <option value="cancelled_by_teacher">Cancelled by Teacher</option>
+                        <option value="no_show">No Show</option>
+                    </select>
+                </div>
+                <div class="status-modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeLessonStatusModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="saveStatusBtn">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+let currentLessonId = null;
+
+function openLessonStatusModal(lessonId, currentStatus) {
+    currentLessonId = lessonId;
+    document.getElementById('lessonId').value = lessonId;
+    document.getElementById('lessonStatus').value = currentStatus;
+    
+    const modal = document.getElementById('lessonStatusModal');
+    modal.style.display = 'block';
+    setTimeout(() => modal.classList.add('show'), 10);
+}
+
+function closeLessonStatusModal() {
+    const modal = document.getElementById('lessonStatusModal');
+    modal.classList.remove('show');
+    setTimeout(() => modal.style.display = 'none', 300);
+}
+
+async function updateLessonStatus() {
+    const form = document.getElementById('lessonStatusForm');
+    const formData = new FormData(form);
+    const status = formData.get('status');
+    const lessonId = formData.get('lessonId');
+    
+    const saveBtn = document.getElementById('saveStatusBtn');
+    saveBtn.disabled = true;
+    saveBtn.textContent = 'Saving...';
+    
+    try {
+        const response = await fetch(`/dashboard/lessons/${lessonId}/status`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ status })
+        });
+        
+        if (response.ok) {
+            const result = await response.json();
+            if (result.success) {
+                // Update the status badge in the table
+                const statusBadge = document.querySelector(`[onclick*="'${lessonId}'"]`)?.closest('span');
+                if (statusBadge) {
+                    statusBadge.className = `badge status-${status}`;
+                    statusBadge.textContent = status.replace(/_/g, ' ');
+                }
+                closeLessonStatusModal();
+                
+                // Show success message
+                const successMsg = document.createElement('div');
+                successMsg.className = 'alert alert-success';
+                successMsg.textContent = 'Lesson status updated successfully';
+                document.querySelector('.card').prepend(successMsg);
+                setTimeout(() => successMsg.remove(), 3000);
+            }
+        } else {
+            throw new Error('Failed to update status');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Error updating lesson status. Please try again.');
+    } finally {
+        saveBtn.disabled = false;
+        saveBtn.textContent = 'Save Changes';
+    }
+}
+
+// Handle form submission
+document.getElementById('lessonStatusForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    updateLessonStatus();
+});
+
+// Close modal when clicking outside
+document.getElementById('lessonStatusModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeLessonStatusModal();
+    }
+});
+</script>

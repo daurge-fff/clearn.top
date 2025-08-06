@@ -69,9 +69,9 @@
                 <table class="data-table">
                     <%
                         const sortableLink = (field, text) => {
-                            const currentSort = query.sort === field;
-                            const order = currentSort && query.order === 'asc' ? 'desc' : 'asc';
-                            const icon = currentSort ? (query.order === 'asc' ? '▲' : '▼') : '';
+                            const isCurrentSort = query.sort === field;
+                            const order = isCurrentSort && query.order === 'asc' ? 'desc' : 'asc';
+                            const icon = isCurrentSort ? (query.order === 'asc' ? '↑' : '↓') : '';
                             const params = new URLSearchParams(query);
                             params.set('sort', field);
                             params.set('order', order);
@@ -96,26 +96,23 @@
                                 <td><a href="/dashboard/user-profile/<%= lesson.teacher._id %>" class="user-link"><%= lesson.teacher.name %></a></td>
                                 <td><span class="badge role-teacher"><%= lesson.course.name %></span></td>
                                 <td><%= lesson.topic || 'General' %></td>
-                                <td><%= new Date(lesson.localLessonDate).toLocaleString('en-GB') %></td>
+                                <td><%= new Date(lesson.localLessonDate).toLocaleString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) %></td>
 
-                                <td class="status-cell" data-lesson-id="<%= lesson._id %>" data-current-status="<%= lesson.status %>">
-                                    <span class="badge status-<%= lesson.status.replace(/ /g, '_') %> current-status-badge">
-                                        <%= lesson.status.replace(/_/g, ' ') %>
+                                <td class="status-cell" onclick="openLessonStatusModal('<%= lesson._id %>', '<%= lesson.status %>')">
+                                    <span class="badge lesson-<%= lesson.status %>">
+                                        <%= lesson.status.replace(/_/g, ' ').toUpperCase() %>
                                     </span>
-                                    <div class="status-dropdown">
-                                        <div class="status-dropdown-item" data-status="scheduled">Scheduled</div>
-                                        <div class="status-dropdown-item" data-status="completed">Completed</div>
-                                        <div class="status-dropdown-item" data-status="cancelled_by_student">Cancelled (Student)</div>
-                                        <div class="status-dropdown-item" data-status="cancelled_by_teacher">Cancelled (Teacher)</div>
-                                        <div class="status-dropdown-item" data-status="no_show">No Show</div>
-                                    </div>
                                 </td>
                                 
                                 <td class="actions-cell">
-                                    <a href="/dashboard/lessons/manage/<%= lesson._id %>" class="btn-icon" data-tooltip="Manage"><i class="icon-edit"></i></a>
-                                    <button class="btn-icon btn-danger delete-lesson-btn" data-id="<%= lesson._id %>" data-tooltip="Delete">
-                                        <i class="icon-delete"></i>
-                                    </button>
+                                    <a href="/dashboard/lessons/manage/<%= lesson._id %>" class="btn btn-sm btn-outline-primary btn-icon" title="Edit">
+                                        <i class="icon-pen"></i>
+                                    </a>
+                                    <form action="/dashboard/lessons/<%= lesson._id %>?_method=DELETE" method="POST" style="display: inline;">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger btn-icon" onclick="return confirm('Are you sure you want to delete this lesson?')" title="Delete">
+                                            <i class="icon-trash"></i>
+                                        </button>
+                                    </form>
                                 </td>
                             </tr>
                         <% }); %>
@@ -132,3 +129,155 @@
         <% } %>
     </div>
 </div>
+
+<!-- Новое модальное окно статуса урока -->
+<div class="status-modal" id="lessonStatusModal">
+    <div class="status-modal-content">
+        <div class="status-modal-header">
+            <h3 class="status-modal-title">Change Lesson Status</h3>
+            <button class="status-modal-close" onclick="closeLessonStatusModal()">&times;</button>
+        </div>
+        <div class="status-modal-body">
+            <div class="form-group">
+                <label for="lessonStatusSelect">Select Status:</label>
+                <select class="status-select" id="lessonStatusSelect">
+                    <option value="scheduled">Scheduled</option>
+                    <option value="in-progress">In Progress</option>
+                    <option value="completed">Completed</option>
+                    <option value="cancelled">Cancelled</option>
+                    <option value="cancelled_student">Cancelled (Student)</option>
+                    <option value="cancelled_teacher">Cancelled (Teacher)</option>
+                    <option value="no_show">No Show</option>
+                </select>
+            </div>
+        </div>
+        <div class="status-modal-footer">
+            <button type="button" class="btn btn-secondary" onclick="closeLessonStatusModal()">Cancel</button>
+            <button type="button" class="btn btn-primary" onclick="updateLessonStatus()">Update</button>
+        </div>
+    </div>
+</div>
+
+<script>
+let currentLessonId = null;
+let isLessonModalOpen = false;
+
+function openLessonStatusModal(lessonId, currentStatus) {
+    if (isLessonModalOpen) return;
+    
+    currentLessonId = lessonId;
+    const statusSelect = document.getElementById('lessonStatusSelect');
+    if (statusSelect) {
+        statusSelect.value = currentStatus;
+    }
+    
+    const modal = document.getElementById('lessonStatusModal');
+    if (!modal) {
+        console.error('Lesson status modal not found');
+        return;
+    }
+    
+    // Remove any existing backdrop
+    const existingBackdrop = document.getElementById('lesson-status-modal-backdrop');
+    if (existingBackdrop) {
+        existingBackdrop.remove();
+    }
+    
+    // Show modal with new CSS classes
+    modal.style.display = 'block';
+    modal.classList.add('show');
+    isLessonModalOpen = true;
+    
+    // Close on backdrop click
+    modal.addEventListener('click', function(e) {
+        if (e.target === modal) {
+            closeLessonStatusModal();
+        }
+    });
+}
+
+function closeLessonStatusModal() {
+     if (!isLessonModalOpen) return;
+     
+     const modal = document.getElementById('lessonStatusModal');
+     if (modal) {
+         modal.classList.remove('show');
+         setTimeout(() => {
+             modal.style.display = 'none';
+         }, 300);
+     }
+     
+     isLessonModalOpen = false;
+     currentLessonId = null;
+ }
+
+function updateLessonStatus() {
+    if (!currentLessonId) {
+        alert('No lesson selected');
+        return;
+    }
+    
+    const statusSelect = document.getElementById('lessonStatusSelect');
+    if (!statusSelect) {
+        alert('Status select not found');
+        return;
+    }
+    
+    const newStatus = statusSelect.value;
+    if (!newStatus) {
+        alert('Please select a status');
+        return;
+    }
+    
+    // Show loading state
+    const updateBtn = document.querySelector('#lessonStatusModal .btn-primary');
+    const originalText = updateBtn.textContent;
+    updateBtn.textContent = 'Updating...';
+    updateBtn.disabled = true;
+    
+    fetch(`/dashboard/lessons/${currentLessonId}/status`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ status: newStatus })
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            closeLessonStatusModal();
+            location.reload();
+        } else {
+            throw new Error(data.message || 'Unknown error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error updating status: ' + error.message);
+    })
+    .finally(() => {
+        updateBtn.textContent = originalText;
+        updateBtn.disabled = false;
+    });
+}
+
+// Close modal with Escape key
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape' && isLessonModalOpen) {
+        closeLessonStatusModal();
+    }
+});
+
+// Ensure modal is hidden on page load
+document.addEventListener('DOMContentLoaded', function() {
+    const modal = document.getElementById('lessonStatusModal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+});
+</script>

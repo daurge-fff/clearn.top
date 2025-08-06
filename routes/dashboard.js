@@ -87,10 +87,19 @@ router.post('/payments/:id/status', ensureAuth, ensureRole('admin'), async (req,
     try {
         const { status } = req.body;
         const payment = await paymentService.updatePaymentStatus(req.params.id, status, req.user._id);
-        res.status(200).json({ message: 'Payment status updated successfully', payment });
+        
+        if (req.headers['content-type'] === 'application/json') {
+            res.status(200).json({ success: true, message: 'Payment status updated successfully', payment });
+        } else {
+            res.redirect('/dashboard/payments');
+        }
     } catch (error) {
         console.error('Error updating payment status:', error);
-        res.status(500).json({ message: error.message });
+        if (req.headers['content-type'] === 'application/json') {
+            res.status(500).json({ success: false, message: error.message });
+        } else {
+            res.status(500).send('Server error');
+        }
     }
 });
 
@@ -112,10 +121,32 @@ router.get('/users', ensureAuth, ensureRole('admin'), async (req, res) => {
 
         const users = await User.find(filter).sort(sort).lean();
 
+        // Calculate lesson counts for each user based on their role
+        const usersWithLessonCounts = await Promise.all(users.map(async (user) => {
+            let lessonCount = 0;
+            
+            if (user.role === 'student') {
+                lessonCount = user.lessonsPaid || 0;
+            } else if (user.role === 'teacher') {
+                // Count lessons where this user is the teacher
+                const teacherLessons = await Lesson.countDocuments({ teacher: user._id });
+                lessonCount = teacherLessons;
+            } else if (user.role === 'admin') {
+                // Count all lessons for admins
+                const adminLessons = await Lesson.countDocuments({});
+                lessonCount = adminLessons;
+            }
+
+            return {
+                ...user,
+                lessonCount: lessonCount
+            };
+        }));
+
         res.render('admin/users', {
             layout: 'layouts/dashboard',
             user: req.user,
-            users: users,
+            users: usersWithLessonCounts,
             query: req.query,
             page_name: 'users'
         });
@@ -1125,6 +1156,120 @@ router.get('/payments', ensureAuth, ensureRole('admin'), async (req, res) => {
     } catch (err) {
         console.error(err);
         res.status(500).send('Server Error');
+    }
+});
+
+// @desc    Update lesson status
+// @route   POST /dashboard/lessons/:id/status
+router.post('/lessons/:id/status', ensureAuth, ensureRole('admin'), async (req, res) => {
+    try {
+        const { status } = req.body;
+        await Lesson.findByIdAndUpdate(req.params.id, { status });
+        
+        if (req.headers['content-type'] === 'application/json') {
+            res.json({ success: true, message: 'Status updated successfully' });
+        } else {
+            res.redirect('/dashboard/lessons');
+        }
+    } catch (error) {
+        console.error('Error updating lesson status:', error);
+        if (req.headers['content-type'] === 'application/json') {
+            res.status(500).json({ success: false, message: 'Server error' });
+        } else {
+            res.status(500).send('Server error');
+        }
+    }
+});
+
+// @desc    Edit payment
+// @route   GET /admin/payments/:id/edit
+router.get('/payments/:id/edit', ensureAuth, ensureRole('admin'), async (req, res) => {
+    try {
+        const payment = await Payment.findById(req.params.id).populate('userId', 'name email').lean();
+        if (!payment) {
+            return res.status(404).send('Payment not found');
+        }
+        
+        res.render('admin/payment_edit', {
+            layout: 'layouts/dashboard',
+            user: req.user,
+            payment: payment,
+            page_name: 'payments'
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Server Error');
+    }
+});
+
+// @desc    Update payment
+// @route   PUT /dashboard/payments/:id
+router.put('/payments/:id', ensureAuth, ensureRole('admin'), async (req, res) => {
+    try {
+        const { amount, status, description, paymentSystem, pendingIdentifier } = req.body;
+        
+        const payment = await Payment.findById(req.params.id);
+        if (!payment) {
+            return res.status(404).send('Payment not found');
+        }
+        
+        payment.amountPaid = parseFloat(amount);
+        payment.status = status;
+        payment.description = description;
+        payment.paymentSystem = paymentSystem;
+        payment.pendingIdentifier = pendingIdentifier;
+        payment.updatedAt = new Date();
+        
+        await payment.save();
+        
+        res.redirect('/dashboard/payments');
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Server Error');
+    }
+});
+
+// @desc    Delete payment
+// @route   DELETE /dashboard/payments/:id
+router.delete('/payments/:id', ensureAuth, ensureRole('admin'), async (req, res) => {
+    try {
+        const payment = await Payment.findById(req.params.id);
+        if (!payment) {
+            return res.status(404).send('Payment not found');
+        }
+        
+        await Payment.findByIdAndDelete(req.params.id);
+        
+        res.redirect('/dashboard/payments');
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Server Error');
+    }
+});
+
+// @desc    Delete lesson
+// @route   DELETE /dashboard/lessons/:id
+router.delete('/lessons/:id', ensureAuth, ensureRole('admin'), async (req, res) => {
+    try {
+        const lesson = await Lesson.findById(req.params.id);
+        if (!lesson) {
+            return res.status(404).send('Lesson not found');
+        }
+        
+        await Lesson.findByIdAndDelete(req.params.id);
+        
+        if (req.headers['content-type'] === 'application/json') {
+            res.json({ success: true, message: 'Lesson deleted successfully' });
+        } else {
+            res.redirect('/dashboard/lessons');
+        }
+    } catch (err) {
+        console.error(err);
+        if (req.headers['content-type'] === 'application/json') {
+            res.status(500).json({ success: false, message: 'Server error' });
+        } else {
+            res.status(500).send('Server Error');
+        }
     }
 });
 

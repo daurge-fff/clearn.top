@@ -114,7 +114,7 @@
                     <% if (lessons && lessons.length > 0) { %>
                         <% lessons.forEach(lesson => { %>
                             <tr data-lesson-id="<%= lesson._id %>">
-                                <td><%= new Date(lesson.localLessonDate).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) %></td>
+                                <td><%= new Date(lesson.localLessonDate).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) %></td>
                                 <td>
                                     <% if (userProfile.role === 'student') { %>
                                         <% if (lesson.teacher) { %>
@@ -132,14 +132,7 @@
                                 </td>
                                 <td><%= lesson.topic %></td>
                                 <td class="status-cell" data-lesson-id="<%= lesson._id %>" data-current-status="<%= lesson.status %>">
-                                    <span class="badge status-<%= lesson.status %> current-status-badge"><%= lesson.status.replace(/_/g, ' ') %></span>
-                                    <div class="status-dropdown">
-                                        <div class="status-dropdown-item" data-status="scheduled">Scheduled</div>
-                                        <div class="status-dropdown-item" data-status="completed">Completed</div>
-                                        <div class="status-dropdown-item" data-status="cancelled_by_student">Cancelled (Student)</div>
-                                        <div class="status-dropdown-item" data-status="cancelled_by_teacher">Cancelled (Teacher)</div>
-                                        <div class="status-dropdown-item" data-status="no_show">No Show</div>
-                                    </div>
+                                    <span class="badge lesson-<%= lesson.status %>"><%= lesson.status.replace(/_/g, ' ').toUpperCase() %></span>
                                 </td>
                                 <td class="actions-cell">
                                     <button class="btn-icon delete-lesson-btn" data-id="<%= lesson._id %>" data-tooltip="Delete"><i class="icon-delete"></i></button>
@@ -202,7 +195,38 @@
 
 <script src="/js/user_profile.js" defer></script>
 
+<!-- Lesson Status Modal -->
+<div class="status-modal" id="lessonStatusModal">
+    <div class="status-modal-content">
+        <div class="status-modal-header">
+            <h3 class="status-modal-title">Change Lesson Status</h3>
+            <button class="status-modal-close" onclick="closeLessonStatusModal()">&times;</button>
+        </div>
+        <div class="status-modal-body">
+            <div class="form-group">
+                <label for="lessonStatusSelect">Select Status:</label>
+                <select class="status-select" id="lessonStatusSelect">
+                    <option value="scheduled">Scheduled</option>
+                    <option value="in-progress">In Progress</option>
+                    <option value="completed">Completed</option>
+                    <option value="cancelled">Cancelled</option>
+                    <option value="cancelled_by_student">Cancelled (Student)</option>
+                    <option value="cancelled_by_teacher">Cancelled (Teacher)</option>
+                    <option value="no_show">No Show</option>
+                </select>
+            </div>
+        </div>
+        <div class="status-modal-footer">
+            <button type="button" class="btn btn-secondary" onclick="closeLessonStatusModal()">Cancel</button>
+            <button type="button" class="btn btn-primary" onclick="updateLessonStatus()">Update</button>
+        </div>
+    </div>
+</div>
+
 <script>
+    let currentLessonId = null;
+    let isLessonModalOpen = false;
+
     document.addEventListener('DOMContentLoaded', function() {
         // Find adjustment card by checking h2 text content
         const adjustmentCard = Array.from(document.querySelectorAll('.card')).find(card => {
@@ -245,5 +269,119 @@
                 }
             });
         });
+
+        // Add click handlers for status cells
+        const statusCells = document.querySelectorAll('.status-cell');
+        statusCells.forEach(cell => {
+            cell.addEventListener('click', function() {
+                const lessonId = this.dataset.lessonId;
+                const currentStatus = this.dataset.currentStatus;
+                openLessonStatusModal(lessonId, currentStatus);
+            });
+        });
+    });
+
+    function openLessonStatusModal(lessonId, currentStatus) {
+        if (isLessonModalOpen) return;
+        
+        currentLessonId = lessonId;
+        const statusSelect = document.getElementById('lessonStatusSelect');
+        if (statusSelect) {
+            statusSelect.value = currentStatus;
+        }
+        
+        const modal = document.getElementById('lessonStatusModal');
+        if (!modal) {
+            console.error('Lesson status modal not found');
+            return;
+        }
+        
+        modal.style.display = 'block';
+        modal.classList.add('show');
+        isLessonModalOpen = true;
+        
+        // Close on backdrop click
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                closeLessonStatusModal();
+            }
+        });
+    }
+
+    function closeLessonStatusModal() {
+        if (!isLessonModalOpen) return;
+        
+        const modal = document.getElementById('lessonStatusModal');
+        if (modal) {
+            modal.classList.remove('show');
+            setTimeout(() => {
+                modal.style.display = 'none';
+            }, 300);
+        }
+        
+        isLessonModalOpen = false;
+        currentLessonId = null;
+    }
+
+    function updateLessonStatus() {
+        if (!currentLessonId) {
+            alert('No lesson selected');
+            return;
+        }
+        
+        const statusSelect = document.getElementById('lessonStatusSelect');
+        if (!statusSelect) {
+            alert('Status select not found');
+            return;
+        }
+        
+        const newStatus = statusSelect.value;
+        if (!newStatus) {
+            alert('Please select a status');
+            return;
+        }
+        
+        // Show loading state
+        const updateBtn = document.querySelector('#lessonStatusModal .btn-primary');
+        const originalText = updateBtn.textContent;
+        updateBtn.textContent = 'Updating...';
+        updateBtn.disabled = true;
+        
+        fetch(`/dashboard/lessons/${currentLessonId}/status`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ status: newStatus })
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                closeLessonStatusModal();
+                location.reload();
+            } else {
+                throw new Error(data.message || 'Unknown error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error updating status: ' + error.message);
+        })
+        .finally(() => {
+            updateBtn.textContent = originalText;
+            updateBtn.disabled = false;
+        });
+    }
+
+    // Close modal with Escape key
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape' && isLessonModalOpen) {
+            closeLessonStatusModal();
+        }
     });
 </script>
