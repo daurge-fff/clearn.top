@@ -1,0 +1,9 @@
+version: '3'
+services:
+  my-app:
+    build: .
+    container_name: clearn
+    restart: always
+    ports:
+      - "127.0.0.1:3000:3000"  # Важно: только на localhost!
+
