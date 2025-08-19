@@ -144,20 +144,20 @@ document.addEventListener('DOMContentLoaded', () => {
             { 
                 id: 'betatransfer', 
                 name: 'Betatransfer', 
-                regions: ['EU', 'CIS', 'Crypto'],
+                regions: ['🌟 Global'],
                 preferred: 'europe',
                 description: 'Open banking, P2P, Crypto'
             },
             { 
                 id: 'paypal', 
                 name: 'PayPal', 
-                regions: ['🇪🇺 Europe'], 
+                regions: ['🌍 Global'], 
                 description: 'Global payments'
             },
             { 
                 id: 'payoneer', 
                 name: 'Payoneer', 
-                regions: ['🇪🇺 Europe', '🇮🇱 Israel'], 
+                regions: ['🇮🇱 Israel'], 
                 description: 'International transfers'
             },
             { 
@@ -169,13 +169,13 @@ document.addEventListener('DOMContentLoaded', () => {
             { 
                 id: 'cryptocloud', 
                 name: 'CryptoCloud', 
-                regions: ['🌍 Global'], 
+                regions: ['🪙 Crypto'], 
                 description: 'Cryptocurrency payments'
             },
             { 
                 id: 'robokassa', 
                 name: 'Robokassa', 
-                regions: ['🌐 CIS'], 
+                regions: ['💳 CIS'], 
                 description: 'CIS countries'
             }
         ]
