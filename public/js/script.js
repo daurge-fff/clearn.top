@@ -560,7 +560,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="payment-info">
                         <span class="name">${sys.name}</span>
                         ${regionsText ? `<div class="regions">${regionsText}</div>` : ''}
-                        ${sys.description ? `<div class="description">${sys.description}</div>` : ''}
                     </div>
                 </div>`;
             }).join('');

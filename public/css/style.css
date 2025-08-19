@@ -2352,6 +2352,9 @@ input[type="range"]::-moz-range-thumb {
     align-items: center;
     gap: 2px;
     white-space: nowrap;
+    max-width: calc(100% + 8px);
+    word-wrap: break-word;
+    hyphens: auto;
 }
 
 /* Regions display */
@@ -4220,30 +4223,43 @@ input[type="range"]::-moz-range-thumb {
 @media (max-width: 768px) {
     .payment-system-chooser .systems {
         grid-template-columns: repeat(2, 1fr);
-        gap: 12px;
-        padding: 10px;
+        gap: 10px;
+        padding: 8px;
     }
     .payment-system-card {
-        padding: 14px 10px;
+        padding: 12px 8px;
         font-size: 0.85rem;
-        min-height: 85px;
+        min-height: 75px;
         border-radius: 10px;
+        position: relative;
     }
     .payment-system-card .logo {
-        width: 32px;
-        height: 32px;
+        width: 28px;
+        height: 28px;
+        margin-bottom: 6px;
     }
     .payment-system-card .name {
-        font-size: 0.85rem;
+        font-size: 0.8rem;
         font-weight: 600;
+        line-height: 1.2;
+        margin-bottom: 4px;
     }
     .payment-system-card .regions {
-        font-size: 0.72rem;
-        line-height: 1.4;
+        font-size: 0.7rem;
+        line-height: 1.3;
+        opacity: 0.85;
     }
     .payment-system-card .description {
-        font-size: 0.68rem;
-        line-height: 1.3;
+        display: none;
+    }
+    
+    .payment-system-card .preferred-badge {
+        font-size: 0.6rem;
+        padding: 3px 6px;
+        max-width: calc(100% + 6px);
+        white-space: normal;
+        word-break: break-word;
+        line-height: 1.2;
     }
     #final-pay-button {
         padding: 16px 20px;
@@ -4255,24 +4271,25 @@ input[type="range"]::-moz-range-thumb {
 @media (max-width: 480px) {
     .payment-system-chooser .systems {
         grid-template-columns: 1fr;
-        gap: 10px;
-        max-width: 320px;
+        gap: 8px;
+        max-width: 340px;
         margin: 0 auto;
-        padding: 12px;
+        padding: 10px;
     }
     .payment-system-card {
-        padding: 16px;
+        padding: 14px 12px;
         font-size: 0.8rem;
-        min-height: 90px;
+        min-height: 70px;
         display: flex;
         align-items: center;
         text-align: left;
-        gap: 16px;
+        gap: 12px;
         border-radius: 12px;
+        position: relative;
     }
     .payment-system-card .logo {
-        width: 36px;
-        height: 36px;
+        width: 32px;
+        height: 32px;
         margin-bottom: 0;
         flex-shrink: 0;
     }
@@ -4280,22 +4297,33 @@ input[type="range"]::-moz-range-thumb {
         flex: 1;
         align-items: flex-start;
         text-align: left;
-        gap: 5px;
+        gap: 3px;
     }
     .payment-system-card .name {
-        font-size: 0.9rem;
+        font-size: 0.85rem;
         font-weight: 600;
-        margin-bottom: 3px;
+        margin-bottom: 2px;
+        line-height: 1.2;
     }
     .payment-system-card .regions {
-        font-size: 0.75rem;
+        font-size: 0.72rem;
         justify-content: flex-start;
-        line-height: 1.4;
+        line-height: 1.3;
+        opacity: 0.8;
     }
     .payment-system-card .description {
-        font-size: 0.7rem;
-        text-align: left;
-        line-height: 1.3;
+        display: none;
+    }
+    
+    .payment-system-card .preferred-badge {
+        font-size: 0.55rem;
+        padding: 2px 5px;
+        max-width: calc(100% + 4px);
+        white-space: normal;
+        word-break: break-word;
+        line-height: 1.1;
+        top: -2px;
+        right: -2px;
     }
     #final-pay-button {
         padding: 14px 18px;
