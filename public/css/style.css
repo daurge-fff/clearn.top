@@ -2366,6 +2366,15 @@ input[type="range"]::-moz-range-thumb {
     filter: brightness(0) invert(0);
 }
 
+[data-theme="light"] .payment-system-card.active .logo {
+    filter: brightness(0) invert(0);
+}
+
+[data-theme="light"] .payment-system-card.active .name {
+    color: #000000 !important;
+    font-weight: 600;
+}
+
 /* Упрощенные стили названий */
 .payment-system-card .name {
     font-size: 0.8rem;
@@ -2432,7 +2441,7 @@ input[type="range"]::-moz-range-thumb {
 }
 
 [data-theme="light"] .payment-system-card.active .regions {
-    color: rgba(255, 255, 255, 0.9);
+    color: rgba(0, 0, 0, 0.8) !important;
 }
 
 /* Description */
@@ -2463,7 +2472,7 @@ input[type="range"]::-moz-range-thumb {
 }
 
 [data-theme="light"] .payment-system-card.active .description {
-    color: rgba(255, 255, 255, 0.8);
+    color: rgba(0, 0, 0, 0.7) !important;
 }
 
 /* Preferred system styling */
