@@ -3,6 +3,7 @@ const CryptocloudProvider = require('./CryptocloudProvider');
 const MonobankProvider = require('./MonobankProvider');
 const PaypalProvider = require('./PaypalProvider');
 const PayoneerProvider = require('./PayoneerProvider');
+const BetatransferProvider = require('./BetatransferProvider');
 const ManualBankProvider = require('./ManualBankProvider');
 const paymentConfig = require('../../config/payments');
 const currencyService = require('../currencyService');
@@ -35,6 +36,10 @@ class PaymentManager {
         
         if (enabledProviders.includes('payoneer') && this.config.payoneer.enabled) {
             this.providers.set('payoneer', new PayoneerProvider(this.config.payoneer));
+        }
+        
+        if (enabledProviders.includes('betatransfer') && this.config.betatransfer.enabled) {
+            this.providers.set('betatransfer', new BetatransferProvider(this.config.betatransfer));
         }
         
         // manual_bank provider removed

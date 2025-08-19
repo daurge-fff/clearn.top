@@ -2197,69 +2197,51 @@ input[type="range"]::-moz-range-thumb {
 }
 .payment-system-chooser .systems { 
     display: grid !important; 
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)) !important; 
-    gap: 16px;
+    grid-template-columns: repeat(3, 1fr) !important; 
+    grid-template-rows: repeat(2, 1fr) !important;
+    gap: 8px;
+    max-width: 100%;
+    padding: 8px;
 }
 
 @media (max-width: 768px) {
     .payment-system-chooser .systems {
         grid-template-columns: repeat(2, 1fr) !important;
+        grid-template-rows: auto !important;
     }
 }
 
 .payment-system-card { 
-    border: 2px solid var(--card-border); 
+    border: 1px solid var(--card-border); 
     padding: 20px 16px; 
-    border-radius: 16px; 
+    border-radius: 12px; 
     text-align: center; 
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); 
+    transition: border-color 0.2s ease; 
     background: var(--card-bg);
-    backdrop-filter: blur(20px);
-    position: relative;
-    overflow: hidden;
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
     cursor: pointer;
     font-size: 0.95rem;
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 12px;
-    min-height: 100px;
+    min-height: 110px;
     justify-content: center;
-}
-.payment-system-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-    transition: left 0.6s ease;
-}
-
-.payment-system-card:hover::before {
-    left: 100%;
+    margin: 8px 4px;
 }
 
 .payment-system-card:hover { 
     border-color: var(--accent-color-1);
-    transform: translateY(-5px) scale(1.02);
-    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
-    background: var(--card-bg);
 }
 
 [data-theme="light"] .payment-system-card:hover {
-    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
+    border-color: var(--accent-color-1);
 }
 
 .payment-system-card.active { 
     border-color: var(--accent-color-1); 
-    background: linear-gradient(135deg, var(--accent-color-1), var(--accent-color-2));
+    background: var(--accent-color-1);
     color: white; 
-    box-shadow: 0 15px 50px var(--shadow-color); 
-    font-weight: 700; 
-    transform: translateY(-5px) scale(1.05);
+    font-weight: 600;
 }
 
 .payment-system-card.active .name {
@@ -2267,10 +2249,20 @@ input[type="range"]::-moz-range-thumb {
     font-weight: 700;
 }
 
+[data-theme="dark"] .payment-system-card.active {
+    color: #000000;
+    background: var(--accent-color-1);
+}
+
+[data-theme="dark"] .payment-system-card.active .name {
+    color: #000000 !important;
+    font-weight: 700;
+    text-shadow: none;
+}
+
 [data-theme="light"] .payment-system-card.active { 
     color: #fff; 
-    background: linear-gradient(135deg, var(--accent-color-1), var(--accent-color-2));
-    box-shadow: 0 15px 50px rgba(55, 66, 250, 0.3);
+    background: var(--accent-color-1);
 }
 
 [data-theme="light"] .payment-system-card.active .name { 
@@ -2282,103 +2274,220 @@ input[type="range"]::-moz-range-thumb {
     width: 40px;
     height: 40px;
     opacity: 0.9;
-    transition: all 0.4s ease;
-    filter: brightness(1) saturate(1.2);
+    transition: opacity 0.2s ease;
+    object-fit: contain;
 }
 
 [data-theme="dark"] .payment-system-card .logo {
-    filter: brightness(0) invert(1);
+    filter: brightness(0) invert(1) contrast(1.2);
 }
 
 [data-theme="light"] .payment-system-card .logo {
-    filter: brightness(0.9) saturate(1.4) contrast(1.2);
+    filter: brightness(0.8) saturate(1.2) contrast(1.1);
 }
 
 .payment-system-card:hover .logo {
     opacity: 1;
-    transform: scale(1.1);
 }
 
 [data-theme="dark"] .payment-system-card:hover .logo {
-    filter: brightness(0) invert(1);
+    filter: brightness(0) invert(1) contrast(1.3);
 }
 
 [data-theme="light"] .payment-system-card:hover .logo {
-    filter: brightness(0.9) saturate(1.4) contrast(1.2);
+    filter: brightness(0.8) saturate(1.2) contrast(1.1);
 }
 
 .payment-system-card.active .logo {
     opacity: 1;
-    transform: scale(1.15);
-    filter: brightness(0) invert(1);
+    filter: brightness(0) invert(1) contrast(1.4);
+}
+
+[data-theme="dark"] .payment-system-card.active .logo {
+    filter: brightness(0) invert(0) contrast(1.4);
 }
 
 [data-theme="light"] .payment-system-card.active .logo {
-    filter: brightness(0) invert(1);
+    filter: brightness(0) invert(1) contrast(1.4);
 }
 
 .payment-system-card .name {
     font-size: 0.9rem;
     font-weight: 600;
     transition: all 0.3s ease;
+    color: var(--text-color);
 }
 
-.payment-system-card[data-system="robokassa"] {
-    grid-column: 1 / -1;
+[data-theme="dark"] .payment-system-card .name {
+    color: #ffffff;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 }
+
+[data-theme="light"] .payment-system-card .name {
+    color: #333333;
+}
+
+/* Payment info container */
+.payment-system-card .payment-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    width: 100%;
+}
+
+/* Preferred badge */
+.payment-system-card .preferred-badge {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    background: #4F46E5;
+    color: #fff;
+    font-size: 0.65rem;
+    font-weight: 600;
+    padding: 4px 8px;
+    border-radius: 8px;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    white-space: nowrap;
+}
+
+/* Regions display */
+.payment-system-card .regions {
+    font-size: 0.75rem;
+    color: var(--text-color);
+    text-align: center;
+    line-height: 1.3;
+    opacity: 0.8;
+    max-width: 100%;
+    word-wrap: break-word;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+[data-theme="dark"] .payment-system-card .regions {
+    color: #e0e0e0;
+    opacity: 0.9;
+}
+
+[data-theme="light"] .payment-system-card .regions {
+    color: #666666;
+    opacity: 0.8;
+}
+
+.payment-system-card .regions img {
+    border-radius: 2px;
+    vertical-align: middle;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    display: inline-block;
+}
+
+.payment-system-card.active .regions {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+[data-theme="dark"] .payment-system-card.active .regions {
+    color: rgba(0, 0, 0, 0.8);
+}
+
+[data-theme="light"] .payment-system-card.active .regions {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+/* Description */
+.payment-system-card .description {
+    font-size: 0.7rem;
+    color: var(--text-color);
+    font-style: italic;
+    opacity: 0.7;
+    text-align: center;
+}
+
+[data-theme="dark"] .payment-system-card .description {
+    color: #cccccc;
+    opacity: 0.8;
+}
+
+[data-theme="light"] .payment-system-card .description {
+    color: #888888;
+    opacity: 0.7;
+}
+
+.payment-system-card.active .description {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+[data-theme="dark"] .payment-system-card.active .description {
+    color: rgba(0, 0, 0, 0.7);
+}
+
+[data-theme="light"] .payment-system-card.active .description {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+/* Preferred system styling */
+.payment-system-card.preferred {
+    border-color: #FFD700;
+    position: relative;
+}
+
+.payment-system-card.preferred:hover {
+    border-color: #FFA500;
+}
+
+
 #final-pay-button, #paypal-button-container { margin-top: 10px; }
 #final-pay-button { 
     width: 100%; 
-    padding: 20px 30px; 
+    padding: 18px 24px; 
     background: linear-gradient(135deg, var(--accent-color-1) 0%, var(--accent-color-2) 100%);
-    background-size: 200% 200%;
-    backdrop-filter: blur(30px);
-    border: 2px solid transparent; 
-    border-radius: 20px; 
+    border: 1px solid var(--accent-color-1); 
+    border-radius: 12px; 
     color: white; 
-    font-size: 1.2rem; 
-    font-weight: 700; 
+    font-size: 1.1rem; 
+    font-weight: 600; 
     font-family: var(--font-headings);
     cursor: pointer; 
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); 
-    position: relative;
-    overflow: hidden;
-    box-shadow: 0 15px 40px var(--shadow-color), 0 8px 25px rgba(0, 0, 0, 0.15);
+    transition: all 0.2s ease; 
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.3px;
     margin-top: 20px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-#final-pay-button::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
-    transition: left 0.6s ease;
+[data-theme="dark"] #final-pay-button {
+    color: #ffffff;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
-#final-pay-button:hover::before {
-    left: 100%;
+[data-theme="light"] #final-pay-button {
+    color: #ffffff;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 #final-pay-button:hover:not(:disabled) { 
-    transform: translateY(-6px) scale(1.03);
-    background-position: 100% 0;
-    box-shadow: 0 20px 60px var(--shadow-color), 0 12px 35px rgba(0, 0, 0, 0.2);
-    border-color: var(--accent-color-1);
-    animation: pulse-glow 2s infinite;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+    opacity: 0.9;
+}
+
+[data-theme="dark"] #final-pay-button:hover:not(:disabled) {
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
 }
 
 [data-theme="light"] #final-pay-button:hover:not(:disabled) {
-    box-shadow: 0 20px 60px rgba(55, 66, 250, 0.4), 0 12px 35px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
 }
 
 #final-pay-button:active {
-    transform: translateY(-3px) scale(1.01);
-    transition: all 0.15s ease;
+    transform: translateY(0);
+    transition: all 0.1s ease;
 }
 
 #final-pay-button:disabled { 
@@ -3962,48 +4071,63 @@ input[type="range"]::-moz-range-thumb {
 
 @media (max-width: 768px) {
     #payment-modal .modal-content {
-        width: 95%;
+        width: 96%;
         margin: 2vh auto;
         max-height: 96vh;
         border-radius: 16px;
     }
     #payment-modal .modal-header {
-        padding: 15px 20px 10px;
+        padding: 18px 24px 12px;
     }
     #payment-modal .modal-header h2 {
-        font-size: 1.2rem;
+        font-size: 1.3rem;
+        font-weight: 600;
     }
     #payment-modal .modal-body {
-        padding: 15px 20px;
-        max-height: calc(96vh - 140px);
+        padding: 18px 24px;
+        max-height: calc(96vh - 150px);
     }
     #payment-modal .modal-footer {
-        padding: 6px 20px 10px;
+        padding: 8px 24px 12px;
     }
     #payment-modal .form-group {
-        padding: 15px 15px 10px 15px;
-        margin-bottom: 15px;
+        padding: 16px 16px 12px 16px;
+        margin-bottom: 16px;
+        border-radius: 12px;
     }
     #payment-identifier {
-        padding: 12px 15px;
-        font-size: 0.95rem;
+        padding: 14px 16px;
+        font-size: 1rem;
+        border-radius: 10px;
     }
     #payment-identifier + label {
-        top: 28px;
-        left: 30px;
-        font-size: 0.95rem;
+        top: 30px;
+        left: 32px;
+        font-size: 1rem;
     }
     .payment-system-chooser {
-        padding: 15px;
-        margin: 12px 0 8px 0;
+        padding: 16px;
+        margin: 14px 0 10px 0;
+        border-radius: 12px;
     }
     .payment-system-chooser .systems {
-        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-        gap: 8px;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+        padding: 8px;
     }
     .payment-system-card {
-        padding: 12px 8px;
+        padding: 14px 10px;
         font-size: 0.85rem;
+        min-height: 80px;
+        border-radius: 10px;
+    }
+    .payment-system-card .logo {
+        width: 30px;
+        height: 30px;
+    }
+    .payment-system-card .name {
+        font-size: 0.85rem;
+        font-weight: 600;
     }
     .manual-payment-container {
         margin-top: 18px;
@@ -4096,38 +4220,87 @@ input[type="range"]::-moz-range-thumb {
 @media (max-width: 768px) {
     .payment-system-chooser .systems {
         grid-template-columns: repeat(2, 1fr);
-        gap: 10px;
+        gap: 12px;
+        padding: 10px;
     }
     .payment-system-card {
-        padding: 12px 8px;
-        font-size: 0.8rem;
-        min-height: 70px;
+        padding: 14px 10px;
+        font-size: 0.85rem;
+        min-height: 85px;
+        border-radius: 10px;
     }
     .payment-system-card .logo {
-        width: 28px;
-        height: 28px;
+        width: 32px;
+        height: 32px;
     }
     .payment-system-card .name {
-        font-size: 0.8rem;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+    .payment-system-card .regions {
+        font-size: 0.72rem;
+        line-height: 1.4;
+    }
+    .payment-system-card .description {
+        font-size: 0.68rem;
+        line-height: 1.3;
+    }
+    #final-pay-button {
+        padding: 16px 20px;
+        font-size: 1rem;
+        border-radius: 10px;
     }
 }
 
 @media (max-width: 480px) {
     .payment-system-chooser .systems {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 8px;
+        grid-template-columns: 1fr;
+        gap: 10px;
+        max-width: 320px;
+        margin: 0 auto;
+        padding: 12px;
     }
     .payment-system-card {
-        padding: 10px 6px;
-        font-size: 0.75rem;
-        min-height: 65px;
+        padding: 16px;
+        font-size: 0.8rem;
+        min-height: 90px;
+        display: flex;
+        align-items: center;
+        text-align: left;
+        gap: 16px;
+        border-radius: 12px;
     }
     .payment-system-card .logo {
-        width: 24px;
-        height: 24px;
+        width: 36px;
+        height: 36px;
+        margin-bottom: 0;
+        flex-shrink: 0;
+    }
+    .payment-system-card .payment-info {
+        flex: 1;
+        align-items: flex-start;
+        text-align: left;
+        gap: 5px;
     }
     .payment-system-card .name {
+        font-size: 0.9rem;
+        font-weight: 600;
+        margin-bottom: 3px;
+    }
+    .payment-system-card .regions {
         font-size: 0.75rem;
+        justify-content: flex-start;
+        line-height: 1.4;
+    }
+    .payment-system-card .description {
+        font-size: 0.7rem;
+        text-align: left;
+        line-height: 1.3;
+    }
+    #final-pay-button {
+        padding: 14px 18px;
+        font-size: 0.95rem;
+        border-radius: 10px;
     }
     .manual-payment-container {
         margin-top: 15px;
@@ -4392,56 +4565,41 @@ body.modal-open-scroll-lock {
 .copyable-item {
     display: inline-flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
     cursor: pointer;
-    transition: all 0.3s ease;
-    padding: 8px 12px;
-    border-radius: 8px;
-    background: linear-gradient(135deg, rgba(0, 242, 254, 0.05), rgba(0, 242, 254, 0.02));
-    border: 1px solid rgba(0, 242, 254, 0.2);
+    transition: all 0.2s ease;
+    padding: 4px 6px;
+    border-radius: 6px;
+    background: transparent;
+    border: none;
     position: relative;
-    overflow: hidden;
-    margin: 4px 0;
-}
-
-.copyable-item::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(0, 242, 254, 0.1), transparent);
-    transition: left 0.4s ease;
+    margin: 2px 0;
+    text-decoration: underline;
+    text-decoration-style: dotted;
+    text-underline-offset: 3px;
 }
 
 .copyable-item:hover {
     color: var(--accent-color-1);
-    transform: translateY(-2px) scale(1.02);
-    box-shadow: 0 6px 20px rgba(0, 242, 254, 0.2);
-    border-color: var(--accent-color-1);
-}
-
-.copyable-item:hover::before {
-    left: 100%;
+    text-decoration-color: var(--accent-color-1);
+    background: rgba(0, 242, 254, 0.05);
 }
 
 .copyable-item.inline {
     display: inline-flex;
-    margin: 0 4px;
-    padding: 4px 8px;
+    margin: 0 2px;
+    padding: 2px 4px;
 }
 
 .copy-icon {
-    font-size: 1rem;
-    opacity: 0.7;
-    transition: all 0.3s ease;
-    filter: drop-shadow(0 2px 4px rgba(0, 242, 254, 0.3));
+    font-size: 0.9rem;
+    opacity: 0.6;
+    transition: all 0.2s ease;
 }
 
 .copyable-item:hover .copy-icon {
     opacity: 1;
-    transform: scale(1.2) rotate(15deg);
+    transform: scale(1.1);
 }
 
 .copyable-text {

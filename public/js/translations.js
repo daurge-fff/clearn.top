@@ -121,6 +121,7 @@ const translations = {
         payment_modal_agree_2: "and",
         payment_modal_privacy: "Privacy Policy",
         payment_modal_pay_button: "Pay",
+        payment_recommended_europe: "🌟 Recommended for Europe",
         payment_creating: "Creating invoice...",
         payment_error_invoice: "Failed to create payment invoice.",
         manual_payment_title: "Manual Payment via",
@@ -339,6 +340,7 @@ const translations = {
         payment_modal_agree_2: "ול",
         payment_modal_privacy: "מדיניות הפרטיות",
         payment_modal_pay_button: "שלם",
+        payment_recommended_europe: "🌟 מומלץ לאירופה",
         payment_creating: "יוצר חשבונית...",
         payment_error_invoice: "נכשל ביצירת חשבונית תשלום.",
         manual_payment_title: "תשלום ידני דרך",
@@ -377,6 +379,7 @@ const translations = {
         payment_modal_agree_2: "ול",
         payment_modal_privacy: "מדיניות הפרטיות",
         payment_modal_pay_button: "שלם",
+        payment_recommended_europe: "🌟 מומלץ לאירופה",
         payment_creating: "יוצר חשבונית...",
         payment_error_invoice: "לא ניתן ליצור חשבונית תשלום.",
         manual_payment_title: "תשלום ידני דרך",
@@ -585,6 +588,7 @@ const translations = {
         payment_modal_agree_2: "i",
         payment_modal_privacy: "Polityką prywatności",
         payment_modal_pay_button: "Zapłać",
+        payment_recommended_europe: "🌟 Polecane dla Europy",
         payment_creating: "Tworzenie faktury...",
         payment_error_invoice: "Nie można utworzyć faktury płatności.",
         manual_payment_title: "Płatność ręczna przez",
@@ -798,6 +802,7 @@ const translations = {
         payment_modal_agree_2: "en het",
         payment_modal_privacy: "Privacybeleid",
         payment_modal_pay_button: "Betaal",
+        payment_recommended_europe: "🌟 Aanbevolen voor Europa",
         payment_creating: "Factuur aanmaken...",
         payment_error_invoice: "Kan geen betalingsfactuur aanmaken.",
         manual_payment_title: "Handmatige betaling via",
@@ -1011,6 +1016,7 @@ const translations = {
         payment_modal_agree_2: "и",
         payment_modal_privacy: "Политикой конфиденциальности",
         payment_modal_pay_button: "Оплатить",
+        payment_recommended_europe: "🌟 Рекомендуется для Европы",
         payment_creating: "Создание счета...",
         payment_error_invoice: "Не удалось создать счет на оплату.",
         manual_payment_title: "Ручная оплата через",
@@ -1229,6 +1235,7 @@ const translations = {
         payment_modal_agree_2: "und der",
         payment_modal_privacy: "Datenschutzrichtlinie",
         payment_modal_pay_button: "Bezahlen",
+        payment_recommended_europe: "🌟 Empfohlen für Europa",
         payment_creating: "Rechnung wird erstellt...",
         payment_error_invoice: "Zahlungsrechnung konnte nicht erstellt werden.",
         manual_payment_title: "Manuelle Zahlung über",
@@ -1437,6 +1444,7 @@ const translations = {
         payment_modal_agree_2: "та",
         payment_modal_privacy: "Політикою конфіденційності",
         payment_modal_pay_button: "Оплатити",
+        payment_recommended_europe: "🌟 Рекомендується для Європи",
         payment_creating: "Створення рахунку...",
         payment_error_invoice: "Не вдалося створити рахунок на оплату.",
         manual_payment_title: "Ручна оплата через",
@@ -1655,6 +1663,7 @@ const translations = {
         payment_modal_agree_2: "y la",
         payment_modal_privacy: "Política de privacidad",
         payment_modal_pay_button: "Pagar",
+        payment_recommended_europe: "🌟 Recomendado para Europa",
         payment_creating: "Creando factura...",
         payment_error_invoice: "Error al crear la factura de pago.",
         manual_payment_title: "Pago manual vía",
@@ -1868,6 +1877,7 @@ const translations = {
         payment_modal_agree_2: "e la",
         payment_modal_privacy: "Politica sulla privacy",
         payment_modal_pay_button: "Paga",
+        payment_recommended_europe: "🌟 Consigliato per l'Europa",
         payment_creating: "Creazione fattura...",
         payment_error_invoice: "Impossibile creare la fattura di pagamento.",
         manual_payment_title: "Pagamento manuale tramite",
@@ -1961,4 +1971,8 @@ const translations = {
     },
 };
 
-module.exports = translations;
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = translations;
+} else {
+    window.translations = translations;
+}

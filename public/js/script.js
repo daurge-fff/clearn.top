@@ -141,9 +141,43 @@ document.addEventListener('DOMContentLoaded', () => {
         basePrices: { '25': 10, '50': 20 },
         discounts: { 1: 0, 5: 5, 10: 10, 15: 15, 20: 20 },
         availableSystems: [
-            { id: 'paypal', name: 'PayPal' }, { id: 'payoneer', name: 'Payoneer' },
-            { id: 'monobank', name: 'Monobank' }, { id: 'cryptocloud', name: 'CryptoCloud' }, 
-            { id: 'robokassa', name: 'Robokassa' }
+            { 
+                id: 'betatransfer', 
+                name: 'Betatransfer', 
+                regions: ['EU', 'CIS', 'Crypto'],
+                preferred: 'europe',
+                description: 'Open banking, P2P, Crypto'
+            },
+            { 
+                id: 'paypal', 
+                name: 'PayPal', 
+                regions: ['🇪🇺 Europe'], 
+                description: 'Global payments'
+            },
+            { 
+                id: 'payoneer', 
+                name: 'Payoneer', 
+                regions: ['🇪🇺 Europe', '🇮🇱 Israel'], 
+                description: 'International transfers'
+            },
+            { 
+                id: 'monobank', 
+                name: 'Monobank', 
+                regions: ['🇺🇦 Ukraine'], 
+                description: 'Ukrainian banking'
+            },
+            { 
+                id: 'cryptocloud', 
+                name: 'CryptoCloud', 
+                regions: ['🌍 Global'], 
+                description: 'Cryptocurrency payments'
+            },
+            { 
+                id: 'robokassa', 
+                name: 'Robokassa', 
+                regions: ['🌐 CIS'], 
+                description: 'CIS countries'
+            }
         ]
     };
     let currentBasePrice = 0, currentTariffName = '', selectedPaymentSystem = null, manualPaymentRendered = false, isDonationMode = false;
@@ -471,7 +505,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (donationAmountSelector) donationAmountSelector.style.display = donationMode ? 'block' : 'none';
         if (priceBreakdown) priceBreakdown.style.display = donationMode ? 'none' : 'block';
 
-        currentBasePrice = donationMode ? 1 : paymentConfig.basePrices[tariffDuration];
+        currentBasePrice = donationMode ? 10 : paymentConfig.basePrices[tariffDuration];
         currentTariffName = donationMode ? 'Donation' : `Lesson ${tariffDuration} min`;
 
         const modalTariffName = document.getElementById('modal-tariff-name');
@@ -495,9 +529,39 @@ document.addEventListener('DOMContentLoaded', () => {
         if (systemsContainer) {
             systemsContainer.innerHTML = paymentConfig.availableSystems.map(sys => {
                 const logoPath = `/images/payment-logos/${sys.id}.svg`;
-                return `<div class="payment-system-card" data-system="${sys.id}">
+                const isPreferred = sys.preferred === 'europe';
+                // Создаем сокращенные описания регионов с эмодзи
+                const regionIcons = {
+                    'EU': '🇪🇺 EU',
+                    'India': '🇮🇳 India',
+                    'Japan': '🇯🇵 Japan',
+                    'South Korea': '🇰🇷 Korea',
+                    'Brazil': '🇧🇷 Brazil',
+                    'Mexico': '🇲🇽 Mexico',
+                    'Argentina': '🇦🇷 Argentina',
+                    'CIS': '🌐 CIS',
+                    'Ukraine': '🇺🇦 Ukraine',
+                    'Kyrgyzstan': '🇰🇬 Kyrgyzstan',
+                    'Kazakhstan': '🇰🇿 Kazakhstan',
+                    'Azerbaijan': '🇦🇿 Azerbaijan',
+                    'Tajikistan': '🇹🇯 Tajikistan',
+                    'Uzbekistan': '🇺🇿 Uzbekistan',
+                    'Crypto': '₿ Crypto'
+                };
+                
+                const regionsText = sys.regions ? sys.regions.map(region => regionIcons[region] || region).slice(0, 3).join(', ') + (sys.regions.length > 3 ? '...' : '') : '';
+                const lang = localStorage.getItem('language') || 'en';
+                const t = (typeof translations !== 'undefined' && translations[lang]) ? translations[lang] : translations['en'] || {};
+                const preferredBadge = isPreferred ? `<div class="preferred-badge">${t.payment_recommended_europe || '🌟 Recommended for Europe'}</div>` : '';
+                
+                return `<div class="payment-system-card ${isPreferred ? 'preferred' : ''}" data-system="${sys.id}">
+                    ${preferredBadge}
                     <img src="${logoPath}" alt="${sys.name}" class="logo" onerror="this.style.display='none'">
-                    <span class="name">${sys.name}</span>
+                    <div class="payment-info">
+                        <span class="name">${sys.name}</span>
+                        ${regionsText ? `<div class="regions">${regionsText}</div>` : ''}
+                        ${sys.description ? `<div class="description">${sys.description}</div>` : ''}
+                    </div>
                 </div>`;
             }).join('');
         }
@@ -681,25 +745,23 @@ document.addEventListener('DOMContentLoaded', () => {
             const target = e.target.closest('.payment-system-card');
             if (!target) return;
             
-            // Hide manual payment container when switching payment systems
-            const manualPaymentContainer = document.querySelector('.manual-payment-container');
-            if (manualPaymentContainer) {
-                manualPaymentContainer.style.display = 'none';
-            }
-            
             paymentModal.querySelectorAll('.payment-system-card.active').forEach(c => c.classList.remove('active'));
             target.classList.add('active');
             selectedPaymentSystem = target.dataset.system;
             const isManual = ['paypal', 'payoneer', 'monobank'].includes(selectedPaymentSystem);
             document.getElementById('final-pay-button').style.display = isManual ? 'none' : 'flex';
             document.getElementById('paypal-button-container').style.display = isManual ? 'block' : 'none';
-            if (isManual && !manualPaymentRendered) {
+            
+            if (isManual) {
+                // Always render manual payment flow for manual systems to ensure info is displayed
                 renderManualPaymentFlow(selectedPaymentSystem);
                 manualPaymentRendered = true;
-            } else if (!isManual) {
+            } else {
+                // Clear container and reset flag for non-manual systems
                 document.getElementById('paypal-button-container').innerHTML = '';
                 manualPaymentRendered = false;
             }
+            
             updatePayButtonState();
             updatePayButtonText();
         });

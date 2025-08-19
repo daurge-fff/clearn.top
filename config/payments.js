@@ -56,13 +56,26 @@ module.exports = {
         description: 'Перевод через Payoneer'
     },
 
-
+    // Настройки Betatransfer
+    betatransfer: {
+        publicKey: process.env.BETATRANSFER_PUBLIC_KEY,
+        secretKey: process.env.BETATRANSFER_SECRET_KEY,
+        paymentSystem: process.env.PAYMENT_SYSTEM || 'Card8',
+        currency: process.env.CURRENCY || 'EUR',
+        enabled: true,
+        type: 'automatic',
+        currencies: ['EUR', 'USD'],
+        name: 'Betatransfer',
+        description: 'European payment gateway with global coverage',
+        regions: ['EU', 'IN', 'JP', 'KR', 'BR', 'MX', 'AR', 'CIS', 'UA', 'KG', 'KZ', 'AZ', 'TJ', 'UZ'],
+        preferredRegion: 'EU'
+    },
 
     // Общие настройки
     general: {
         defaultCurrency: 'EUR',
         manualPaymentTimeout: 24 * 60 * 60 * 1000, // 24 часа в миллисекундах
         automaticPaymentTimeout: 30 * 60 * 1000, // 30 минут в миллисекундах
-        enabledProviders: ['robokassa', 'cryptocloud', 'monobank', 'paypal', 'payoneer']
+        enabledProviders: ['betatransfer', 'robokassa', 'cryptocloud', 'monobank', 'paypal', 'payoneer']
     }
 };
