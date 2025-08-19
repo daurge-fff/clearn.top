@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="<%= currentLang %>" dir="ltr" data-theme="light">
- <head>
+<head>
     <link rel="icon" type="image/png" href="/images/favicon/favicon-96x96.png" sizes="96x96" />
     <link rel="icon" type="image/svg+xml" href="/images/favicon/favicon.svg" />
     <link rel="shortcut icon" href="/images/favicon/favicon.ico" />
@@ -8,18 +8,131 @@
     <meta name="apple-mobile-web-app-title" content="CLEARN" />
     <link rel="manifest" href="/images/favicon/site.webmanifest" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta charset="UTF-8"><title><%= lang.paymentFailTitle %></title>
-     <link rel="stylesheet" href="/css/style.css">
-      <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;700&family=Montserrat:wght@300;400;600&display=swap&subset=cyrillic,latin-ext" rel="stylesheet">
-    <style> body { display: flex; justify-content: center; align-items: center; min-height: 100vh; text-align: center; padding: 20px;}
-        .payment-status { padding: 40px; border-radius: 12px; max-width: 600px; } .payment-status h1 { color: #e74c3c; font-family: var(--font-headings); margin-bottom: 15px; }
+    <meta charset="UTF-8">
+    <title><%= lang.paymentFailTitle %></title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            margin: 0;
+            padding: 10px;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+
+        .fail-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 20px;
+            max-width: 400px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .fail-icon {
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 15px;
+            background: #e74c3c;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            color: white;
+        }
+
+        .fail-title {
+            font-family: var(--font-headings);
+            font-size: 22px;
+            font-weight: 700;
+            color: #2c3e50;
+            margin: 0 0 10px 0;
+        }
+
+        .fail-message {
+            font-size: 14px;
+            color: #7f8c8d;
+            margin: 0 0 20px 0;
+            line-height: 1.5;
+        }
+
+        .btn-retry {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .btn-retry:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3);
+            text-decoration: none;
+            color: white;
+        }
+
+        .help-text {
+            font-size: 12px;
+            color: #95a5a6;
+            margin-top: 15px;
+        }
+
+        @media (max-width: 480px) {
+            .fail-container {
+                padding: 15px;
+                margin: 10px;
+            }
+
+            .fail-icon {
+                width: 50px;
+                height: 50px;
+                font-size: 24px;
+            }
+
+            .fail-title {
+                font-size: 20px;
+            }
+
+            .fail-message {
+                font-size: 13px;
+            }
+
+            .btn-retry {
+                padding: 8px 20px;
+                font-size: 13px;
+            }
+        }
     </style>
 </head>
 <body>
-    <div class="payment-status card-glass">
-        <h1><%= lang.paymentFailTitle %></h1>
-        <p><%= lang.paymentFailMsg %></p>
-        <a href="/#tariffs?lang=<%= currentLang %>" class="cta-button" style="margin-top: 20px;"><%= lang.paymentRetry %></a>
+    <div class="fail-container">
+        <div class="fail-icon">✕</div>
+        <h1 class="fail-title"><%= lang.paymentFailTitle %></h1>
+        <p class="fail-message"><%= lang.paymentFailMsg %></p>
+        <a href="/#tariffs?lang=<%= currentLang %>" class="btn-retry"><%= lang.paymentRetry %></a>
+        <p class="help-text"><%= lang.supportText %></p>
     </div>
 </body>
 </html>

@@ -459,6 +459,9 @@ const translations = {
         supportText: "אם יש לכם שאלות, אנא פנו לתמיכה",
         autoRedirect: "מעבר אוטומטי תוך",
         seconds: "שניות",
+        paymentFailTitle: "התשלום נכשל",
+        paymentFailMsg: "לצערנו, התשלום שלכם לא עובד. אנא נסו שוב או צרו קשר עם התמיכה שלנו.",
+        paymentRetry: "נסו שוב",
     },
     // ======================
     // === POLISH (PL) ===
@@ -669,6 +672,9 @@ const translations = {
         supportText: "Jeśli masz pytania, skontaktuj się z pomocą techniczną",
         autoRedirect: "Automatyczne przekierowanie za",
         seconds: "sekund",
+        paymentFailTitle: "Płatność nieudana",
+        paymentFailMsg: "Niestety, Twoja płatność nie mogła zostać przetworzona. Spróbuj ponownie lub skontaktuj się z naszym wsparciem.",
+        paymentRetry: "Spróbuj ponownie",
     },
     // ======================
     // === DUTCH (NL) ===
@@ -879,6 +885,9 @@ const translations = {
         supportText: "Als u vragen heeft, neem dan contact op met de ondersteuning",
         autoRedirect: "Automatische omleiding over",
         seconds: "seconden",
+        paymentFailTitle: "Betaling mislukt",
+        paymentFailMsg: "Helaas kon uw betaling niet worden verwerkt. Probeer het opnieuw of neem contact op met onze ondersteuning.",
+        paymentRetry: "Probeer opnieuw",
     },
     // ======================
     // === RUSSIAN (RU) ===
@@ -1302,6 +1311,9 @@ const translations = {
         supportText: "Bei Fragen wenden Sie sich bitte an den Support",
         autoRedirect: "Automatische Weiterleitung in",
         seconds: "Sekunden",
+        paymentFailTitle: "Zahlung fehlgeschlagen",
+        paymentFailMsg: "Leider konnte Ihre Zahlung nicht verarbeitet werden. Bitte versuchen Sie es erneut oder wenden Sie sich an unseren Support.",
+        paymentRetry: "Erneut versuchen",
     },
     // ========================
     // === UKRAINIAN (UK) ===
@@ -1730,6 +1742,9 @@ const translations = {
         supportText: "Si tiene alguna pregunta, póngase en contacto con el soporte",
         autoRedirect: "Redirección automática en",
         seconds: "segundos",
+        paymentFailTitle: "Pago fallido",
+        paymentFailMsg: "Lamentablemente, su pago no pudo ser procesado. Por favor, inténtelo de nuevo o póngase en contacto con nuestro soporte.",
+        paymentRetry: "Intentar de nuevo",
     },
     // ======================
     // === ITALIAN (IT) ===
@@ -1940,6 +1955,9 @@ const translations = {
         supportText: "Se avete domande, contattate il supporto",
         autoRedirect: "Reindirizzamento automatico tra",
         seconds: "secondi",
+        paymentFailTitle: "Pagamento fallito",
+        paymentFailMsg: "Purtroppo, il vostro pagamento non è stato elaborato. Si prega di riprovare o contattare il nostro supporto.",
+        paymentRetry: "Riprova",
     },
 };
 
