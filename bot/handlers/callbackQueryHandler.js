@@ -296,7 +296,15 @@ async function handleConfirmMessage(ctx, user, params) {
         
         if (type === 'broadcast') {
             const [role, encodedMessage] = rest;
-            const message = Buffer.from(encodedMessage, 'base64').toString('utf-8');
+            
+            // Validate base64 encoded message
+            let message;
+            try {
+                message = Buffer.from(encodedMessage, 'base64').toString('utf-8');
+            } catch (decodeError) {
+                console.error('Failed to decode broadcast message:', decodeError);
+                return ctx.editMessageText('❌ Error: Invalid message format. Please try again.');
+            }
             
             let query = { telegramChatId: { $exists: true, $ne: null } };
             if (role !== 'all') {
@@ -304,8 +312,19 @@ async function handleConfirmMessage(ctx, user, params) {
             }
             
             const users = await User.find(query, 'telegramChatId name').lean();
+            
+            if (users.length === 0) {
+                return ctx.editMessageText('❌ No users found to send message to.');
+            }
+            
             let successCount = 0;
             let failCount = 0;
+            const failedUsers = [];
+            
+            // Show progress for large broadcasts
+            if (users.length > 10) {
+                await ctx.editMessageText(`📤 Sending broadcast to ${users.length} users...`);
+            }
             
             for (const targetUser of users) {
                 try {
@@ -313,11 +332,28 @@ async function handleConfirmMessage(ctx, user, params) {
                     successCount++;
                 } catch (error) {
                     failCount++;
-                    console.error(`Failed to send message to ${targetUser.name}:`, error.message);
+                    failedUsers.push(targetUser.name);
+                    console.error(`Failed to send broadcast to ${targetUser.name} (ID: ${targetUser._id}):`, {
+                        error: error.message,
+                        chatId: targetUser.telegramChatId,
+                        messageLength: message.length
+                    });
                 }
             }
             
-            await ctx.editMessageText(`✅ Broadcast message sent!\n\n📊 Statistics:\n✅ Delivered: ${successCount}\n❌ Failed: ${failCount}\n👥 Total recipients: ${users.length}`);
+            // Detailed delivery report
+            let reportMessage = `✅ Broadcast completed!\n\n📊 Delivery Statistics:\n✅ Successfully delivered: ${successCount}\n❌ Failed deliveries: ${failCount}\n👥 Total recipients: ${users.length}`;
+            
+            if (failCount > 0 && failCount <= 5) {
+                reportMessage += `\n\n❌ Failed to deliver to: ${failedUsers.join(', ')}`;
+            } else if (failCount > 5) {
+                reportMessage += `\n\n❌ Multiple delivery failures (check logs for details)`;
+            }
+            
+            await ctx.editMessageText(reportMessage);
+            
+            // Log broadcast summary
+            console.log(`Broadcast completed - Role: ${role}, Success: ${successCount}, Failed: ${failCount}, Total: ${users.length}`);
             
         } else if (type === 'personal') {
             const [userId, encodedMessage] = rest;
@@ -451,6 +487,30 @@ function registerCallbackQueryHandler(bot, dependencies) {
                 case 'refresh': await handleRefreshCallback(ctx, user, params); break;
                 case 'admin_select_user_notification': await handleAdminCallback(ctx, user, params); break;
                 case 'confirm': await handleConfirmMessage(ctx, user, params); break;
+                case 'cancel':
+                    if (params[0] === 'broadcast') {
+                        const [, role, encodedMessage] = params;
+                        let messagePreview = '';
+                        
+                        // Try to decode message for preview
+                        try {
+                            const message = Buffer.from(encodedMessage, 'base64').toString('utf-8');
+                            messagePreview = message.length > 50 ? message.substring(0, 50) + '...' : message;
+                        } catch (error) {
+                            messagePreview = 'Unable to decode message';
+                        }
+                        
+                        const roleText = role === 'all' ? 'всем пользователям' : `пользователям с ролью "${role}"`;
+                        
+                        await ctx.editMessageText(
+                            `❌ Рассылка отменена\n\n` +
+                            `📝 Сообщение: "${messagePreview}"\n` +
+                            `👥 Получатели: ${roleText}\n\n` +
+                            `✅ Никому ничего не было отправлено.`
+                        );
+                        await ctx.answerCbQuery('Рассылка отменена');
+                    }
+                    break;
                 case 'payment':
                     const [actionType, paymentId] = params;
                     if (actionType === 'approve') {

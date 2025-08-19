@@ -536,6 +536,15 @@ async function showNotificationMenu(ctx) {
 
 async function sendBroadcastMessage(ctx, message, role = 'all', prefix = '') {
     try {
+        // Validate message length
+        if (!message || message.trim().length === 0) {
+            return ctx.reply('❌ Message cannot be empty.');
+        }
+        
+        if (message.length > 4000) {
+            return ctx.reply('❌ Message is too long. Please keep it under 4000 characters.');
+        }
+
         let query = { telegramChatId: { $exists: true, $ne: null } };
         if (role !== 'all') {
             query.role = role;
@@ -543,6 +552,11 @@ async function sendBroadcastMessage(ctx, message, role = 'all', prefix = '') {
 
         const users = await User.find(query, 'telegramChatId name').lean();
         const finalMessage = prefix ? `${prefix}\n\n${message}` : message;
+        
+        // Additional validation for final message length after prefix
+        if (finalMessage.length > 4000) {
+            return ctx.reply('❌ Message with prefix is too long. Please shorten your message.');
+        }
         
         // Show confirmation before sending
         const roleText = role === 'all' ? 'all users' : `all ${role}s`;
@@ -556,24 +570,6 @@ async function sendBroadcastMessage(ctx, message, role = 'all', prefix = '') {
         };
         
         return ctx.reply(confirmationMessage, { parse_mode: 'Markdown', reply_markup: keyboard });
-        
-        let successCount = 0;
-        let failCount = 0;
-
-        for (const user of users) {
-            try {
-                await ctx.telegram.sendMessage(user.telegramChatId, finalMessage);
-                successCount++;
-            } catch (error) {
-                failCount++;
-                console.error(`Failed to send message to ${user.name}:`, error.message);
-            }
-        }
-
-        const deliveryRoleText = role === 'all' ? 'all users' : `all ${role}s`;
-        await ctx.reply(`✅ Message sent successfully!\n\n📊 Statistics:\n✅ Delivered: ${successCount}\n❌ Failed: ${failCount}\n👥 Total ${deliveryRoleText}: ${users.length}`);
-        
-        return handleMenuCommand(ctx);
     } catch (error) {
         console.error('Broadcast error:', error);
         await ctx.reply('❌ Error sending broadcast message.');
