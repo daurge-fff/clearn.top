@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="<%= currentLang %>" dir="<%= lang.dir || 'ltr' %>" data-theme="light">
+<html lang="<%= currentLang %>" dir="ltr" data-theme="light">
 <head>
     <link rel="icon" type="image/png" href="/images/favicon/favicon-96x96.png" sizes="96x96" />
     <link rel="icon" type="image/svg+xml" href="/images/favicon/favicon.svg" />
@@ -12,141 +12,219 @@
      <link rel="stylesheet" href="/css/style.css">
      <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;700&family=Montserrat:wght@300;400;600&display=swap&subset=cyrillic,latin-ext" rel="stylesheet">
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
         body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-family: 'Roboto', sans-serif;
             padding: 20px;
         }
         
         .success-container {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(20px);
-            border-radius: 20px;
-            padding: 3rem;
+            background: white;
+            border-radius: 24px;
+            padding: 4rem 3rem;
             text-align: center;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
-            max-width: 500px;
-            width: 90%;
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.15);
+            max-width: 480px;
+            width: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .success-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: linear-gradient(90deg, #10b981, #059669);
         }
         
         .success-icon {
-            font-size: 4rem;
-            color: #28a745;
-            margin-bottom: 1rem;
-            animation: bounce 1s ease-in-out;
+            width: 90px;
+            height: 90px;
+            background: linear-gradient(135deg, #10b981, #059669);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 2.5rem;
+            color: white;
+            font-size: 3rem;
+            font-weight: 600;
+            box-shadow: 0 15px 40px rgba(16, 185, 129, 0.4);
+            animation: successPulse 2s infinite;
         }
         
-        @keyframes bounce {
-            0%, 20%, 50%, 80%, 100% {
-                transform: translateY(0);
-            }
-            40% {
-                transform: translateY(-10px);
-            }
-            60% {
-                transform: translateY(-5px);
-            }
+        @keyframes successPulse {
+            0% { transform: scale(1); box-shadow: 0 15px 40px rgba(16, 185, 129, 0.4); }
+            50% { transform: scale(1.08); box-shadow: 0 20px 50px rgba(16, 185, 129, 0.6); }
+            100% { transform: scale(1); box-shadow: 0 15px 40px rgba(16, 185, 129, 0.4); }
         }
         
         .success-title {
-            color: #333;
-            font-size: 2rem;
-            font-weight: bold;
-            margin-bottom: 1rem;
+            color: #1f2937;
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            line-height: 1.2;
+            letter-spacing: -0.02em;
         }
         
         .success-message {
-            color: #666;
-            font-size: 1.1rem;
-            margin-bottom: 2rem;
+            color: #6b7280;
+            font-size: 1.15rem;
             line-height: 1.6;
+            margin-bottom: 1.5rem;
+            font-weight: 400;
+        }
+        
+        .await-message {
+            color: #059669;
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 2.5rem;
+            font-weight: 500;
+            padding: 1.5rem;
+            background: linear-gradient(135deg, #ecfdf5, #f0fdf4);
+            border-radius: 16px;
+            border: 1px solid #a7f3d0;
+        }
+        
+        .date-info {
+            background: #f9fafb;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 2rem 0;
+            border-left: 4px solid #10b981;
+        }
+        
+        .date-row {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .date-label {
+            color: #6b7280;
+            font-weight: 500;
+            font-size: 0.95rem;
+        }
+        
+        .date-value {
+            color: #1f2937;
+            font-weight: 600;
+            font-size: 0.95rem;
         }
         
         .btn-dashboard {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #667eea, #764ba2);
             border: none;
             color: white;
-            padding: 12px 30px;
-            border-radius: 25px;
-            font-weight: 500;
+            padding: 18px 45px;
+            border-radius: 50px;
+            font-weight: 600;
             text-decoration: none;
             display: inline-block;
             transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+            font-family: 'Inter', sans-serif;
         }
         
         .btn-dashboard:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+            transform: translateY(-4px);
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.5);
             color: white;
+            text-decoration: none;
         }
         
-        .payment-details {
-            background: #f8f9fa;
-            border-radius: 10px;
-            padding: 1.5rem;
-            margin: 1.5rem 0;
-            text-align: left;
+        .help-text {
+            color: #9ca3af;
+            font-size: 0.9rem;
+            margin-top: 1.5rem;
+            font-weight: 400;
         }
         
-        .detail-row {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 0.5rem;
+        .countdown {
+            color: #667eea;
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-top: 1rem;
         }
         
-        .detail-label {
-            font-weight: 500;
-            color: #666;
-        }
-        
-        .detail-value {
-            font-weight: bold;
-            color: #333;
+        @media (max-width: 768px) {
+            .success-container {
+                padding: 3rem 2rem;
+            }
+            
+            .success-title {
+                font-size: 2rem;
+            }
+            
+            .success-icon {
+                width: 75px;
+                height: 75px;
+                font-size: 2.5rem;
+            }
+            
+            .btn-dashboard {
+                padding: 16px 35px;
+                font-size: 1rem;
+            }
         }
     </style>
 </head>
 <body>
     <div class="success-container">
-        <div class="success-icon">✅</div>
-        <h1 class="success-title"><%= lang.paymentSuccessTitle %></h1>
-        <p class="success-message">
-            <%= lang.paymentSuccessMsg %>
-        </p>
+        <div class="success-icon">✓</div>
+        <h1 class="success-title"><%= lang.paymentSuccessTitle || 'Платеж успешен!' %></h1>
+        <p class="success-message"><%= lang.paymentSuccessMsg || 'Спасибо за ваш платеж! Транзакция была успешно завершена.' %></p>
         
-        <div class="payment-details">
-            <div class="detail-row">
-                <span class="detail-label">Status:</span>
-                <span class="detail-value">✅ Confirmed</span>
-            </div>
-            <div class="detail-row">
-                <span class="detail-label">Processing Time:</span>
-                <span class="detail-value">Instant</span>
-            </div>
-            <div class="detail-row">
-                <span class="detail-label">Next Step:</span>
-                <span class="detail-value">Schedule your lessons</span>
-            </div>
+        <div class="await-message">
+            <%= lang.awaitLessonsMsg || 'Ожидайте начисления уроков на ваш аккаунт.' %>
         </div>
         
-        <a href="/dashboard" class="btn-dashboard">
-            <%= lang.paymentBack %>
-        </a>
+
         
-        <p class="mt-3 text-muted small">
-            Need help? Contact us via Telegram or email for support.
-        </p>
+        <a href="/dashboard" class="btn-dashboard"><%= lang.goToDashboard || 'Перейти в личный кабинет' %></a>
+        
+        <div class="help-text">
+            <%= lang.supportText || 'Если у вас возникли вопросы, обратитесь в службу поддержки' %>
+        </div>
+        
+        <div class="countdown">
+            <%= lang.autoRedirect || 'Автоматический переход через' %> <span id="countdown">10</span> <%= lang.seconds || 'секунд' %>
+        </div>
     </div>
     
     <script>
-        // Auto-redirect to dashboard after 10 seconds
-        setTimeout(() => {
-            window.location.href = '/dashboard';
-        }, 10000);
+        let countdown = 10;
+        const countdownElement = document.getElementById('countdown');
+        
+        const timer = setInterval(() => {
+            countdown--;
+            countdownElement.textContent = countdown;
+            
+            if (countdown <= 0) {
+                clearInterval(timer);
+                window.location.href = '/dashboard';
+            }
+        }, 1000);
     </script>
 </body>
 </html>

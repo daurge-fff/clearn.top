@@ -624,10 +624,13 @@ router.post('/lessons', ensureAuth, ensureRole('admin', 'teacher'), async (req, 
         return res.status(400).json({ msg: 'Please fill all required fields.' });
     }
     try {
-        const dateWithoutTimezone = new Date(lessonDate);
+        // Интерпретируем дату как MSK время и конвертируем в UTC для хранения
+        const moscowDate = moment.tz(lessonDate, 'Europe/Moscow');
+        const utcDate = moscowDate.utc().toDate();
+        
         const newLesson = await Lesson.create({
             student, teacher, course,
-            lessonDate: dateWithoutTimezone,
+            lessonDate: utcDate,
             duration: Number(duration),
             topic: topic || 'Scheduled Lesson'
         });
@@ -641,7 +644,15 @@ router.post('/lessons', ensureAuth, ensureRole('admin', 'teacher'), async (req, 
 
 router.put('/lessons/:id', ensureAuth, ensureRole('admin'), async (req, res) => {
     try {
-        const updatedLesson = await Lesson.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        const updateData = { ...req.body };
+        
+        // Если обновляется дата урока, конвертируем из MSK в UTC
+        if (updateData.lessonDate) {
+            const moscowDate = moment.tz(updateData.lessonDate, 'Europe/Moscow');
+            updateData.lessonDate = moscowDate.utc().toDate();
+        }
+        
+        const updatedLesson = await Lesson.findByIdAndUpdate(req.params.id, updateData, { new: true });
         if (!updatedLesson) {
             return res.status(404).json({ msg: 'Lesson not found' });
         }

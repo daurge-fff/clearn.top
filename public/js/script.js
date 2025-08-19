@@ -556,10 +556,33 @@ document.addEventListener('DOMContentLoaded', () => {
         const confirmButton = document.getElementById('confirm-manual-payment');
         const transactionIdInput = document.getElementById('paypal-transaction-id');
         
-        [transactionIdInput, document.getElementById('terms-checkbox'), document.getElementById('payment-identifier')].forEach(el => {
-            el.addEventListener('input', updatePayButtonState);
-            el.addEventListener('change', updatePayButtonState);
-        });
+        // Add event listeners for the transaction ID input
+        if (transactionIdInput) {
+            transactionIdInput.addEventListener('input', updatePayButtonState);
+            transactionIdInput.addEventListener('change', updatePayButtonState);
+        }
+        
+        // Re-add event listeners for existing elements to ensure they work with the new manual payment form
+        const termsCheckbox = document.getElementById('terms-checkbox');
+        const identifierInput = document.getElementById('payment-identifier');
+        
+        if (termsCheckbox) {
+            // Remove existing listeners to avoid duplicates
+            termsCheckbox.removeEventListener('input', updatePayButtonState);
+            termsCheckbox.removeEventListener('change', updatePayButtonState);
+            // Add fresh listeners
+            termsCheckbox.addEventListener('input', updatePayButtonState);
+            termsCheckbox.addEventListener('change', updatePayButtonState);
+        }
+        
+        if (identifierInput) {
+            // Remove existing listeners to avoid duplicates
+            identifierInput.removeEventListener('input', updatePayButtonState);
+            identifierInput.removeEventListener('change', updatePayButtonState);
+            // Add fresh listeners
+            identifierInput.addEventListener('input', updatePayButtonState);
+            identifierInput.addEventListener('change', updatePayButtonState);
+        }
 
         updatePayButtonState();
 
@@ -614,7 +637,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     const result = await response.json();
                     showNotification(result.message || 'Payment confirmation submitted successfully!', 'success');
                     setTimeout(() => {
-                        window.location.href = '/successful-payment';
+                        const currentLang = getCurrentLanguage();
+                        window.location.href = `/successful-payment?lang=${currentLang}&amount=${amount}&currency=${paymentConfig.currency}&orderId=${createResult.orderId}`;
                     }, 2000);
                 } else {
                     const errorData = await response.json();

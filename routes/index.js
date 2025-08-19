@@ -43,18 +43,7 @@ router.get('/faq', (req, res) => {
     res.render('faq', { layout: false });
 });
 
-router.get('/successful-payment', (req, res) => {
-    res.render('successful-payment', {
-        layout: false,
-        currentLang: 'en',
-        lang: {
-            dir: 'ltr',
-            paymentSuccessTitle: 'Payment Successful!',
-            paymentSuccessMsg: 'Thank you! We have received your payment and will contact you shortly to schedule the lessons.',
-            paymentBack: 'Back to Main Page'
-        }
-    });
-});
+// Удален дублирующийся роут - используется роут ниже с переводами
 
 // @route   GET /failed-payment
 // @desc    Display failed payment page
@@ -65,7 +54,8 @@ router.get('/failed-payment', (req, res) => {
     const translations = require('../public/js/translations');
     
     res.render('failed-payment', {
-        lang: translations[lang],
+        layout: false,
+        lang: translations[lang] || translations['en'],
         currentLang
     });
 });
@@ -78,9 +68,19 @@ router.get('/successful-payment', (req, res) => {
     const currentLang = lang;
     const translations = require('../public/js/translations');
     
+    // Создаем пример данных платежа для демонстрации
+    const paymentDetails = {
+        amount: req.query.amount || '5000',
+        currency: req.query.currency || 'RUB',
+        orderId: req.query.orderId || 'ORDER-' + Date.now(),
+        date: new Date().toLocaleDateString('ru-RU')
+    };
+    
     res.render('successful-payment', {
-        lang: translations[lang],
-        currentLang
+        layout: false,
+        lang: translations[lang] || translations['en'],
+        currentLang,
+        paymentDetails
     });
 });
 

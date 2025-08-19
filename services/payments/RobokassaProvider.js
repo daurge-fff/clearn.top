@@ -83,7 +83,9 @@ class RobokassaProvider extends PaymentProvider {
             Description: description, // Не кодируем здесь, будем кодировать при формировании URL
             SignatureValue: signature,
             Culture: 'ru',
-            Encoding: 'utf-8'
+            Encoding: 'utf-8',
+            SuccessURL: `${process.env.BASE_URL || 'https://clearn.top'}/successful-payment`,
+            FailURL: `${process.env.BASE_URL || 'https://clearn.top'}/failed-payment`
         };
         
         // Добавляем OutSumCurrency только если валюта не RUB (по умолчанию RUB)
