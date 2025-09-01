@@ -495,17 +495,7 @@ function registerCallbackQueryHandler(bot, dependencies) {
             }
 
             switch (action) {
-                case 'cancel':  await handleCancellationRequest(ctx, user, params); break;
-                case 'settings':await handleSettingsCallback(ctx, user, params); break;
-                case 'admin':   await handleAdminCallback(ctx, user, params); break;
-                case 'cal':     await handleCalendarCallback(ctx, user, params); break;
-                case 'page':    await handlePaginationCallback(ctx, user, params); break;
-                case 'lesson':  await handleLessonCallback(ctx, user, params, dependencies); break;
-                case 'grade':   await handleLessonGrade(ctx, user, params[0], params[1]); break;
-                case 'refresh': await handleRefreshCallback(ctx, user, params); break;
-                case 'admin_select_user_notification': await handleAdminCallback(ctx, user, params); break;
-                case 'confirm': await handleConfirmMessage(ctx, user, params); break;
-                case 'cancel':
+                case 'cancel':  
                     if (params[0] === 'broadcast') {
                         const [, role, encodedMessage] = params;
                         let messagePreview = '';
@@ -518,17 +508,50 @@ function registerCallbackQueryHandler(bot, dependencies) {
                             messagePreview = 'Unable to decode message';
                         }
                         
-                        const roleText = role === 'all' ? 'всем пользователям' : `пользователям с ролью "${role}"`;
+                        const roleText = role === 'all' ? 'all users' : `users with role "${role}"`;
                         
                         await ctx.editMessageText(
-                            `❌ Рассылка отменена\n\n` +
-                            `📝 Сообщение: "${messagePreview}"\n` +
-                            `👥 Получатели: ${roleText}\n\n` +
-                            `✅ Никому ничего не было отправлено.`
+                            `❌ Broadcast cancelled\n\n` +
+                            `📝 Message: "${messagePreview}"\n` +
+                            `👥 Recipients: ${roleText}\n\n` +
+                            `✅ Nothing was sent to anyone.`
                         );
-                        await ctx.answerCbQuery('Рассылка отменена');
+                        await ctx.answerCbQuery('Broadcast cancelled');
+                    } else if (params[0] === 'personal') {
+                        const [, userId, encodedMessage] = params;
+                        let messagePreview = '';
+                        
+                        // Try to decode message for preview
+                        try {
+                            const message = Buffer.from(encodedMessage, 'base64').toString('utf-8');
+                            messagePreview = message.length > 50 ? message.substring(0, 50) + '...' : message;
+                        } catch (error) {
+                            messagePreview = 'Unable to decode message';
+                        }
+                        
+                        const targetUser = await User.findById(userId, 'name').lean();
+                        const userName = targetUser ? targetUser.name : 'Unknown user';
+                        
+                        await ctx.editMessageText(
+                            `❌ Personal message cancelled\n\n` +
+                            `📝 Message: "${messagePreview}"\n` +
+                            `👤 Recipient: ${userName}\n\n` +
+                            `✅ Nothing was sent.`
+                        );
+                        await ctx.answerCbQuery('Message cancelled');
+                    } else {
+                        await handleCancellationRequest(ctx, user, params);
                     }
                     break;
+                case 'settings':await handleSettingsCallback(ctx, user, params); break;
+                case 'admin':   await handleAdminCallback(ctx, user, params); break;
+                case 'cal':     await handleCalendarCallback(ctx, user, params); break;
+                case 'page':    await handlePaginationCallback(ctx, user, params); break;
+                case 'lesson':  await handleLessonCallback(ctx, user, params, dependencies); break;
+                case 'grade':   await handleLessonGrade(ctx, user, params[0], params[1]); break;
+                case 'refresh': await handleRefreshCallback(ctx, user, params); break;
+                case 'admin_select_user_notification': await handleAdminCallback(ctx, user, params); break;
+                case 'confirm': await handleConfirmMessage(ctx, user, params); break;
                 case 'payment':
                     const [actionType, paymentId] = params;
                     if (actionType === 'approve') {

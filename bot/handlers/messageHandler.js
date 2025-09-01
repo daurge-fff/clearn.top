@@ -588,7 +588,7 @@ async function sendBroadcastMessage(ctx, message, role = 'all', prefix = '') {
         const keyboard = {
             inline_keyboard: [
                 [{ text: '✅ Send Message', callback_data: `confirm_broadcast_${role}_${Buffer.from(finalMessage).toString('base64')}` }],
-                [{ text: '❌ Cancel', callback_data: 'cancel_broadcast' }]
+                [{ text: '❌ Cancel', callback_data: `cancel_broadcast_${role}_${Buffer.from(finalMessage).toString('base64')}` }]
             ]
         };
         
@@ -639,7 +639,7 @@ async function sendNotificationToUser(ctx, userId, message) {
         const keyboard = {
             inline_keyboard: [
                 [{ text: '✅ Send Message', callback_data: `confirm_personal_${userId}_${Buffer.from(finalMessage).toString('base64')}` }],
-                [{ text: '❌ Cancel', callback_data: 'cancel_personal' }]
+                [{ text: '❌ Cancel', callback_data: `cancel_personal_${userId}_${Buffer.from(finalMessage).toString('base64')}` }]
             ]
         };
         
