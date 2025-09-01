@@ -56,12 +56,12 @@ module.exports = function(passport) {
                             user = await User.create(newUser);
                             
                             // Notify admins about new Google user registration
-                            const adminMessage = `🆕 *Новая регистрация через Google*\n\n` +
-                                `👤 *Имя:* ${user.name}\n` +
+                            const adminMessage = `🆕 *New Google Registration*\n\n` +
+                                `👤 *Name:* ${user.name}\n` +
                                 `📧 *Email:* ${user.email}\n` +
                                 `🔗 *Google ID:* ${user.googleId}\n` +
-                                `🕒 *Дата регистрации:* ${new Date().toLocaleString('ru-RU', { timeZone: 'Europe/Moscow' })}\n` +
-                                `🌐 *Часовой пояс:* ${user.timeZone}`;
+                                `🕒 *Registration Date:* ${new Date().toLocaleString('en-US', { timeZone: 'Europe/Moscow' })}\n` +
+                                `🌐 *Time Zone:* ${user.timeZone}`;
                             
                             try {
                                 await notifyAllAdmins(adminMessage);

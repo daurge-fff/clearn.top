@@ -998,15 +998,15 @@ router.post('/users/add', ensureAuth, ensureRole('admin'), async (req, res) => {
         const savedUser = await newUser.save();
 
         // Notify admins about new user creation by admin
-        const adminMessage = `🆕 *Новый пользователь создан админом*\n\n` +
-            `👤 *Имя:* ${savedUser.name}\n` +
+        const adminMessage = `🆕 *New User Created by Admin*\n\n` +
+            `👤 *Name:* ${savedUser.name}\n` +
             `📧 *Email:* ${savedUser.email}\n` +
-            `👥 *Роль:* ${savedUser.role}\n` +
-            `📱 *Контакт:* ${savedUser.contact || 'Не указан'}\n` +
-            `💰 *Уроков оплачено:* ${savedUser.lessonsPaid}\n` +
-            `⭐ *Звезды:* ${savedUser.stars || 0}\n` +
-            `🕒 *Дата создания:* ${new Date().toLocaleString('ru-RU', { timeZone: 'Europe/Moscow' })}\n` +
-            `👨‍💼 *Создан админом:* ${req.user.name}`;
+            `👥 *Role:* ${savedUser.role}\n` +
+            `📱 *Contact:* ${savedUser.contact || 'Not specified'}\n` +
+            `💰 *Lessons Paid:* ${savedUser.lessonsPaid}\n` +
+            `⭐ *Stars:* ${savedUser.stars || 0}\n` +
+            `🕒 *Creation Date:* ${new Date().toLocaleString('en-US', { timeZone: 'Europe/Moscow' })}\n` +
+            `👨‍💼 *Created by Admin:* ${req.user.name}`;
         
         try {
             await notifyAllAdmins(adminMessage);

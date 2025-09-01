@@ -88,13 +88,13 @@ router.post('/register', async (req, res) => {
         }
 
         // Notify admins about new user registration
-        const adminMessage = `🆕 *Новая регистрация пользователя*\n\n` +
-            `👤 *Имя:* ${savedUser.name}\n` +
+        const adminMessage = `🆕 *New User Registration*\n\n` +
+            `👤 *Name:* ${savedUser.name}\n` +
             `📧 *Email:* ${savedUser.email}\n` +
-            `📱 *Контакт:* ${savedUser.contact || 'Не указан'}\n` +
-            `🕒 *Дата регистрации:* ${new Date().toLocaleString('ru-RU', { timeZone: 'Europe/Moscow' })}\n` +
-            `🌐 *Часовой пояс:* ${savedUser.timeZone}\n` +
-            `🎁 *Реферал:* ${referrer ? `Да (${referrer.name})` : 'Нет'}`;
+            `📱 *Contact:* ${savedUser.contact || 'Not specified'}\n` +
+            `🕒 *Registration Date:* ${new Date().toLocaleString('en-US', { timeZone: 'Europe/Moscow' })}\n` +
+            `🌐 *Time Zone:* ${savedUser.timeZone}\n` +
+            `🎁 *Referral:* ${referrer ? `Yes (${referrer.name})` : 'No'}`;
         
         try {
             await notifyAllAdmins(adminMessage);
