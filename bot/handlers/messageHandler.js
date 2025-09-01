@@ -298,8 +298,31 @@ async function handleMenuButton(ctx, user, text) {
                 await ctx.reply("Nothing to undo.");
             } else {
                  if (lastAction.type === 'lesson_status') {
-                    await Lesson.findByIdAndUpdate(lastAction.data.lessonId, { status: lastAction.data.previousStatus });
-                    await ctx.reply(`✅ Action undone. Lesson status reverted to "${lastAction.data.previousStatus}".`);
+                    const lesson = await Lesson.findById(lastAction.data.lessonId).populate('student', '_id');
+                    if (lesson) {
+                        const currentStatus = lesson.status;
+                        const previousStatus = lastAction.data.previousStatus;
+                        
+                        // Update lesson status
+                        await Lesson.findByIdAndUpdate(lastAction.data.lessonId, { status: previousStatus });
+                        
+                        // Adjust lessonsPaid based on status change (reverse the previous action)
+                        if (currentStatus === 'completed' && previousStatus === 'scheduled') {
+                            // Was completed, now scheduled - no balance change needed
+                        } else if (currentStatus === 'completed' && previousStatus.startsWith('cancelled_')) {
+                            // Was completed, now cancelled - refund the lesson
+                            await User.findByIdAndUpdate(lesson.student._id, { $inc: { lessonsPaid: 1 } });
+                        } else if (currentStatus === 'no_show' && previousStatus === 'scheduled') {
+                            // Was no-show, now scheduled - no balance change needed
+                        } else if (currentStatus === 'no_show' && previousStatus.startsWith('cancelled_')) {
+                            // Was no-show, now cancelled - refund the lesson
+                            await User.findByIdAndUpdate(lesson.student._id, { $inc: { lessonsPaid: 1 } });
+                        }
+                        
+                        await ctx.reply(`✅ Action undone. Lesson status reverted to "${previousStatus}".`);
+                    } else {
+                        await ctx.reply("❌ Error: Lesson not found.");
+                    }
                 } else {
                     await ctx.reply("Sorry, this action cannot be undone.");
                 }

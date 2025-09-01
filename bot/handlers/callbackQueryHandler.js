@@ -40,10 +40,19 @@ async function handleLessonCallback(ctx, user, params, { undoStack }) {
     const lesson = await Lesson.findById(lessonId).populate('student', 'name');
     if (!lesson) return ctx.answerCbQuery("Lesson not found");
 
-    undoStack.push({ chatId, type: 'lesson_status', data: { lessonId, previousStatus: lesson.status } });
+    const oldStatus = lesson.status;
+    undoStack.push({ chatId, type: 'lesson_status', data: { lessonId, previousStatus: oldStatus } });
 
     if (actionType === 'completed') {
         await Lesson.findByIdAndUpdate(lessonId, { status: 'completed' });
+        
+        // Adjust lessonsPaid based on status change
+        if (oldStatus === 'scheduled') {
+            // Lesson was scheduled and now completed - no refund needed
+        } else if (oldStatus.startsWith('cancelled_')) {
+            // Lesson was cancelled and now marked as completed - deduct from balance
+            await User.findByIdAndUpdate(lesson.student._id, { $inc: { lessonsPaid: -1 } });
+        }
         
         await ctx.editMessageText(`✅ Lesson with ${lesson.student.name} marked as completed.`);
         const maxGrade = lesson.isProject ? 25 : 10;
@@ -69,6 +78,15 @@ async function handleLessonCallback(ctx, user, params, { undoStack }) {
         await ctx.reply(`Please rate the ${lesson.isProject ? 'project' : 'lesson'} from 1 to ${maxGrade}:`, { reply_markup: gradeKeyboard });
     } else if (actionType === 'noshow') {
         await Lesson.findByIdAndUpdate(lessonId, { status: 'no_show' });
+        
+        // Adjust lessonsPaid based on status change
+        if (oldStatus === 'scheduled') {
+            // Lesson was scheduled and now no-show - no refund (lesson is consumed)
+        } else if (oldStatus.startsWith('cancelled_')) {
+            // Lesson was cancelled and now marked as no-show - deduct from balance
+            await User.findByIdAndUpdate(lesson.student._id, { $inc: { lessonsPaid: -1 } });
+        }
+        
         await ctx.editMessageText(`👻 Lesson with ${lesson.student.name} marked as "no show".`);
     }
     

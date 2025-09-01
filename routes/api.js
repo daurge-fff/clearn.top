@@ -628,11 +628,19 @@ router.post('/lessons', ensureAuth, ensureRole('admin', 'teacher'), async (req, 
         const moscowDate = moment.tz(lessonDate, 'Europe/Moscow');
         const utcDate = moscowDate.utc().toDate();
         
+        // Calculate lesson number for this student
+        const completedLessonsCount = await Lesson.countDocuments({
+            student: student,
+            status: 'completed'
+        });
+        const lessonNumber = completedLessonsCount + 1;
+        const defaultTopic = `Lesson ${lessonNumber}`;
+
         const newLesson = await Lesson.create({
             student, teacher, course,
             lessonDate: utcDate,
             duration: Number(duration),
-            topic: topic || 'Scheduled Lesson'
+            topic: topic || defaultTopic
         });
         await User.findByIdAndUpdate(student, { $inc: { lessonsPaid: -1 } });
         res.status(201).json(newLesson);
@@ -669,7 +677,8 @@ router.delete('/lessons/:id', ensureAuth, ensureRole('admin'), async (req, res) 
         if (!lesson) {
             return res.status(404).json({ msg: 'Lesson not found' });
         }
-        if (lesson.status === 'scheduled') {
+        // Return lesson to balance unless it was a no-show
+        if (lesson.status !== 'no_show') {
             await User.findByIdAndUpdate(lesson.student, { $inc: { lessonsPaid: 1 } });
         }
         await lesson.deleteOne();
@@ -695,17 +704,33 @@ router.put('/lessons/:id/status', ensureAuth, ensureRole('admin'), async (req, r
         const user = lesson.student;
         const oldStatus = lesson.status;
 
-        // Logic for lessonsPaid based on status change (stars are now only awarded through grading)
+        // Logic for lessonsPaid based on status change
         if (newStatus !== oldStatus) {
             let lessonsPaidUpdate = 0;
 
-            // Case 1: A scheduled lesson is cancelled
+            // Case 1: A scheduled lesson is cancelled (return lesson to balance)
             if (oldStatus === 'scheduled' && newStatus.startsWith('cancelled_')) {
                 lessonsPaidUpdate = 1;
             }
-            // Case 2: A cancelled lesson is rescheduled
+            // Case 2: A scheduled lesson becomes no_show (do not return lesson)
+            else if (oldStatus === 'scheduled' && newStatus === 'no_show') {
+                lessonsPaidUpdate = 0; // No refund for no-show
+            }
+            // Case 3: A cancelled lesson is rescheduled (deduct lesson from balance)
             else if (oldStatus.startsWith('cancelled_') && newStatus === 'scheduled') {
                 lessonsPaidUpdate = -1;
+            }
+            // Case 4: A no_show lesson is rescheduled (deduct lesson from balance)
+            else if (oldStatus === 'no_show' && newStatus === 'scheduled') {
+                lessonsPaidUpdate = -1;
+            }
+            // Case 5: A completed lesson is changed to cancelled (return lesson to balance)
+            else if (oldStatus === 'completed' && newStatus.startsWith('cancelled_')) {
+                lessonsPaidUpdate = 1;
+            }
+            // Case 6: A completed lesson is changed to no_show (no change in balance)
+            else if (oldStatus === 'completed' && newStatus === 'no_show') {
+                lessonsPaidUpdate = 0;
             }
 
             // Apply updates if there are any changes

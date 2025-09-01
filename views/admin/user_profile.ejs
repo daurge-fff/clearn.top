@@ -118,13 +118,23 @@
                                 <td>
                                     <% if (userProfile.role === 'student') { %>
                                         <% if (lesson.teacher) { %>
-                                            <a href="/dashboard/user-profile/<%= lesson.teacher._id %>" class="link-discreet"><%= lesson.teacher.name %></a>
+                                            <% if (user.role === 'admin') { %>
+                                                <a href="/dashboard/user-profile/<%= lesson.teacher._id %>" class="link-discreet"><%= lesson.teacher.name %></a>
+                                            <% } else { %>
+                                                <%= lesson.teacher.name %>
+                                            <% } %>
                                         <% } else { %>
                                             N/A
                                         <% } %>
                                     <% } else { %>
                                         <% if (lesson.student) { %>
-                                            <a href="/dashboard/user-profile/<%= lesson.student._id %>" class="link-discreet"><%= lesson.student.name %></a>
+                                            <% if (user.role === 'admin') { %>
+                                                <a href="/dashboard/user-profile/<%= lesson.student._id %>" class="link-discreet"><%= lesson.student.name %></a>
+                                            <% } else if (user.role === 'teacher') { %>
+                                                <a href="/dashboard/student/<%= lesson.student._id %>" class="link-discreet"><%= lesson.student.name %></a>
+                                            <% } else { %>
+                                                <%= lesson.student.name %>
+                                            <% } %>
                                         <% } else { %>
                                             N/A
                                         <% } %>

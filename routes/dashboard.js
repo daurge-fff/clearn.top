@@ -414,13 +414,21 @@ router.post('/lessons/add', ensureAuth, ensureRole('admin'), async (req, res) =>
         const lessonMoment = moment.tz(lessonDate, adminTz);
         const lessonDateUTC = lessonMoment.toDate();
 
+        // Calculate lesson number for this student
+        const completedLessonsCount = await Lesson.countDocuments({
+            student: student,
+            status: 'completed'
+        });
+        const lessonNumber = completedLessonsCount + 1;
+        const defaultTopic = `Lesson ${lessonNumber}`;
+
         await Lesson.create({
             student,
             teacher,
             course,
             lessonDate: lessonDateUTC,
             duration: Number(duration),
-            topic: topic || 'Scheduled Lesson'
+            topic: topic || defaultTopic
         });
         await User.findByIdAndUpdate(student, { $inc: { lessonsPaid: -1 } });
         res.redirect('/dashboard/lessons');
@@ -429,7 +437,46 @@ router.post('/lessons/add', ensureAuth, ensureRole('admin'), async (req, res) =>
         res.redirect('/dashboard/lessons/add');
     }
 });
-router.get('/schedule', ensureAuth, ensureRole('teacher'), async (req, res) => { try { const lessons = await Lesson.find({ teacher: req.user.id }).populate('student', 'name').populate('course', 'name').sort({ lessonDate: -1 }).lean(); const userTz = req.user.timeZone || 'Europe/Moscow'; const lessonsWithLocalTime = lessons.map(lesson => ({ ...lesson, localLessonDate: moment.utc(lesson.lessonDate).tz(userTz).toDate() })); res.render('teacher/schedule', { layout: 'layouts/dashboard', user: req.user, lessons: lessonsWithLocalTime, page_name: 'schedule' }); } catch (err) { console.error(err); res.status(500).send('Server Error'); } });
+router.get('/schedule', ensureAuth, ensureRole('teacher'), async (req, res) => {
+    try {
+        const lessons = await Lesson.find({ teacher: req.user.id })
+            .populate('student', 'name')
+            .populate('course', 'name')
+            .sort({ lessonDate: -1 })
+            .lean();
+        
+        const userTz = req.user.timeZone || 'Europe/Moscow';
+        const lessonsWithLocalTime = lessons.map(lesson => ({
+            ...lesson,
+            localLessonDate: moment.utc(lesson.lessonDate).tz(userTz).toDate()
+        }));
+        
+        // Добавляем номера уроков для каждого ученика
+        for (let lesson of lessonsWithLocalTime) {
+            if (lesson.student && lesson.status === 'completed') {
+                const completedLessons = await Lesson.find({
+                    student: lesson.student._id,
+                    status: 'completed'
+                }).sort({ lessonDate: 1 }).lean();
+                
+                const lessonIndex = completedLessons.findIndex(l => String(l._id) === String(lesson._id));
+                if (lessonIndex !== -1) {
+                    lesson.lessonNumber = lessonIndex + 1;
+                }
+            }
+        }
+        
+        res.render('teacher/schedule', {
+            layout: 'layouts/dashboard',
+            user: req.user,
+            lessons: lessonsWithLocalTime,
+            page_name: 'schedule'
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Server Error');
+    }
+});
 router.get('/my-students', ensureAuth, ensureRole('teacher'), async (req, res) => { try { const teacher = await User.findById(req.user.id).populate('students'); res.render('teacher/my_students', { layout: 'layouts/dashboard', user: req.user, students: teacher.students, page_name: 'students' }); } catch (err) { console.error(err); res.status(500).send('Server Error'); } });
 router.get('/lessons/manage/:id', ensureAuth, async (req, res) => { try { const lesson = await Lesson.findById(req.params.id).populate('student', 'name').populate('course', 'name').lean(); if (!lesson) return res.status(404).send('Lesson not found'); if (req.user.role !== 'admin' && String(lesson.teacher) !== String(req.user.id)) { return res.status(403).send('Forbidden: You are not authorized to manage this lesson.'); } const userTimeZone = req.user.timeZone || 'UTC'; lesson.localLessonDate = moment.tz(lesson.lessonDate, userTimeZone).toDate(); res.render('teacher/lesson_manage', { layout: 'layouts/dashboard', user: req.user, lesson: lesson, page_name: req.user.role === 'admin' ? 'lessons' : 'schedule' }); } catch (err) { console.error(err); res.status(500).send('Server Error'); } });
 // @desc    Просмотр профиля ученика учителем
@@ -717,9 +764,28 @@ router.get('/lessons/view/:id', ensureAuth, ensureRole('student'), async (req, r
         res.status(500).send('Server Error');
     }
 });
-// @desc    Просмотр профиля любого пользователя админом
+// @desc    Универсальный маршрут для просмотра профиля пользователя
 // @route   GET /dashboard/user-profile/:id
-router.get('/user-profile/:id', ensureAuth, ensureRole('admin'), async (req, res) => {
+router.get('/user-profile/:id', ensureAuth, async (req, res) => {
+    // Если учитель пытается открыть профиль ученика, перенаправляем на student/:id
+    if (req.user.role === 'teacher') {
+        const targetUser = await User.findById(req.params.id).lean();
+        if (targetUser && targetUser.role === 'student') {
+            // Проверяем, является ли этот ученик студентом данного учителя
+            const isMyStudent = req.user.students.some(studentId => studentId.toString() === req.params.id);
+            if (isMyStudent) {
+                return res.redirect(`/dashboard/student/${req.params.id}`);
+            } else {
+                return res.status(403).send('Access denied: This is not your student.');
+            }
+        }
+        return res.status(403).send('Access denied.');
+    }
+    
+    // Только админы могут использовать этот маршрут напрямую
+    if (req.user.role !== 'admin') {
+        return res.status(403).send('Access denied.');
+    }
     try {
         const userProfile = await User.findById(req.params.id).lean();
         if (!userProfile) return res.status(404).send('User not found');

@@ -61,9 +61,9 @@ async function createCalendarKeyboard(user, date) {
         nextYear++;
     }
     keyboard.push([
-        { text: "‹", callback_data: `cal_nav_${prevYear}_${prevMonth}` },
+        { text: "◀", callback_data: `cal_nav_${prevYear}_${prevMonth}` },
         { text: `${monthName} ${year}`, callback_data: "cal_ignore" },
-        { text: "›", callback_data: `cal_nav_${nextYear}_${nextMonth}` }
+        { text: "▶", callback_data: `cal_nav_${nextYear}_${nextMonth}` }
     ]);
     keyboard.push(["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"].map(d => ({ text: d, callback_data: "cal_ignore" })));
 

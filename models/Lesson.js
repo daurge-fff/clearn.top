@@ -32,7 +32,7 @@ const LessonSchema = new mongoose.Schema({
     },
     topic: {
         type: String,
-        default: 'Scheduled Lesson'
+        default: ''
     },
     homework: {
         type: String
