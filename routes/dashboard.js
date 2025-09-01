@@ -12,6 +12,7 @@ const Grade = require('../models/Grade');
 const upload = require('../middleware/upload');
 const Payment = require('../models/Payment');
 const paymentService = require('../services/paymentService');
+const { notifyAllAdmins } = require('../services/notificationService');
 
 // Stars are now awarded directly based on the grade score (1:1 ratio)
 
@@ -994,7 +995,24 @@ router.post('/users/add', ensureAuth, ensureRole('admin'), async (req, res) => {
         const salt = await bcrypt.genSalt(10);
         newUser.password = await bcrypt.hash(password, salt);
         
-        await newUser.save();
+        const savedUser = await newUser.save();
+
+        // Notify admins about new user creation by admin
+        const adminMessage = `🆕 *Новый пользователь создан админом*\n\n` +
+            `👤 *Имя:* ${savedUser.name}\n` +
+            `📧 *Email:* ${savedUser.email}\n` +
+            `👥 *Роль:* ${savedUser.role}\n` +
+            `📱 *Контакт:* ${savedUser.contact || 'Не указан'}\n` +
+            `💰 *Уроков оплачено:* ${savedUser.lessonsPaid}\n` +
+            `⭐ *Звезды:* ${savedUser.stars || 0}\n` +
+            `🕒 *Дата создания:* ${new Date().toLocaleString('ru-RU', { timeZone: 'Europe/Moscow' })}\n` +
+            `👨‍💼 *Создан админом:* ${req.user.name}`;
+        
+        try {
+            await notifyAllAdmins(adminMessage);
+        } catch (error) {
+            console.error('Failed to send admin notification for user creation:', error);
+        }
 
         res.redirect('/dashboard/users');
 

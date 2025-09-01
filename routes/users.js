@@ -5,6 +5,7 @@ const bcrypt = require('bcryptjs');
 const User = require('../models/User');
 const { ensureGuest } = require('../middleware/auth');
 const { claimPendingPaymentsForUser } = require('../services/paymentService');
+const { notifyAllAdmins } = require('../services/notificationService');
 
 // Login Page
 router.get('/login', ensureGuest, (req, res) => {
@@ -84,6 +85,21 @@ router.post('/register', async (req, res) => {
         if (referrer) {
             referrer.referralBonuses = (referrer.referralBonuses || 0) + 1;
             await referrer.save();
+        }
+
+        // Notify admins about new user registration
+        const adminMessage = `🆕 *Новая регистрация пользователя*\n\n` +
+            `👤 *Имя:* ${savedUser.name}\n` +
+            `📧 *Email:* ${savedUser.email}\n` +
+            `📱 *Контакт:* ${savedUser.contact || 'Не указан'}\n` +
+            `🕒 *Дата регистрации:* ${new Date().toLocaleString('ru-RU', { timeZone: 'Europe/Moscow' })}\n` +
+            `🌐 *Часовой пояс:* ${savedUser.timeZone}\n` +
+            `🎁 *Реферал:* ${referrer ? `Да (${referrer.name})` : 'Нет'}`;
+        
+        try {
+            await notifyAllAdmins(adminMessage);
+        } catch (error) {
+            console.error('Failed to send admin notification for new user registration:', error);
         }
 
         await claimPendingPaymentsForUser(savedUser);

@@ -4,6 +4,7 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 
 const User = require('../models/User');
+const { notifyAllAdmins } = require('../services/notificationService');
 
 module.exports = function(passport) {
     passport.use(
@@ -53,6 +54,21 @@ module.exports = function(passport) {
                             done(null, user);
                         } else {
                             user = await User.create(newUser);
+                            
+                            // Notify admins about new Google user registration
+                            const adminMessage = `🆕 *Новая регистрация через Google*\n\n` +
+                                `👤 *Имя:* ${user.name}\n` +
+                                `📧 *Email:* ${user.email}\n` +
+                                `🔗 *Google ID:* ${user.googleId}\n` +
+                                `🕒 *Дата регистрации:* ${new Date().toLocaleString('ru-RU', { timeZone: 'Europe/Moscow' })}\n` +
+                                `🌐 *Часовой пояс:* ${user.timeZone}`;
+                            
+                            try {
+                                await notifyAllAdmins(adminMessage);
+                            } catch (error) {
+                                console.error('Failed to send admin notification for Google user registration:', error);
+                            }
+                            
                             done(null, user);
                         }
                     }
