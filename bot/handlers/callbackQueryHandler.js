@@ -79,11 +79,14 @@ async function handleLessonCallback(ctx, user, params, { undoStack }) {
     } else if (actionType === 'noshow') {
         await Lesson.findByIdAndUpdate(lessonId, { status: 'no_show' });
         
-        // Adjust lessonsPaid based on status change
+        // Adjust lessonsPaid based on status change - no_show always deducts lesson
         if (oldStatus === 'scheduled') {
-            // Lesson was scheduled and now no-show - no refund (lesson is consumed)
+            // Lesson was scheduled and now no-show - lesson is consumed (no balance change needed)
         } else if (oldStatus.startsWith('cancelled_')) {
             // Lesson was cancelled and now marked as no-show - deduct from balance
+            await User.findByIdAndUpdate(lesson.student._id, { $inc: { lessonsPaid: -1 } });
+        } else if (oldStatus === 'completed') {
+            // Lesson was completed and now marked as no-show - deduct from balance
             await User.findByIdAndUpdate(lesson.student._id, { $inc: { lessonsPaid: -1 } });
         }
         

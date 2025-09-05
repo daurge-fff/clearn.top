@@ -1340,6 +1340,9 @@ router.delete('/lessons/:id', ensureAuth, ensureRole('admin'), async (req, res) 
             return res.status(404).send('Lesson not found');
         }
         
+        // Always return lesson to balance when deleting
+        await User.findByIdAndUpdate(lesson.student, { $inc: { lessonsPaid: 1 } });
+        
         await Lesson.findByIdAndDelete(req.params.id);
         
         if (req.headers['content-type'] === 'application/json') {

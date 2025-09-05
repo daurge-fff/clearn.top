@@ -209,6 +209,23 @@ async function handleLessonCancellation(ctx, user, lessonId, reason) {
         }
     } else if (isTeacher) {
         newStatus = 'cancelled_by_teacher';
+        // Return lesson to student's balance when teacher cancels
+        await User.findByIdAndUpdate(lesson.student._id, { $inc: { lessonsPaid: 1 } });
+        
+        const student = lesson.student;
+        if (student && student.telegramChatId) {
+            // Получаем часовой пояс студента для отображения времени
+            const studentData = await User.findById(student._id).select('timeZone').lean();
+            const studentTz = studentData?.timeZone || 'Europe/Moscow';
+            const date = moment.utc(lesson.lessonDate).tz(studentTz).format('DD/MM/YYYY');
+            const time = moment.utc(lesson.lessonDate).tz(studentTz).format('HH:mm');
+            const notification = `⚠️ *Lesson Cancellation*\n\nYour teacher *${user.name}* has cancelled the lesson scheduled for *${date} at ${time}*.\n\n*Reason:* ${reason}\n\nThe lesson has been returned to your balance.`;
+            try {
+                ctx.telegram.sendMessage(student.telegramChatId, notification, { parse_mode: 'Markdown' });
+            } catch (telegramError) {
+                console.error(`Failed to send lesson notification to student ${student.name}:`, telegramError.message);
+            }
+        }
     }
 
     lesson.status = newStatus;
