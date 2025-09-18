@@ -56,6 +56,15 @@ router.post('/create', async (req, res) => {
             orderId
         });
 
+        // Создаем платеж через провайдер
+        const paymentResult = await pm.createPayment(paymentSystem, {
+            amount,
+            currency,
+            description,
+            orderId,
+            identifier
+        });
+
         // Уведомляем администратора
         await notifyAdmin(
             `🧾 *New Invoice Created*\n\n` +
@@ -65,15 +74,6 @@ router.post('/create', async (req, res) => {
             `📝 *Description:* ${description}\n` +
             `🆔 *Order ID:* \`${orderId}\``
         );
-
-        // Создаем платеж через провайдер
-        const paymentResult = await pm.createPayment(paymentSystem, {
-            amount,
-            currency,
-            description,
-            orderId,
-            identifier
-        });
 
         // Обновляем запись платежа с внешним ID
         if (paymentResult.externalId) {
@@ -166,6 +166,73 @@ router.get('/providers', (req, res) => {
 });
 
 /**
+ * Специальный обработчик для Betatransfer webhook
+ * @route POST /api/payments/betatransfer/webhook
+ */
+router.post('/betatransfer/webhook', express.urlencoded({ extended: true }), async (req, res) => {
+    try {
+        console.log('[Betatransfer] Received webhook notification:', req.body);
+        
+        // Обрабатываем уведомление через менеджер
+        const pm = getPaymentManager();
+        const result = await pm.handleNotification('betatransfer', req.body, req.headers);
+        
+        if (result.success && result.orderId) {
+            // Находим платеж в базе данных
+            const payment = await Payment.findOne({ 
+                $or: [
+                    { externalId: result.orderId },
+                    { orderId: result.orderId }
+                ]
+            });
+            
+            if (payment && payment.status !== 'completed') {
+                // Обновляем статус платежа
+                payment.status = 'completed';
+                
+                // Привязываем к пользователю, если еще не привязан
+                if (!payment.userId) {
+                    const user = await findUserByIdentifier(payment.pendingIdentifier);
+                    if (user) {
+                        payment.userId = user._id;
+                        console.log(`Auto-linked Betatransfer payment ${payment._id} to user ${user.email}`);
+                    }
+                }
+                
+                await payment.save();
+                
+                // Начисляем уроки пользователю
+                if (payment.userId) {
+                    await creditPaymentToUser(payment);
+                    
+                    await notifyAdmin(
+                        `✅ *Successful Payment (Betatransfer)*\n\n` +
+                        `💰 *Amount:* ${payment.amount} ${payment.currency}\n` +
+                        `👤 *Client:* \`${payment.pendingIdentifier}\`\n` +
+                        `🆔 *Order:* \`${result.orderId}\`\n` +
+                        `✅ *Status:* Payment processed and lessons credited`
+                    );
+                } else {
+                    await notifyAdmin(
+                        `⚠️ *Successful Payment (Betatransfer) - Needs Linking*\n\n` +
+                        `💰 *Amount:* ${payment.amount} ${payment.currency}\n` +
+                        `👤 *Client:* \`${payment.pendingIdentifier}\`\n` +
+                        `🆔 *Order:* \`${result.orderId}\`\n\n` +
+                        `Please link this payment to a user manually.`
+                    );
+                }
+            }
+        }
+        
+        res.send('OK');
+        
+    } catch (error) {
+        console.error('[Betatransfer] Webhook processing error:', error);
+        res.status(500).send('ERROR');
+    }
+});
+
+/**
  * Специальный обработчик для Robokassa Result URL
  * @route POST /api/payments/robokassa/result
  */
@@ -184,7 +251,8 @@ router.post('/robokassa/result', express.urlencoded({ extended: true }), async (
             const payment = await Payment.findOne({ 
                 $or: [
                     { robokassaInvoiceId: result.orderId },
-                    { externalId: result.orderId }
+                    { externalId: result.orderId },
+                    { orderId: result.orderId }
                 ]
             });
             
@@ -205,11 +273,11 @@ router.post('/robokassa/result', express.urlencoded({ extended: true }), async (
                 
                 // Начисляем уроки пользователю
                 if (payment.userId) {
-                    await creditPaymentToUser(payment.userId, payment.amount, payment.currency);
+                    await creditPaymentToUser(payment);
                     
                     await notifyAdmin(
                         `✅ *Successful Payment (Robokassa)*\n\n` +
-                        `💰 *Amount:* ${payment.amount} ${payment.currency}\n` +
+                        `💰 *Amount:* ${result.amount} RUB\n` +
                         `👤 *Client:* \`${payment.pendingIdentifier}\`\n` +
                         `🆔 *Order:* \`${result.orderId}\`\n` +
                         `✅ *Status:* Payment processed and lessons credited`
@@ -262,7 +330,8 @@ router.post('/webhook/:provider', express.raw({ type: 'application/json' }), asy
             const payment = await Payment.findOne({ 
                 $or: [
                     { robokassaInvoiceId: result.orderId },
-                    { externalId: result.orderId }
+                    { externalId: result.orderId },
+                    { orderId: result.orderId }
                 ]
             });
 
@@ -285,9 +354,10 @@ router.post('/webhook/:provider', express.raw({ type: 'application/json' }), asy
                 if (payment.userId) {
                     const creditResult = await creditPaymentToUser(payment);
                     if (creditResult.success) {
+                        const displayAmount = providerName === 'robokassa' ? `${result.amount} RUB` : `${result.amount} ${result.currency || payment.currency}`;
                         await notifyAdmin(
                             `✅ *Successful Payment (${pm.getProvider(providerName).getDisplayName()})*\n\n` +
-                            `*Amount:* ${result.amount} ${result.currency || payment.currency}\n` +
+                            `*Amount:* ${displayAmount}\n` +
                             `*Client:* \`${payment.pendingIdentifier}\`\n` +
                             `*User:* ${creditResult.user.name}\n` +
                             `*Action:* ${payment.lessonsPurchased} lesson(s) credited. New balance: *${creditResult.user.lessonsPaid}* lessons.`
@@ -435,7 +505,8 @@ async function createPendingPayment(details) {
     return await Payment.create({
         userId: user ? user._id : null,
         pendingIdentifier: identifier.trim().toLowerCase(),
-        robokassaInvoiceId: orderId, // Используем как универсальный ID заказа
+        orderId: orderId, // Наш внутренний ID заказа
+        robokassaInvoiceId: orderId, // Для обратной совместимости
         status: 'pending',
         amountPaid: amount,
         baseAmount: amount,

@@ -54,9 +54,10 @@ class BetatransferProvider extends PaymentProvider {
         try {
             const requestData = {
                 amount: amount.toString(),
-                currency: this.currency,
+                currency: paymentData.currency || this.currency,
                 orderId: orderId,
-                paymentSystem: this.paymentSystem
+                paymentSystem: this.paymentSystem,
+                payerId: payerId
             };
 
             // Создание подписи согласно документации Betatransfer
@@ -101,6 +102,20 @@ class BetatransferProvider extends PaymentProvider {
                 headers: error.config?.headers,
                 params: error.config?.params
             });
+            
+            // Показываем детали ошибки
+            if (error.response?.data?.errors) {
+                console.error('[Betatransfer] Detailed errors:', error.response.data.errors);
+            }
+            
+            // Если это ошибка с валютами, показываем понятное сообщение
+            if (error.response?.status === 422 && error.response?.data?.errors?.currency) {
+                const currencyError = error.response.data.errors.currency[0];
+                if (currencyError.includes('No available payment system for currency')) {
+                    throw new Error('Betatransfer account is not configured for any currencies. Please contact your account manager to enable payment processing.');
+                }
+            }
+            
             throw new Error(`Failed to create Betatransfer payment: ${error.response?.status} ${error.response?.statusText}`);
         }
     }

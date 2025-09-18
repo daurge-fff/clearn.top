@@ -59,7 +59,7 @@ class RobokassaProvider extends PaymentProvider {
             originalCurrency: paymentData.originalCurrency
         });
 
-        const orderId = this.generateOrderId();
+        const orderId = paymentData.orderId || this.generateOrderId();
         const amount = this.formatAmount(paymentData.amount);
         const currency = paymentData.currency || 'RUB'; // Используем RUB по умолчанию
         const description = paymentData.description || `Оплата ${paymentData.lessonsPurchased || 1} уроков`;
