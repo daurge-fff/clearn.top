@@ -654,6 +654,80 @@
     box-shadow: 0 2px 10px rgba(255, 185, 43, 0.2);
 }
 
+/* === COMPACT TABLE MODE === */
+.data-table.compact th,
+.data-table.compact td {
+    padding: 4px 8px;
+    font-size: 0.85rem;
+    line-height: 1.2;
+}
+
+.data-table.compact .badge {
+    padding: 4px 10px;
+    font-size: 0.75rem;
+}
+
+.nowrap { white-space: nowrap; }
+
+.truncate {
+    display: inline-block;
+    max-width: 220px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    vertical-align: bottom;
+}
+
+/* Column sizing for lesson tables */
+.data-table .col-student { max-width: 220px; }
+.data-table .col-teacher { max-width: 200px; }
+.data-table .col-course  { max-width: 220px; }
+.data-table .col-topic   { max-width: 240px; }
+.data-table .col-datetime { width: 170px; }
+.data-table .col-status  { width: 120px; }
+.data-table .col-actions { width: 96px; text-align: right; }
+
+.data-table .col-actions .btn,
+.data-table .col-actions .btn-icon {
+    padding: 4px 6px;
+    min-width: auto;
+}
+
+/* Tighter status badge inside tables */
+.data-table .col-status .badge {
+    padding: 3px 8px;
+    font-size: 0.7rem;
+    line-height: 1;
+    white-space: nowrap;
+}
+
+.muted { color: #666; font-size: 0.85em; margin-right: 6px; }
+
+/* Responsive adjustments: hide less important columns on small screens */
+@media (max-width: 1200px) {
+    .data-table.compact th,
+    .data-table.compact td { padding: 4px 6px; font-size: 0.8rem; }
+    .data-table .col-datetime { width: 150px; }
+    .truncate { max-width: 170px; }
+}
+
+@media (max-width: 900px) {
+    .data-table.compact th,
+    .data-table.compact td { padding: 3px 6px; font-size: 0.78rem; }
+    .data-table .col-datetime { width: 140px; }
+    .data-table .col-status { width: 90px; }
+    .data-table .col-actions { width: 72px; }
+    .truncate { max-width: 150px; }
+}
+
+@media (max-width: 600px) {
+    .data-table.compact th,
+    .data-table.compact td { padding: 3px 5px; font-size: 0.76rem; }
+    .data-table .col-datetime { width: 130px; }
+    .data-table .col-status { width: 84px; }
+    .data-table .col-actions { width: 64px; }
+    .truncate { max-width: 130px; }
+}
+
 /* Улучшенные стили для статуса */
 .status-card {
     display: flex;
@@ -2508,6 +2582,7 @@ select.form-control {
     backdrop-filter: blur(10px);
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
 }
+.filter-card.compact { border-radius: 12px; }
 .filter-form {
     display: flex;
     flex-wrap: wrap;
@@ -3903,6 +3978,7 @@ select.form-control {
     gap: 15px;
     align-items: flex-end;
 }
+.filter-form.compact { gap: 10px; }
 
 @media (min-width: 992px) {
     .filter-form {
@@ -3927,6 +4003,7 @@ select.form-control {
     margin-bottom: 8px;
     opacity: 0.9;
 }
+.filter-form.compact .filter-group label { font-size: 0.85rem; margin-bottom: 6px; }
 
 .filter-group select,
 .filter-group .input-with-icon input {
@@ -3939,6 +4016,12 @@ select.form-control {
     color: var(--text-color);
     font-size: 0.95rem;
     text-align: center;
+}
+.filter-form.compact .filter-group select,
+.filter-form.compact .filter-group .input-with-icon input {
+    height: 36px;
+    padding: 8px 12px;
+    font-size: 0.9rem;
 }
 
 .input-with-icon {
@@ -3956,6 +4039,7 @@ select.form-control {
     opacity: 0.5;
     pointer-events: none;
 }
+.filter-form.compact .input-with-icon i { left: 12px; width: 16px; height: 16px; }
 .input-with-icon input {
     padding-left: 45px !important;
 }
@@ -3981,7 +4065,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
         display: none;
         width: 100%;
         flex-direction: column;
-        gap: 15px;
+        gap: 12px;
         margin-top: 10px;
     }
     .collapsible-filters.is-open {

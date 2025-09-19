@@ -10,35 +10,35 @@
         <h2>Upcoming & Recent Lessons</h2>
         <% if (lessons && lessons.length > 0) { %>
             <div class="table-responsive">
-                <table class="data-table">
+                <table class="data-table compact">
                     <thead>
                         <tr>
-                            <th>Date & Time</th>
-                            <th>Student</th>
-                            <th>Course</th>
-                            <th>Status</th>
-                            <th>Actions</th>
+                            <th class="col-datetime">Date & Time</th>
+                            <th class="col-student">Student</th>
+                            <th class="col-course">Course</th>
+                            <th class="col-status">Status</th>
+                            <th class="col-actions">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         <% lessons.forEach(lesson => { %>
                             <tr>
-                                <td><%= new Date(lesson.localLessonDate).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) %></td>
-                                <td>
+                                <td class="col-datetime nowrap"><%= new Date(lesson.localLessonDate).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) %></td>
+                                <td class="col-student">
                                     <% if (lesson.student) { %>
-                                        <a href="/dashboard/student/<%= lesson.student._id %>" class="link-discreet"><%= lesson.student.name %></a>
+                                        <a href="/dashboard/student/<%= lesson.student._id %>" class="link-discreet truncate" title="<%= lesson.student.name %>"><%= lesson.student.name %></a>
                                     <% } else { %>
                                         Student not found
                                     <% } %>
                                 </td>
-                                <td>
+                                <td class="col-course">
                                     <% if (lesson.lessonNumber) { %>
-                                        <span style="color: #666; font-size: 0.9em; margin-right: 8px;">#<%= lesson.lessonNumber %></span>
+                                        <span class="muted">#<%= lesson.lessonNumber %></span>
                                     <% } %>
-                                    <%= lesson.course ? lesson.course.name : 'N/A' %>
+                                    <span class="truncate" title="<%= (lesson.course ? lesson.course.name : 'N/A') %>"><%= lesson.course ? lesson.course.name : 'N/A' %></span>
                                 </td>
-                                <td><span class="badge status-<%= lesson.status %>"><%= lesson.status.replace(/_/g, ' ') %></span></td>
-                                <td class="actions-cell">
+                                <td class="col-status"><span class="badge status-<%= lesson.status %>"><%= lesson.status.replace(/_/g, ' ') %></span></td>
+                                <td class="col-actions actions-cell">
                                     <a href="/dashboard/lessons/manage/<%= lesson._id %>" class="btn-icon" data-tooltip="Manage Lesson"><i class="icon-edit"></i></a>
                                 </td>
                             </tr>
