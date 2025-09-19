@@ -66,7 +66,7 @@ module.exports = {
         type: 'automatic',
         currencies: ['EUR', 'USD'],
         name: 'Betatransfer',
-        description: 'European payment gateway with global coverage',
+        description: 'European payment gateway with OpenBanking support',
         regions: ['EU', 'IN', 'JP', 'KR', 'BR', 'MX', 'AR', 'CIS', 'UA', 'KG', 'KZ', 'AZ', 'TJ', 'UZ'],
         preferredRegion: 'EU'
     },

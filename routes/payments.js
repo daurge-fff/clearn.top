@@ -167,8 +167,14 @@ router.get('/providers', (req, res) => {
 
 /**
  * Специальный обработчик для Betatransfer webhook
- * @route POST /api/payments/betatransfer/webhook
+ * @route GET /api/payments/betatransfer/webhook - для проверки доступности
+ * @route POST /api/payments/betatransfer/webhook - для получения уведомлений
  */
+router.get('/betatransfer/webhook', (req, res) => {
+    console.log('[Betatransfer] Webhook availability check');
+    res.send('OK');
+});
+
 router.post('/betatransfer/webhook', express.urlencoded({ extended: true }), async (req, res) => {
     try {
         console.log('[Betatransfer] Received webhook notification:', req.body);

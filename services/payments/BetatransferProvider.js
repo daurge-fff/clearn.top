@@ -57,7 +57,11 @@ class BetatransferProvider extends PaymentProvider {
                 currency: paymentData.currency || this.currency,
                 orderId: orderId,
                 paymentSystem: this.paymentSystem,
-                payerId: payerId
+                payerId: payerId,
+                urlSuccess: 'https://clearn.top/successful-payment',
+                urlFail: 'https://clearn.top/failed-payment',
+                urlResult: 'https://clearn.top/api/payments/betatransfer/webhook',
+                fullCallback: '1'
             };
 
             // Создание подписи согласно документации Betatransfer
