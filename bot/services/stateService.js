@@ -1,5 +1,8 @@
 const User = require('../../models/User');
 
+// Temporary storage for messages (in production, use Redis or database)
+const messageStorage = new Map();
+
 /**
  * Sets a new state for a user in the database.
  * @param {string} telegramChatId
@@ -49,8 +52,53 @@ async function clearState(telegramChatId) {
     );
 }
 
+/**
+ * Stores a message temporarily and returns a unique ID
+ * @param {string} message - The message to store
+ * @param {object} metadata - Additional metadata (role, userId, etc.)
+ * @returns {string} - Unique message ID
+ */
+function storeMessage(message, metadata = {}) {
+    const messageId = `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    messageStorage.set(messageId, {
+        message,
+        metadata,
+        timestamp: Date.now()
+    });
+    
+    // Clean up old messages (older than 1 hour)
+    const oneHourAgo = Date.now() - 60 * 60 * 1000;
+    for (const [id, data] of messageStorage.entries()) {
+        if (data.timestamp < oneHourAgo) {
+            messageStorage.delete(id);
+        }
+    }
+    
+    return messageId;
+}
+
+/**
+ * Retrieves a stored message by ID
+ * @param {string} messageId - The message ID
+ * @returns {object|null} - The message data or null if not found
+ */
+function getMessage(messageId) {
+    return messageStorage.get(messageId) || null;
+}
+
+/**
+ * Removes a stored message by ID
+ * @param {string} messageId - The message ID
+ */
+function removeMessage(messageId) {
+    messageStorage.delete(messageId);
+}
+
 module.exports = {
     setState,
     getState,
     clearState,
+    storeMessage,
+    getMessage,
+    removeMessage,
 };

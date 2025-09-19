@@ -94,8 +94,6 @@ async function handleStatefulInput(ctx, user, text) {
         return handleMenuCommand(ctx);
     }
 
-    await stateService.clearState(chatId);
-
     switch (state.name) {
         case 'awaiting_user_search':
             return searchService.findUserForAdmin(ctx, text);
@@ -123,24 +121,32 @@ async function handleStatefulInput(ctx, user, text) {
         
         // Notification states
         case 'awaiting_broadcast_message':
+            await stateService.clearState(chatId);
             return sendBroadcastMessage(ctx, text, 'all');
         case 'awaiting_students_message':
+            await stateService.clearState(chatId);
             return sendBroadcastMessage(ctx, text, 'student');
         case 'awaiting_teachers_message':
+            await stateService.clearState(chatId);
             return sendBroadcastMessage(ctx, text, 'teacher');
         case 'awaiting_specific_user_for_notification':
             return findUserForNotification(ctx, text);
         case 'awaiting_notification_message':
             const { targetUserId: notificationTargetUserId } = state.context;
+            await stateService.clearState(chatId);
             return sendNotificationToUser(ctx, notificationTargetUserId, text);
         case 'awaiting_notification_for_user':
             const { targetUserId: selectedUserId } = state.context;
+            await stateService.clearState(chatId);
             return sendNotificationToUser(ctx, selectedUserId, text);
         case 'awaiting_lesson_reminder_message':
+            await stateService.clearState(chatId);
             return sendLessonReminderBroadcast(ctx, text);
         case 'awaiting_promotion_message':
+            await stateService.clearState(chatId);
             return sendBroadcastMessage(ctx, text, 'all', '🎉 PROMOTION');
         case 'awaiting_announcement_message':
+            await stateService.clearState(chatId);
             return sendBroadcastMessage(ctx, text, 'all', '📢 ANNOUNCEMENT');
     }
 }
@@ -602,10 +608,13 @@ async function sendBroadcastMessage(ctx, message, role = 'all', prefix = '') {
         const roleText = role === 'all' ? 'all users' : `all ${role}s`;
         const confirmationMessage = `📋 *Message Preview*\n\n*Recipients:* ${roleText} (${users.length} users)\n\n*Message:*\n${finalMessage}\n\n✅ Confirm sending this message?`;
         
+        // Store message temporarily and get ID
+        const messageId = stateService.storeMessage(finalMessage, { type: 'broadcast', role });
+        
         const keyboard = {
             inline_keyboard: [
-                [{ text: '✅ Send Message', callback_data: `confirm_broadcast_${role}_${Buffer.from(finalMessage).toString('base64')}` }],
-                [{ text: '❌ Cancel', callback_data: `cancel_broadcast_${role}_${Buffer.from(finalMessage).toString('base64')}` }]
+                [{ text: '✅ Send Message', callback_data: `confirm_broadcast_${messageId}` }],
+                [{ text: '❌ Cancel', callback_data: `cancel_broadcast_${messageId}` }]
             ]
         };
         
@@ -653,10 +662,13 @@ async function sendNotificationToUser(ctx, userId, message) {
         // Show confirmation before sending
         const confirmationMessage = `📋 *Message Preview*\n\n*Recipient:* ${user.name}\n\n*Message:*\n${finalMessage}\n\n✅ Confirm sending this message?`;
         
+        // Store message temporarily and get ID
+        const messageId = stateService.storeMessage(finalMessage, { type: 'personal', userId });
+        
         const keyboard = {
             inline_keyboard: [
-                [{ text: '✅ Send Message', callback_data: `confirm_personal_${userId}_${Buffer.from(finalMessage).toString('base64')}` }],
-                [{ text: '❌ Cancel', callback_data: `cancel_personal_${userId}_${Buffer.from(finalMessage).toString('base64')}` }]
+                [{ text: '✅ Send Message', callback_data: `confirm_personal_${messageId}` }],
+                [{ text: '❌ Cancel', callback_data: `cancel_personal_${messageId}` }]
             ]
         };
         

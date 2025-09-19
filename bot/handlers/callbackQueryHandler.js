@@ -311,12 +311,242 @@ async function handlePaginationCallback(ctx, user, params) {
 }
 
 
+async function handleConfirmMessageById(ctx, user, messageId) {
+    try {
+        // Validate messageId format
+        if (!messageId || !messageId.startsWith('msg_')) {
+            console.error('Invalid messageId format:', messageId);
+            return ctx.editMessageText('❌ Invalid message format. Please try again.');
+        }
+        
+        const messageData = stateService.getMessage(messageId);
+        if (!messageData) {
+            return ctx.editMessageText('❌ Message not found or expired. Please try again.');
+        }
+
+        const { message, metadata } = messageData;
+        
+        if (metadata.type === 'broadcast') {
+            const { role } = metadata;
+            
+            let query = { telegramChatId: { $exists: true, $ne: null } };
+            if (role !== 'all') {
+                query.role = role;
+            }
+            
+            const users = await User.find(query, 'telegramChatId name').lean();
+            
+            if (users.length === 0) {
+                return ctx.editMessageText('❌ No users found to send message to.');
+            }
+            
+            let successCount = 0;
+            let failCount = 0;
+            const failedUsers = [];
+            
+            // Show progress for large broadcasts
+            if (users.length > 10) {
+                await ctx.editMessageText(`📤 Sending broadcast to ${users.length} users...`);
+            }
+            
+            for (const targetUser of users) {
+                try {
+                    await ctx.telegram.sendMessage(targetUser.telegramChatId, message);
+                    successCount++;
+                } catch (error) {
+                    failCount++;
+                    failedUsers.push(targetUser.name);
+                    console.error(`Failed to send broadcast to ${targetUser.name} (ID: ${targetUser._id}):`, {
+                        error: error.message,
+                        chatId: targetUser.telegramChatId,
+                        messageLength: message.length
+                    });
+                }
+            }
+            
+            // Detailed delivery report
+            let reportMessage = `✅ Broadcast completed!\n\n📊 Delivery Statistics:\n✅ Successfully delivered: ${successCount}\n❌ Failed deliveries: ${failCount}\n👥 Total recipients: ${users.length}`;
+            
+            if (failCount > 0 && failCount <= 5) {
+                reportMessage += `\n\n❌ Failed to deliver to: ${failedUsers.join(', ')}`;
+            } else if (failCount > 5) {
+                reportMessage += `\n\n❌ Multiple delivery failures (check logs for details)`;
+            }
+            
+            await ctx.editMessageText(reportMessage);
+            
+            // Log broadcast summary
+            console.log(`Broadcast completed - Role: ${role}, Success: ${successCount}, Failed: ${failCount}, Total: ${users.length}`);
+            
+        } else if (metadata.type === 'personal') {
+            const { userId } = metadata;
+            
+            const targetUser = await User.findById(userId, 'telegramChatId name').lean();
+            if (!targetUser || !targetUser.telegramChatId) {
+                return ctx.editMessageText('❌ User not found or has no Telegram connection.');
+            }
+            
+            try {
+                await ctx.telegram.sendMessage(targetUser.telegramChatId, message);
+                await ctx.editMessageText(`✅ Message sent successfully to ${targetUser.name}!`);
+            } catch (error) {
+                console.error(`Failed to send personal message to ${targetUser.name}:`, error);
+                await ctx.editMessageText(`❌ Failed to send message to ${targetUser.name}. Error: ${error.message}`);
+            }
+        }
+        
+        // Clean up the stored message
+        stateService.removeMessage(messageId);
+        await ctx.answerCbQuery();
+    } catch (error) {
+        console.error('Confirm message by ID error:', error);
+        await ctx.answerCbQuery('❌ Error sending message.');
+    }
+}
+
+async function handleCancelMessageById(ctx, user, messageId) {
+    try {
+        // Validate messageId format
+        if (!messageId || !messageId.startsWith('msg_')) {
+            console.error('Invalid messageId format:', messageId);
+            return ctx.editMessageText('❌ Invalid message format. Please try again.');
+        }
+        
+        const messageData = stateService.getMessage(messageId);
+        if (!messageData) {
+            return ctx.editMessageText('❌ Message not found or expired. Please try again.');
+        }
+
+        const { message, metadata } = messageData;
+        
+        if (metadata.type === 'broadcast') {
+            const { role } = metadata;
+            const roleText = role === 'all' ? 'all users' : `users with role "${role}"`;
+            const messagePreview = message.length > 50 ? message.substring(0, 50) + '...' : message;
+            
+            await ctx.editMessageText(
+                `❌ Broadcast cancelled\n\n` +
+                `📝 Message: "${messagePreview}"\n` +
+                `👥 Recipients: ${roleText}\n\n` +
+                `✅ Nothing was sent to anyone.`
+            );
+            await ctx.answerCbQuery('Broadcast cancelled');
+        } else if (metadata.type === 'personal') {
+            const { userId } = metadata;
+            const targetUser = await User.findById(userId, 'name').lean();
+            const userName = targetUser ? targetUser.name : 'Unknown user';
+            const messagePreview = message.length > 50 ? message.substring(0, 50) + '...' : message;
+            
+            await ctx.editMessageText(
+                `❌ Personal message cancelled\n\n` +
+                `📝 Message: "${messagePreview}"\n` +
+                `👤 Recipient: ${userName}\n\n` +
+                `✅ Nothing was sent.`
+            );
+            await ctx.answerCbQuery('Message cancelled');
+        }
+        
+        // Clean up the stored message
+        stateService.removeMessage(messageId);
+    } catch (error) {
+        console.error('Cancel message by ID error:', error);
+        await ctx.answerCbQuery('❌ Error cancelling message.');
+    }
+}
+
+async function handleCancelMessage(ctx, user, params) {
+    try {
+        const [type, ...rest] = params;
+        
+        // Check if this is a new format with messageId
+        if (type && type.startsWith('msg_')) {
+            return handleCancelMessageById(ctx, user, type);
+        }
+        
+        if (type === 'broadcast') {
+            const [role, encodedMessage] = rest;
+            
+            // Check if role is actually a messageId (starts with 'msg_')
+            if (role && role.startsWith('msg_')) {
+                return handleCancelMessageById(ctx, user, role);
+            }
+            
+            // Check if this is a split messageId (role is 'msg' and we have more parts)
+            if (role === 'msg' && rest.length >= 2) {
+                const messageId = `msg_${rest.slice(1).join('_')}`;
+                return handleCancelMessageById(ctx, user, messageId);
+            }
+            
+            let messagePreview = '';
+            
+            // Try to decode message for preview
+            try {
+                const message = Buffer.from(encodedMessage, 'base64').toString('utf-8');
+                messagePreview = message.length > 50 ? message.substring(0, 50) + '...' : message;
+            } catch (error) {
+                messagePreview = 'Unable to decode message';
+            }
+            
+            const roleText = role === 'all' ? 'all users' : `users with role "${role}"`;
+            
+            await ctx.editMessageText(
+                `❌ Broadcast cancelled\n\n` +
+                `📝 Message: "${messagePreview}"\n` +
+                `👥 Recipients: ${roleText}\n\n` +
+                `✅ Nothing was sent to anyone.`
+            );
+            await ctx.answerCbQuery('Broadcast cancelled');
+        } else if (type === 'personal') {
+            const [userId, encodedMessage] = rest;
+            let messagePreview = '';
+            
+            // Try to decode message for preview
+            try {
+                const message = Buffer.from(encodedMessage, 'base64').toString('utf-8');
+                messagePreview = message.length > 50 ? message.substring(0, 50) + '...' : message;
+            } catch (error) {
+                messagePreview = 'Unable to decode message';
+            }
+            
+            const targetUser = await User.findById(userId, 'name').lean();
+            const userName = targetUser ? targetUser.name : 'Unknown user';
+            
+            await ctx.editMessageText(
+                `❌ Personal message cancelled\n\n` +
+                `📝 Message: "${messagePreview}"\n` +
+                `👤 Recipient: ${userName}\n\n` +
+                `✅ Nothing was sent.`
+            );
+            await ctx.answerCbQuery('Message cancelled');
+        }
+    } catch (error) {
+        console.error('Cancel message error:', error);
+        await ctx.answerCbQuery('❌ Error cancelling message.');
+    }
+}
+
 async function handleConfirmMessage(ctx, user, params) {
     try {
         const [type, ...rest] = params;
         
+        // Check if this is a new format with messageId
+        if (type && type.startsWith('msg_')) {
+            return handleConfirmMessageById(ctx, user, type);
+        }
+        
         if (type === 'broadcast') {
             const [role, encodedMessage] = rest;
+            
+            // Check if role is actually a messageId (starts with 'msg_')
+            if (role && role.startsWith('msg_')) {
+                return handleConfirmMessageById(ctx, user, role);
+            }
+            
+            // Check if this is a split messageId (role is 'msg' and we have more parts)
+            if (role === 'msg' && rest.length >= 2) {
+                const messageId = `msg_${rest.slice(1).join('_')}`;
+                return handleConfirmMessageById(ctx, user, messageId);
+            }
             
             // Validate base64 encoded message
             let message;
@@ -378,15 +608,39 @@ async function handleConfirmMessage(ctx, user, params) {
             
         } else if (type === 'personal') {
             const [userId, encodedMessage] = rest;
-            const message = Buffer.from(encodedMessage, 'base64').toString('utf-8');
+            
+            // Check if userId is actually a messageId (starts with 'msg_')
+            if (userId && userId.startsWith('msg_')) {
+                return handleConfirmMessageById(ctx, user, userId);
+            }
+            
+            // Check if this is a split messageId (userId is 'msg' and we have more parts)
+            if (userId === 'msg' && rest.length >= 2) {
+                const messageId = `msg_${rest.slice(1).join('_')}`;
+                return handleConfirmMessageById(ctx, user, messageId);
+            }
+            
+            // Validate base64 encoded message
+            let message;
+            try {
+                message = Buffer.from(encodedMessage, 'base64').toString('utf-8');
+            } catch (decodeError) {
+                console.error('Failed to decode personal message:', decodeError);
+                return ctx.editMessageText('❌ Error: Invalid message format. Please try again.');
+            }
             
             const targetUser = await User.findById(userId, 'telegramChatId name').lean();
             if (!targetUser || !targetUser.telegramChatId) {
                 return ctx.editMessageText('❌ User not found or has no Telegram connection.');
             }
             
-            await ctx.telegram.sendMessage(targetUser.telegramChatId, message);
-            await ctx.editMessageText(`✅ Message sent successfully to ${targetUser.name}!`);
+            try {
+                await ctx.telegram.sendMessage(targetUser.telegramChatId, message);
+                await ctx.editMessageText(`✅ Message sent successfully to ${targetUser.name}!`);
+            } catch (error) {
+                console.error(`Failed to send personal message to ${targetUser.name}:`, error);
+                await ctx.editMessageText(`❌ Failed to send message to ${targetUser.name}. Error: ${error.message}`);
+            }
         }
         
         await ctx.answerCbQuery();
@@ -501,6 +755,18 @@ function registerCallbackQueryHandler(bot, dependencies) {
                 case 'cancel':  
                     if (params[0] === 'broadcast') {
                         const [, role, encodedMessage] = params;
+                        
+                        // Check if role is actually a messageId (starts with 'msg_')
+                        if (role && role.startsWith('msg_')) {
+                            return handleCancelMessageById(ctx, user, role);
+                        }
+                        
+                        // Check if this is a split messageId (role is 'msg' and we have more parts)
+                        if (role === 'msg' && params.length >= 4) {
+                            const messageId = `msg_${params.slice(2).join('_')}`;
+                            return handleCancelMessageById(ctx, user, messageId);
+                        }
+                        
                         let messagePreview = '';
                         
                         // Try to decode message for preview
@@ -522,6 +788,18 @@ function registerCallbackQueryHandler(bot, dependencies) {
                         await ctx.answerCbQuery('Broadcast cancelled');
                     } else if (params[0] === 'personal') {
                         const [, userId, encodedMessage] = params;
+                        
+                        // Check if userId is actually a messageId (starts with 'msg_')
+                        if (userId && userId.startsWith('msg_')) {
+                            return handleCancelMessageById(ctx, user, userId);
+                        }
+                        
+                        // Check if this is a split messageId (userId is 'msg' and we have more parts)
+                        if (userId === 'msg' && params.length >= 4) {
+                            const messageId = `msg_${params.slice(2).join('_')}`;
+                            return handleCancelMessageById(ctx, user, messageId);
+                        }
+                        
                         let messagePreview = '';
                         
                         // Try to decode message for preview
@@ -555,6 +833,10 @@ function registerCallbackQueryHandler(bot, dependencies) {
                 case 'refresh': await handleRefreshCallback(ctx, user, params); break;
                 case 'admin_select_user_notification': await handleAdminCallback(ctx, user, params); break;
                 case 'confirm': await handleConfirmMessage(ctx, user, params); break;
+                case 'confirm_broadcast': await handleConfirmMessageById(ctx, user, params[0]); break;
+                case 'confirm_personal': await handleConfirmMessageById(ctx, user, params[0]); break;
+                case 'cancel_broadcast': await handleCancelMessageById(ctx, user, params[0]); break;
+                case 'cancel_personal': await handleCancelMessageById(ctx, user, params[0]); break;
                 case 'payment':
                     const [actionType, paymentId] = params;
                     if (actionType === 'approve') {
