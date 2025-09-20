@@ -35,23 +35,59 @@
     <div class="stats-grid">
         <% if (userProfile.role === 'student') { %>
             <div class="stat-card">
+                <div class="stat-icon" style="--icon-bg: rgba(255, 215, 0, 0.2); --icon-color: #FFD700;"><i class="icon-star"></i></div>
                 <div class="stat-info">
                     <span class="stat-number"><%= userProfile.stars %></span>
                     <span class="stat-label">Stars Balance</span>
                 </div>
             </div>
             <div class="stat-card">
+                <div class="stat-icon" style="--icon-bg: rgba(231, 76, 60, 0.2); --icon-color: #e74c3c;"><i class="icon-credit-card"></i></div>
                 <div class="stat-info">
                     <span class="stat-number"><%= userProfile.lessonsPaid %></span>
                     <span class="stat-label">Paid Lessons</span>
                 </div>
             </div>
         <% } %>
-        <div class="stat-card email-card">
-            <div class="stat-info">
-                <span class="stat-number small" title="<%= userProfile.email %>"><%= userProfile.email.length > 12 ? userProfile.email.substring(0, 12) + '...' : userProfile.email %></span>
-                <span class="stat-label">Email</span>
+    </div>
+    
+    <!-- Контактная информация -->
+    <div class="contact-info-card">
+        <h3 class="contact-title">Contact Information</h3>
+        <div class="contact-grid">
+            <div class="contact-item">
+                <div class="contact-icon email-icon">
+                    <i class="icon-email"></i>
+                </div>
+                <div class="contact-details">
+                    <span class="contact-label">Email</span>
+                    <span class="contact-value" title="<%= userProfile.email %>"><%= userProfile.email %></span>
+                </div>
             </div>
+            
+            <% if (userProfile.contact) { %>
+            <div class="contact-item">
+                <div class="contact-icon phone-icon">
+                    <i class="icon-contact"></i>
+                </div>
+                <div class="contact-details">
+                    <span class="contact-label">Phone</span>
+                    <span class="contact-value" title="<%= userProfile.contact %>"><%= userProfile.contact %></span>
+                </div>
+            </div>
+            <% } %>
+            
+            <% if (userProfile.telegramUsername) { %>
+            <div class="contact-item">
+                <div class="contact-icon telegram-icon">
+                    <i class="icon-telegram"></i>
+                </div>
+                <div class="contact-details">
+                    <span class="contact-label">Telegram</span>
+                    <span class="contact-value" title="@<%= userProfile.telegramUsername %>">@<%= userProfile.telegramUsername %></span>
+                </div>
+            </div>
+            <% } %>
         </div>
     </div>
     
