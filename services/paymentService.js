@@ -75,6 +75,7 @@ async function creditPaymentToUser(payment) {
         amountPaid: payment.amountPaid,
         currency: payment.currency,
         transactionType: payment.transactionType,
+        paymentSystem: payment.paymentSystem,
         paymentId: payment._id
     });
     

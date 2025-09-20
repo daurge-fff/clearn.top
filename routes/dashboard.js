@@ -313,6 +313,80 @@ router.post('/users/balance/delete/:id', ensureAuth, ensureRole('admin'), async 
         res.status(500).send('Server Error');
     }
 });
+
+// @desc    Редактирование платежа в истории баланса
+// @route   POST /dashboard/users/balance/edit-payment/:id
+router.post('/users/balance/edit-payment/:id', ensureAuth, ensureRole('admin'), async (req, res) => {
+    try {
+        const { amountPaid, currency, lessonsPurchased, paymentSystem, transactionType } = req.body;
+        const { userId } = req.query;
+        
+        if (!amountPaid || !currency || !lessonsPurchased || !paymentSystem) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'Missing required fields' 
+            });
+        }
+
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ 
+                success: false, 
+                message: 'User not found' 
+            });
+        }
+        
+        const balanceEntry = user.balanceHistory.id(req.params.id);
+        if (!balanceEntry) {
+            return res.status(404).json({ 
+                success: false, 
+                message: 'Balance entry not found' 
+            });
+        }
+
+        
+        // Обновляем поля платежа
+        balanceEntry.amountPaid = parseFloat(amountPaid);
+        balanceEntry.currency = currency;
+        balanceEntry.lessonsPurchased = parseInt(lessonsPurchased);
+        balanceEntry.paymentSystem = paymentSystem;
+        balanceEntry.transactionType = transactionType || '50min';
+        // НЕ изменяем balanceEntry.change - оставляем как было
+        // НЕ пересчитываем баланс пользователя
+        
+        // Обновляем reason с новой платежной системой
+        balanceEntry.reason = `Payment via ${paymentSystem}`;
+
+        await user.save();
+        
+        // Если есть связанный платеж в Payment модели, обновляем его тоже
+        if (balanceEntry.paymentId) {
+            const Payment = require('../models/Payment');
+            const payment = await Payment.findById(balanceEntry.paymentId);
+            if (payment) {
+                payment.amountPaid = parseFloat(amountPaid);
+                payment.currency = currency;
+                payment.lessonsPurchased = parseInt(lessonsPurchased);
+                payment.paymentSystem = paymentSystem;
+                payment.transactionType = transactionType || '50min';
+                payment.pricePerLesson = lessonsPurchased > 0 ? (parseFloat(amountPaid) / lessonsPurchased) : 0;
+                await payment.save();
+            }
+        }
+
+        res.json({ 
+            success: true, 
+            message: 'Payment updated successfully' 
+        });
+        
+    } catch (err) {
+        console.error('Error editing payment:', err);
+        res.status(500).json({ 
+            success: false, 
+            message: 'Server error while updating payment' 
+        });
+    }
+});
 // @desc    Страница просмотра всех уроков (с поиском, фильтрацией и сортировкой)
 // @route   GET /dashboard/lessons
 router.get('/lessons', ensureAuth, ensureRole('admin'), async (req, res) => {
