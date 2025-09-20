@@ -318,7 +318,7 @@ router.post('/users/balance/delete/:id', ensureAuth, ensureRole('admin'), async 
 // @route   POST /dashboard/users/balance/edit-payment/:id
 router.post('/users/balance/edit-payment/:id', ensureAuth, ensureRole('admin'), async (req, res) => {
     try {
-        const { amountPaid, currency, lessonsPurchased, paymentSystem, transactionType } = req.body;
+        const { amountPaid, currency, lessonsPurchased, paymentSystem, transactionType, status, pendingIdentifier, description } = req.body;
         const { userId } = req.query;
         
         if (!amountPaid || !currency || !lessonsPurchased || !paymentSystem) {
@@ -351,6 +351,9 @@ router.post('/users/balance/edit-payment/:id', ensureAuth, ensureRole('admin'), 
         balanceEntry.lessonsPurchased = parseInt(lessonsPurchased);
         balanceEntry.paymentSystem = paymentSystem;
         balanceEntry.transactionType = transactionType || '50min';
+        balanceEntry.status = status || 'completed';
+        balanceEntry.pendingIdentifier = pendingIdentifier || '';
+        balanceEntry.description = description || '';
         // НЕ изменяем balanceEntry.change - оставляем как было
         // НЕ пересчитываем баланс пользователя
         
@@ -369,6 +372,9 @@ router.post('/users/balance/edit-payment/:id', ensureAuth, ensureRole('admin'), 
                 payment.lessonsPurchased = parseInt(lessonsPurchased);
                 payment.paymentSystem = paymentSystem;
                 payment.transactionType = transactionType || '50min';
+                payment.status = status || 'completed';
+                payment.pendingIdentifier = pendingIdentifier || '';
+                payment.notes = description || '';
                 payment.pricePerLesson = lessonsPurchased > 0 ? (parseFloat(amountPaid) / lessonsPurchased) : 0;
                 await payment.save();
             }
@@ -1364,26 +1370,44 @@ router.get('/payments/:id/edit', ensureAuth, ensureRole('admin'), async (req, re
 // @route   PUT /dashboard/payments/:id
 router.put('/payments/:id', ensureAuth, ensureRole('admin'), async (req, res) => {
     try {
-        const { amount, status, description, paymentSystem, pendingIdentifier } = req.body;
+        const { 
+            amountPaid, 
+            currency, 
+            lessonsPurchased, 
+            paymentSystem, 
+            transactionType, 
+            status, 
+            pendingIdentifier, 
+            description 
+        } = req.body;
         
         const payment = await Payment.findById(req.params.id);
         if (!payment) {
-            return res.status(404).send('Payment not found');
+            return res.status(404).json({ success: false, message: 'Payment not found' });
         }
         
-        payment.amountPaid = parseFloat(amount);
-        payment.status = status;
-        payment.description = description;
-        payment.paymentSystem = paymentSystem;
-        payment.pendingIdentifier = pendingIdentifier;
-        payment.updatedAt = new Date();
+        // Update payment fields
+        if (amountPaid !== undefined) payment.amountPaid = parseFloat(amountPaid);
+        if (currency) payment.currency = currency;
+        if (lessonsPurchased !== undefined) payment.lessonsPurchased = parseInt(lessonsPurchased);
+        if (paymentSystem) payment.paymentSystem = paymentSystem;
+        if (transactionType) payment.transactionType = transactionType;
+        if (status) payment.status = status;
+        if (pendingIdentifier !== undefined) payment.pendingIdentifier = pendingIdentifier;
+        if (description !== undefined) payment.notes = description;
         
+        // Recalculate price per lesson
+        if (lessonsPurchased > 0 && amountPaid > 0) {
+            payment.pricePerLesson = parseFloat(amountPaid) / parseInt(lessonsPurchased);
+        }
+        
+        payment.updatedAt = new Date();
         await payment.save();
         
-        res.redirect('/dashboard/payments');
+        res.json({ success: true, message: 'Payment updated successfully' });
     } catch (err) {
-        console.error(err);
-        res.status(500).send('Server Error');
+        console.error('Error updating payment:', err);
+        res.status(500).json({ success: false, message: 'Server error while updating payment' });
     }
 });
 

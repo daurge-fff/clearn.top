@@ -229,10 +229,51 @@ async function updatePaymentStatus(paymentId, newStatus, adminId) {
         if (payment.userId) {
             await creditPaymentToUser(payment);
         }
+    } else if (oldStatus === 'completed' && newStatus !== 'completed') {
+        // Если платеж был завершен, а теперь меняется на другой статус, списываем уроки
+        if (payment.userId) {
+            await debitPaymentFromUser(payment);
+        }
     }
 
     await payment.save();
     return payment;
+}
+
+/**
+ * Списывает уроки пользователя при отмене завершенного платежа
+ * @param {Payment} payment - Документ платежа из Mongoose
+ * @returns {Promise<Object>}
+ */
+async function debitPaymentFromUser(payment) {
+    const user = await User.findById(payment.userId);
+    if (!user) {
+        console.log(`User not found for payment ${payment._id}`);
+        return { success: false, error: 'User not found' };
+    }
+
+    const lessonsToDebit = payment.lessonsPurchased || 0;
+    const newBalance = Math.max(0, user.lessonsPaid - lessonsToDebit);
+    
+    user.lessonsPaid = newBalance;
+    
+    // Добавляем запись в историю баланса
+    user.balanceHistory.push({
+        change: -lessonsToDebit,
+        balanceAfter: newBalance,
+        reason: `Payment status changed from completed to ${payment.status}`,
+        amountPaid: payment.amountPaid,
+        currency: payment.currency,
+        transactionType: payment.transactionType,
+        paymentSystem: payment.paymentSystem,
+        paymentId: payment._id
+    });
+
+    await user.save();
+    
+    console.log(`Debited ${lessonsToDebit} lessons from user ${user.email}. New balance: ${newBalance}`);
+    
+    return { success: true, user, lessonsDebited: lessonsToDebit };
 }
 
 async function declinePayment(paymentId) {
@@ -251,6 +292,7 @@ async function declinePayment(paymentId) {
 module.exports = { 
     findUserByIdentifier,
     creditPaymentToUser,
+    debitPaymentFromUser,
     claimPendingPaymentsForUser,
     approvePayment,
     declinePayment,

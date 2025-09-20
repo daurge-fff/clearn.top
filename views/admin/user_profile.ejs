@@ -49,7 +49,7 @@
         <% } %>
         <div class="stat-card email-card">
             <div class="stat-info">
-                <span class="stat-number small"><%= userProfile.email %></span>
+                <span class="stat-number small" title="<%= userProfile.email %>"><%= userProfile.email.length > 12 ? userProfile.email.substring(0, 12) + '...' : userProfile.email %></span>
                 <span class="stat-label">Email</span>
             </div>
         </div>
@@ -192,7 +192,7 @@
                                 </td>
                                 <td class="actions-cell">
                                     <% if (entry.amountPaid) { %>
-                                        <button class="btn-icon" onclick="openPaymentEditModal('<%= entry._id %>', '<%= entry.amountPaid %>', '<%= entry.currency %>', '<%= entry.lessonsPurchased || entry.change %>', '<%= entry.paymentSystem || 'Manual' %>', '<%= entry.transactionType || '50min' %>')" data-tooltip="Edit Payment"><i class="icon-edit"></i></button>
+                                        <button class="btn-icon" onclick="openPaymentEditModal('<%= entry._id %>', '<%= entry.amountPaid %>', '<%= entry.currency %>', '<%= entry.lessonsPurchased || entry.change %>', '<%= entry.paymentSystem || 'Manual' %>', '<%= entry.transactionType || '50min' %>', '<%= entry.status || 'completed' %>', '<%= entry.pendingIdentifier || '' %>', '<%= entry.description || '' %>')" data-tooltip="Edit Payment"><i class="icon-edit"></i></button>
                                     <% } %>
                                     <form action="/dashboard/users/balance/delete/<%= entry._id %>?userId=<%= userProfile._id %>" method="POST" style="display:inline;">
                                         <button type="submit" class="btn-icon" data-tooltip="Delete" onclick="return confirm('Are you sure you want to delete this entry?');"><i class="icon-delete"></i></button>
@@ -283,17 +283,38 @@
                 </div>
                 
                 <div class="form-group">
-                    <label for="paymentEditSystem">Payment System:</label>
+                    <label for="paymentEditSystem">💳 Payment System:</label>
                     <select class="form-control" id="paymentEditSystem" name="paymentSystem" required>
-                        <option value="PayPal">PayPal</option>
-                        <option value="Robokassa">Robokassa</option>
-                        <option value="Betatransfer">Betatransfer</option>
-                        <option value="Monobank">Monobank</option>
-                        <option value="Cryptocloud">Cryptocloud</option>
-                        <option value="Payoneer">Payoneer</option>
-                        <option value="Manual Bank">Manual Bank</option>
-                        <option value="Manual">Manual</option>
+                        <option value="PayPal">🅿️ PayPal</option>
+                        <option value="Robokassa">🔒 Robokassa</option>
+                        <option value="Betatransfer">🔄 Betatransfer</option>
+                        <option value="Monobank">💙 Monobank</option>
+                        <option value="Cryptocloud">🪙 Cryptocloud</option>
+                        <option value="Payoneer">💼 Payoneer</option>
+                        <option value="Manual Bank">🏦 Manual Bank</option>
+                        <option value="Manual">✋ Manual</option>
                     </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="paymentEditStatus">📊 Status:</label>
+                    <select class="form-control" id="paymentEditStatus" name="status" required>
+                        <option value="pending">⏳ Pending</option>
+                        <option value="completed">✅ Completed</option>
+                        <option value="failed">❌ Failed</option>
+                        <option value="refunded">↩️ Refunded</option>
+                        <option value="manual_review">👀 Manual Review</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="paymentEditIdentifier">🆔 Client ID / Transaction ID:</label>
+                    <input type="text" class="form-control" id="paymentEditIdentifier" name="pendingIdentifier" placeholder="Enter transaction or client ID">
+                </div>
+                
+                <div class="form-group">
+                    <label for="paymentEditDescription">📝 Description:</label>
+                    <textarea class="form-control" id="paymentEditDescription" name="description" rows="3" placeholder="Add any relevant notes..."></textarea>
                 </div>
             </form>
         </div>
@@ -467,13 +488,16 @@
     });
 
     // Payment Edit Modal Functions
-    function openPaymentEditModal(entryId, amountPaid, currency, lessonsPurchased, paymentSystem, transactionType) {
+    function openPaymentEditModal(entryId, amountPaid, currency, lessonsPurchased, paymentSystem, transactionType, status, pendingIdentifier, description) {
         document.getElementById('paymentEditEntryId').value = entryId;
         document.getElementById('paymentEditAmount').value = amountPaid;
         document.getElementById('paymentEditCurrency').value = currency;
         document.getElementById('paymentEditLessons').value = lessonsPurchased;
         document.getElementById('paymentEditSystem').value = paymentSystem || 'Manual';
         document.getElementById('paymentEditTariff').value = transactionType || '50min';
+        document.getElementById('paymentEditStatus').value = status || 'completed';
+        document.getElementById('paymentEditIdentifier').value = pendingIdentifier || '';
+        document.getElementById('paymentEditDescription').value = description || '';
         
         const modal = document.getElementById('paymentEditModal');
         modal.style.display = 'block';
@@ -497,6 +521,9 @@
         const lessonsPurchased = formData.get('lessonsPurchased');
         const paymentSystem = formData.get('paymentSystem');
         const transactionType = formData.get('transactionType');
+        const status = formData.get('status');
+        const pendingIdentifier = formData.get('pendingIdentifier');
+        const description = formData.get('description');
         
         const saveBtn = document.getElementById('savePaymentBtn');
         saveBtn.disabled = true;
@@ -513,7 +540,10 @@
                     currency: currency,
                     lessonsPurchased: parseInt(lessonsPurchased),
                     paymentSystem: paymentSystem,
-                    transactionType: transactionType
+                    transactionType: transactionType,
+                    status: status,
+                    pendingIdentifier: pendingIdentifier,
+                    description: description
                 })
             });
             

@@ -67,9 +67,6 @@
                                 <td><span class="badge lesson-<%= lesson.status %>" onclick="openLessonStatusModal('<%= lesson._id %>', '<%= lesson.status %>')" style="cursor: pointer;" data-tooltip="Click to change status"><%= lesson.status.replace(/_/g, ' ').toUpperCase() %></span></td>
                                 <td class="actions-cell">
                                     <a href="/dashboard/lessons/manage/<%= lesson._id %>" class="btn-icon" data-tooltip="Manage"><i class="icon-edit"></i></a>
-                                    <button class="btn-icon" onclick="openLessonStatusModal('<%= lesson._id %>', '<%= lesson.status %>')" data-tooltip="Change Status">
-                                        <i class="icon-pen"></i>
-                                    </button>
                                 </td>
                             </tr>
                         <% }); %>
