@@ -2466,29 +2466,60 @@ select.form-control {
 
 
 @media (max-width: 768px) {
+    /* Главная страница дашборда - адаптивная сетка */
+    .stats-grid {
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)) !important;
+        gap: 8px !important;
+    }
+    
+    /* Если 2 карточки - растягиваем на всю ширину */
+    .stats-grid:has(.stat-card:nth-child(2):last-child) {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+    
+    .stat-card {
+        padding: 12px 8px !important;
+    }
+    
+    .stat-number {
+        font-size: 1.4rem !important;
+        margin-bottom: 4px !important;
+    }
+    
+    .stat-icon {
+        font-size: 1.6rem !important;
+        margin-bottom: 6px !important;
+    }
+    
+    .stat-label {
+        font-size: 0.75rem !important;
+        line-height: 1.2 !important;
+    }
+    
+    /* Страница профиля пользователя - 2 карточки растянуты */
     .profile-page-container .stats-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 12px;
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 12px !important;
     }
     
     .profile-page-container .stat-card {
-        padding: 16px 12px;
-        min-height: auto;
+        padding: 16px 12px !important;
+        min-height: auto !important;
     }
     
     .profile-page-container .stat-number {
-        font-size: 1.4rem;
-        margin-bottom: 4px;
+        font-size: 1.4rem !important;
+        margin-bottom: 4px !important;
     }
     
     .profile-page-container .stat-icon {
-        font-size: 1.6rem;
-        margin-bottom: 6px;
+        font-size: 1.6rem !important;
+        margin-bottom: 6px !important;
     }
     
     .profile-page-container .stat-label {
-        font-size: 0.8rem;
-        line-height: 1.2;
+        font-size: 0.8rem !important;
+        line-height: 1.2 !important;
     }
     
     .contact-info-card {
@@ -2514,32 +2545,81 @@ select.form-control {
     .contact-value {
         font-size: 0.9rem;
     }
+    
+    /* Исправление кнопок в таблицах на планшетах */
+    .profile-page-container .actions-cell {
+        display: flex !important;
+        flex-direction: row !important;
+        gap: 8px !important;
+        justify-content: center !important;
+        align-items: center !important;
+    }
+    
+    .profile-page-container .actions-cell .btn-icon {
+        flex: none !important;
+        min-width: auto !important;
+        max-width: none !important;
+        width: 36px !important;
+        height: 36px !important;
+        padding: 8px !important;
+    }
 }
 
 @media (max-width: 480px) {
+    /* Главная страница дашборда - адаптивная сетка */
+    .stats-grid {
+        grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)) !important;
+        gap: 4px !important;
+    }
+    
+    /* Если 2 карточки - растягиваем на всю ширину */
+    .stats-grid:has(.stat-card:nth-child(2):last-child) {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+    
+    .stat-card {
+        padding: 8px 4px !important;
+    }
+    
+    .stat-number {
+        font-size: 1.2rem !important;
+        margin-bottom: 2px !important;
+    }
+    
+    .stat-icon {
+        font-size: 1.3rem !important;
+        margin-bottom: 4px !important;
+    }
+    
+    .stat-label {
+        font-size: 0.65rem !important;
+        line-height: 1.1 !important;
+    }
+    
+    /* Страница профиля пользователя - 2 карточки растянуты */
     .profile-page-container .stats-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 8px;
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 8px !important;
     }
     
     .profile-page-container .stat-card {
-        padding: 12px 8px;
-        min-height: auto;
+        padding: 12px 8px !important;
+        min-height: auto !important;
     }
     
     .profile-page-container .stat-number {
-        font-size: 1.2rem;
-        margin-bottom: 2px;
+        font-size: 1.2rem !important;
+        margin-bottom: 2px !important;
     }
     
     .profile-page-container .stat-icon {
-        font-size: 1.3rem;
-        margin-bottom: 4px;
+        font-size: 1.3rem !important;
+        margin-bottom: 4px !important;
     }
     
     .profile-page-container .stat-label {
-        font-size: 0.7rem;
-        line-height: 1.1;
+        font-size: 0.7rem !important;
+        line-height: 1.1 !important;
     }
     
     .contact-info-card {
@@ -2573,6 +2653,24 @@ select.form-control {
     
     .contact-value {
         font-size: 0.85rem;
+    }
+    
+    /* Исправление кнопок в таблицах на мобильных устройствах */
+    .profile-page-container .actions-cell {
+        display: flex !important;
+        flex-direction: row !important;
+        gap: 6px !important;
+        justify-content: center !important;
+        align-items: center !important;
+    }
+    
+    .profile-page-container .actions-cell .btn-icon {
+        flex: none !important;
+        min-width: auto !important;
+        max-width: none !important;
+        width: 32px !important;
+        height: 32px !important;
+        padding: 6px !important;
     }
 }
 
