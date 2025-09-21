@@ -6,7 +6,7 @@
  preserveAspectRatio="xMidYMid meet">
 
 <g transform="translate(0.000000,1365.000000) scale(0.100000,-0.100000)"
-fill="#000000" stroke="none">
+fill="url(#cta-gradient)" stroke="none">
 <path d="M5993 13633 c2359 -2 6215 -2 8570 0 2355 1 426 2 -4288 2 -4714 0
 -6640 -1 -4282 -2z"/>
 <path d="M634 13188 l-19 -23 23 19 c12 11 22 21 22 23 0 8 -8 2 -26 -19z"/>
