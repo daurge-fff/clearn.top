@@ -11,6 +11,12 @@ class CourseSync {
 
     async connectToDatabase() {
         try {
+            // Проверяем, есть ли уже активное соединение
+            if (mongoose.connection.readyState === 1) {
+                console.log('✅ Using existing MongoDB connection');
+                return true;
+            }
+            
             await mongoose.connect(process.env.MONGO_URI, {
                 serverSelectionTimeoutMS: 30000,
                 socketTimeoutMS: 45000,

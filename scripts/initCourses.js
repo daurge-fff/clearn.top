@@ -1,5 +1,6 @@
 const CourseSync = require('./syncCourses');
 const TranslationGenerator = require('./generateTranslations');
+const mongoose = require('mongoose');
 
 class CourseInitializer {
     constructor() {
@@ -17,15 +18,15 @@ class CourseInitializer {
             
             // 2. Пытаемся синхронизировать с базой данных
             console.log('🔄 Step 2: Syncing with database...');
-            const connected = await this.sync.connectToDatabase();
             
-            if (connected) {
+            // Проверяем, есть ли уже активное соединение
+            if (mongoose.connection.readyState === 1) {
+                console.log('✅ Using existing MongoDB connection');
                 await this.sync.syncCourses();
                 await this.sync.getDatabaseStatus();
-                await this.sync.disconnect();
                 console.log('✅ Database sync completed');
             } else {
-                console.log('⚠️  Database not available, using configuration only');
+                console.log('⚠️  MongoDB not connected, using configuration only');
             }
             
             console.log('✅ Course system initialized successfully');
