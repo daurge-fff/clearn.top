@@ -27,7 +27,14 @@ mongoose.connect(process.env.MONGO_URI, {
     maxIdleTimeMS: 30000, // Close connections after 30 seconds of inactivity
     bufferCommands: false // Disable mongoose buffering
 })
-    .then(() => console.log('MongoDB Connected via server.js...'))
+    .then(async () => {
+        console.log('MongoDB Connected via server.js...');
+        
+        // Инициализируем систему курсов
+        const CourseInitializer = require('./scripts/initCourses');
+        const initializer = new CourseInitializer();
+        await initializer.initialize();
+    })
     .catch(err => {
         console.error('MongoDB Connection Error:', err);
         process.exit(1);

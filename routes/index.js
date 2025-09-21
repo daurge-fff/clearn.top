@@ -1,21 +1,17 @@
 const express = require('express');
 const router = express.Router();
+const CourseManager = require('../utils/courseManager');
 
-// Эти данные можно будет потом подгружать из базы данных
-const coursesData = {
-    scratch: {},
-    python: {},
-    roblox: {},
-    junior: {},
-    minecraft: {},
-    '3ddesigner': {},
-};
+const courseManager = new CourseManager();
 
 // Главная страница
 router.get('/', (req, res) => {
+    // Получаем только видимые курсы
+    const visibleCourses = courseManager.getVisibleCourses();
+    
     res.render('index', {
         layout: false,
-        courses: coursesData,
+        courses: visibleCourses,
     });
 });
 
