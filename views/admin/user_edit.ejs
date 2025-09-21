@@ -1,92 +1,644 @@
-<h1>Edit User: <%= userToEdit.name %></h1>
-<div class="container">
-<div class="card form-card">
-    <form action="/dashboard/users/edit/<%= userToEdit._id %>" method="POST">
-        <div class="form-group">
-            <label for="name">Full Name</label>
-            <input type="text" id="name" name="name" value="<%= userToEdit.name %>" required>
-        </div>
-        <div class="form-group">
-            <label for="email">Email Address</label>
-            <input type="email" id="email" name="email" value="<%= userToEdit.email %>" required>
-        </div>
-        <div class="form-group">
-            <label for="password">New Password</label>
-            <input type="password" id="password" name="password" placeholder="Leave blank to keep current password">
-        </div>
-        <div class="form-group">
-            <label for="contact">Contact (Telegram, etc.)</label>
-            <input type="text" id="contact" name="contact" value="<%= userToEdit.contact || '' %>">
-        </div>
-        <div class="form-group">
-            <label for="role">Role</label>
-            <select id="role" name="role" onchange="toggleStudentFields()">
-                <option value="student" <%= userToEdit.role === 'student' ? 'selected' : '' %>>Student</option>
-                <option value="teacher" <%= userToEdit.role === 'teacher' ? 'selected' : '' %>>Teacher</option>
-                <option value="admin" <%= userToEdit.role === 'admin' ? 'selected' : '' %>>Admin</option>
-            </select>
-        </div>
-        <div class="form-group">
-             <label for="status">Status</label>
-            <select id="status" name="status">
-                <option value="active" <%= userToEdit.status === 'active' ? 'selected' : '' %>>Active</option>
-                <option value="inactive" <%= userToEdit.status === 'inactive' ? 'selected' : '' %>>Inactive</option>
-                 <option value="paused" <%= userToEdit.status === 'paused' ? 'selected' : '' %>>Paused</option>
-            </select>
-        </div>
-        <div class="form-group">
-            <label for="timeZone">Time Zone</label>
-            <select id="timeZone" name="timeZone" required>
-                <% timeZones.forEach(group => { %>
-                    <optgroup label="<%= group.label %>">
-                        <% group.zones.forEach(tz => { %>
-                            <option value="<%= tz.value %>" <%= userToEdit.timeZone === tz.value ? 'selected' : '' %>><%= tz.label %></option>
-                        <% }); %>
-                    </optgroup>
-                <% }); %>
-            </select>
-        </div>
-        
-        <div id="student-fields">
-            <div class="form-group">
-                <label for="lessonsPaid">Number of Paid Lessons</label>
-                <input type="number" id="lessonsPaid" name="lessonsPaid" value="<%= userToEdit.lessonsPaid || 0 %>">
-            </div>
-            <div class="form-group">
-                <label for="stars">Number of Stars</label>
-                <input type="number" id="stars" name="stars" value="<%= userToEdit.stars || 0 %>">
-            </div>
-            <div class="form-group">
-                <label for="teacher">Assign Teacher</label>
-                <select id="teacher" name="teacher">
-                    <option value="">No teacher assigned</option>
-                    <% teachers.forEach(t => { %>
-                        <option value="<%= t._id %>" <%= String(userToEdit.teacher) === String(t._id) ? 'selected' : '' %>>
-                            <%= t.name %>
-                        </option>
-                    <% }); %>
-                </select>
-            </div>
-        </div>
-        
-        <div class="form-actions">
-            <button type="submit" class="btn btn-primary">Save Changes</button>
-            <a href="/dashboard/users" class="btn btn-secondary">Cancel</a>
-        </div>
-    </form>
+<div class="page-header" style="text-align: center;">
+    <h1>Edit User: <%= userToEdit.name %></h1>
+    <p class="page-subtitle">Manage user profile and settings</p>
 </div>
-</div>
+
+<form action="/dashboard/users/edit/<%= userToEdit._id %>" method="POST" id="editUserForm">
+    <div class="settings-container">
+        <!-- Basic Information -->
+        <div class="card settings-card modern-card">
+            <div class="card-icon-header modern-header">
+                <div class="header-icon">
+                    <i class="icon-users"></i>
+                </div>
+                <div class="header-content">
+                    <h3>Basic Information</h3>
+                    <p>User's basic profile details</p>
+                </div>
+            </div>
+
+            <div class="card-content">
+                <div class="form-row">
+                    <div class="modern-form-group">
+                        <div class="input-container">
+                            <input type="text" id="name" name="name" value="<%= userToEdit.name %>" required class="modern-input">
+                            <label for="name" class="floating-label">Full Name *</label>
+                            <div class="input-highlight"></div>
+                        </div>
+                    </div>
+
+                    <div class="modern-form-group">
+                        <div class="input-container">
+                            <input type="email" id="email" name="email" value="<%= userToEdit.email %>" required class="modern-input">
+                            <label for="email" class="floating-label">Email Address *</label>
+                            <div class="input-highlight"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modern-form-group">
+                    <div class="input-container">
+                        <input type="text" id="contact" name="contact" value="<%= userToEdit.contact || '' %>" class="modern-input" placeholder="@username or phone number">
+                        <label for="contact" class="floating-label">Contact (Telegram, etc.)</label>
+                        <div class="input-highlight"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Account Settings -->
+        <div class="card settings-card modern-card">
+            <div class="card-icon-header modern-header">
+                <div class="header-icon account-icon">
+                    <i class="icon-settings"></i>
+                </div>
+                <div class="header-content">
+                    <h3>Account Settings</h3>
+                    <p>Role, status and permissions</p>
+                </div>
+            </div>
+
+            <div class="card-content">
+                <div class="form-row">
+                    <div class="modern-form-group">
+                        <div class="select-container">
+                            <select id="role" name="role" required class="modern-select" onchange="toggleStudentFields()">
+                                <option value="student" <%= userToEdit.role === 'student' ? 'selected' : '' %>>Student</option>
+                                <option value="teacher" <%= userToEdit.role === 'teacher' ? 'selected' : '' %>>Teacher</option>
+                                <option value="admin" <%= userToEdit.role === 'admin' ? 'selected' : '' %>>Admin</option>
+                            </select>
+                            <label for="role" class="floating-label">Role *</label>
+                            <div class="select-highlight"></div>
+                            <div class="select-arrow">
+                                <i class="icon-chevron-down"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="modern-form-group">
+                        <div class="select-container">
+                            <select id="status" name="status" class="modern-select">
+                                <option value="active" <%= userToEdit.status === 'active' ? 'selected' : '' %>>Active</option>
+                                <option value="inactive" <%= userToEdit.status === 'inactive' ? 'selected' : '' %>>Inactive</option>
+                                <option value="paused" <%= userToEdit.status === 'paused' ? 'selected' : '' %>>Paused</option>
+                            </select>
+                            <label for="status" class="floating-label">Status</label>
+                            <div class="select-highlight"></div>
+                            <div class="select-arrow">
+                                <i class="icon-chevron-down"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Security -->
+        <div class="card settings-card modern-card">
+            <div class="card-icon-header modern-header">
+                <div class="header-icon security-icon">
+                    <i class="icon-key"></i>
+                </div>
+                <div class="header-content">
+                    <h3>Security</h3>
+                    <p>Update password and security settings</p>
+                </div>
+            </div>
+
+            <div class="card-content">
+                <div class="modern-form-group">
+                    <div class="input-container password-container">
+                        <input type="password" id="password" name="password" class="modern-input">
+                        <label for="password" class="floating-label">New Password (leave blank to keep current)</label>
+                        <button type="button" class="modern-password-toggle"><i class="icon-eye"></i><i class="icon-eye-off"></i></button>
+                        <div class="input-highlight"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Time Zone -->
+        <div class="card settings-card modern-card">
+            <div class="card-icon-header modern-header">
+                <div class="header-icon timezone-icon">
+                    <i class="icon-calendar"></i>
+                </div>
+                <div class="header-content">
+                    <h3>Time Zone</h3>
+                    <p>Set user's preferred time zone</p>
+                </div>
+            </div>
+
+            <div class="card-content">
+                <div class="modern-form-group">
+                    <div class="select-container">
+                        <select id="timeZone" name="timeZone" required class="modern-select">
+                            <% timeZones.forEach(group => { %>
+                                <optgroup label="<%= group.label %>">
+                                    <% group.zones.forEach(tz => { %>
+                                        <option value="<%= tz.value %>" <%= userToEdit.timeZone === tz.value ? 'selected' : '' %>><%= tz.label %></option>
+                                    <% }); %>
+                                </optgroup>
+                            <% }); %>
+                        </select>
+                        <label for="timeZone" class="floating-label">Time Zone *</label>
+                        <div class="select-highlight"></div>
+                        <div class="select-arrow">
+                            <i class="icon-chevron-down"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Student Information (conditional) -->
+        <div class="card settings-card modern-card student-info-card" id="student-fields" style="<%= userToEdit.role === 'student' ? 'display: block;' : 'display: none;' %>">
+            <div class="card-icon-header modern-header">
+                <div class="header-icon student-icon">
+                    <i class="icon-star"></i>
+                </div>
+                <div class="header-content">
+                    <h3>Student Information</h3>
+                    <p>Student-specific settings and progress</p>
+                </div>
+            </div>
+
+            <div class="card-content">
+                <div class="form-row">
+                    <div class="modern-form-group">
+                        <div class="input-container">
+                            <input type="number" id="lessonsPaid" name="lessonsPaid" value="<%= userToEdit.lessonsPaid || 0 %>" class="modern-input" min="0">
+                            <label for="lessonsPaid" class="floating-label">Paid Lessons</label>
+                            <div class="input-highlight"></div>
+                        </div>
+                    </div>
+
+                    <div class="modern-form-group">
+                        <div class="input-container">
+                            <input type="number" id="stars" name="stars" value="<%= userToEdit.stars || 0 %>" class="modern-input" min="0">
+                            <label for="stars" class="floating-label">Stars Earned</label>
+                            <div class="input-highlight"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modern-form-group">
+                    <div class="select-container">
+                        <select id="teacher" name="teacher" class="modern-select">
+                            <option value="">No teacher assigned</option>
+                            <% teachers.forEach(t => { %>
+                                <option value="<%= t._id %>" <%= String(userToEdit.teacher) === String(t._id) ? 'selected' : '' %>>
+                                    <%= t.name %>
+                                </option>
+                            <% }); %>
+                        </select>
+                        <label for="teacher" class="floating-label">Assigned Teacher</label>
+                        <div class="select-highlight"></div>
+                        <div class="select-arrow">
+                            <i class="icon-chevron-down"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-actions">
+        <button type="submit" class="btn btn-primary">
+            <i class="icon-check"></i>
+            Save Changes
+        </button>
+        <a href="/dashboard/users" class="btn btn-secondary">
+            <i class="icon-close"></i>
+            Cancel
+        </a>
+    </div>
+</form>
+
+<style>
+/* Modern Settings Styles */
+.settings-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    display: grid;
+    gap: 24px;
+}
+
+.settings-card {
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.settings-card:hover {
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+    transform: translateY(-2px);
+}
+
+.card-icon-header {
+    display: flex;
+    align-items: center;
+    padding: 24px 24px 16px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.header-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 16px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    font-size: 20px;
+}
+
+.header-icon.account-icon {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+.header-icon.security-icon {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+.header-icon.timezone-icon {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+}
+
+.header-icon.student-icon {
+    background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+}
+
+.header-content h3 {
+    margin: 0 0 4px 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #1a202c;
+}
+
+.header-content p {
+    margin: 0;
+    font-size: 14px;
+    color: #718096;
+}
+
+/* Card Content */
+.card-content {
+    padding: 24px;
+}
+
+/* Form Styles */
+.modern-form-group {
+    margin-bottom: 20px;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.input-container {
+    position: relative;
+}
+
+.floating-label {
+    position: absolute;
+    left: 16px;
+    top: 16px;
+    font-size: 16px;
+    color: #718096;
+    pointer-events: none;
+    transition: all 0.3s ease;
+    background: white;
+    padding: 0 4px;
+    z-index: 1;
+}
+
+.modern-input:focus + .floating-label,
+.modern-input:not(:placeholder-shown) + .floating-label {
+    top: -8px;
+    left: 12px;
+    font-size: 12px;
+    color: #667eea;
+    font-weight: 500;
+}
+
+.modern-input {
+    width: 100%;
+    padding: 16px;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    font-size: 16px;
+    background: white;
+    transition: all 0.3s ease;
+    outline: none;
+}
+
+.modern-input:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.input-highlight {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    transition: width 0.3s ease;
+}
+
+.modern-input:focus + .floating-label + .input-highlight {
+    width: 100%;
+}
+
+/* Select Styles */
+.select-container {
+    position: relative;
+}
+
+.modern-select {
+    width: 100%;
+    padding: 16px 48px 16px 16px;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    font-size: 16px;
+    background: white;
+    appearance: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    outline: none;
+}
+
+.modern-select:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.select-arrow {
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    color: #718096;
+}
+
+.select-highlight {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    transition: width 0.3s ease;
+}
+
+.modern-select:focus + .floating-label + .select-highlight {
+    width: 100%;
+}
+
+/* Floating labels for selects */
+.modern-select:focus + .floating-label,
+.modern-select:not([value=""]) + .floating-label {
+    top: -8px;
+    left: 12px;
+    font-size: 12px;
+    color: #667eea;
+    font-weight: 500;
+}
+
+/* Password Toggle */
+.password-container {
+    position: relative;
+}
+
+.modern-password-toggle {
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: #718096;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+}
+
+.modern-password-toggle:hover {
+    color: #667eea;
+    background: rgba(102, 126, 234, 0.1);
+}
+
+.modern-password-toggle .icon-eye-off {
+    display: none;
+}
+
+.modern-password-toggle.active .icon-eye {
+    display: none;
+}
+
+.modern-password-toggle.active .icon-eye-off {
+    display: inline;
+}
+
+/* Form Actions */
+.form-actions {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    margin-top: 32px;
+    padding: 0 20px;
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 16px 32px;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    box-shadow: 0 4px 20px rgba(102, 126, 234, 0.3);
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(102, 126, 234, 0.4);
+}
+
+.btn-secondary {
+    background: #f8fafc;
+    color: #4a5568;
+    border: 2px solid #e2e8f0;
+}
+
+.btn-secondary:hover {
+    background: #edf2f7;
+    border-color: #cbd5e0;
+    transform: translateY(-2px);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .settings-container {
+        padding: 16px;
+        gap: 16px;
+    }
+    
+    .form-row {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+    
+    .card-icon-header {
+        padding: 20px 20px 16px;
+    }
+    
+    .card-content {
+        padding: 20px;
+    }
+    
+    .header-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 18px;
+    }
+    
+    .modern-input,
+    .modern-select {
+        padding: 14px;
+        font-size: 16px;
+    }
+    
+    .floating-label {
+        font-size: 16px;
+    }
+    
+    .modern-input:focus + .floating-label,
+    .modern-input:not(:placeholder-shown) + .floating-label {
+        font-size: 12px;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+    
+    .btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .settings-container {
+        padding: 12px;
+    }
+    
+    .card-icon-header {
+        padding: 16px;
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .card-content {
+        padding: 16px;
+    }
+    
+    .header-icon {
+        margin-right: 0;
+        margin-bottom: 12px;
+    }
+}
+</style>
 
 <script>
-    function toggleStudentFields() {
-        const role = document.getElementById('role').value;
-        const studentFields = document.getElementById('student-fields');
-        if (role === 'student') {
-            studentFields.style.display = 'block';
-        } else {
-            studentFields.style.display = 'none';
-        }
+document.addEventListener('DOMContentLoaded', function() {
+    // Password toggle
+    const passwordToggle = document.querySelector('.modern-password-toggle');
+    const passwordInput = document.getElementById('password');
+    
+    if (passwordToggle && passwordInput) {
+        passwordToggle.addEventListener('click', function(e) {
+            e.preventDefault();
+            const isPassword = passwordInput.type === 'password';
+            passwordInput.type = isPassword ? 'text' : 'password';
+            this.classList.toggle('active');
+        });
     }
-
+    
+    // Initialize student fields visibility
     toggleStudentFields();
+    
+    // Add event listener for role change
+    const roleSelect = document.getElementById('role');
+    if (roleSelect) {
+        roleSelect.addEventListener('change', toggleStudentFields);
+    }
+    
+    // Initialize floating labels for selects
+    const selects = document.querySelectorAll('.modern-select');
+    selects.forEach(select => {
+        // Check if select has a value on load
+        if (select.value) {
+            const label = select.nextElementSibling;
+            if (label && label.classList.contains('floating-label')) {
+                label.style.top = '-8px';
+                label.style.left = '12px';
+                label.style.fontSize = '12px';
+                label.style.color = '#667eea';
+                label.style.fontWeight = '500';
+            }
+        }
+        
+        // Add change event listener
+        select.addEventListener('change', function() {
+            const label = this.nextElementSibling;
+            if (label && label.classList.contains('floating-label')) {
+                if (this.value) {
+                    label.style.top = '-8px';
+                    label.style.left = '12px';
+                    label.style.fontSize = '12px';
+                    label.style.color = '#667eea';
+                    label.style.fontWeight = '500';
+                } else {
+                    label.style.top = '16px';
+                    label.style.left = '16px';
+                    label.style.fontSize = '16px';
+                    label.style.color = '#718096';
+                    label.style.fontWeight = 'normal';
+                }
+            }
+        });
+    });
+});
+
+function toggleStudentFields() {
+    const role = document.getElementById('role').value;
+    const studentFields = document.getElementById('student-fields');
+    if (role === 'student') {
+        studentFields.style.display = 'block';
+    } else {
+        studentFields.style.display = 'none';
+    }
+}
 </script>
