@@ -73,7 +73,8 @@ module.exports = function(passport) {
                         }
                     }
                 } catch (err) {
-                    console.error(err);
+                    console.error('Google OAuth error:', err);
+                    done(err, null);
                 }
             }
         )

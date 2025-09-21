@@ -40,6 +40,19 @@ mongoose.connect(process.env.MONGO_URI, {
         process.exit(1);
     });
 
+// Monitor MongoDB connection status
+mongoose.connection.on('connected', () => {
+    console.log('MongoDB connection established');
+});
+
+mongoose.connection.on('disconnected', () => {
+    console.log('MongoDB disconnected');
+});
+
+mongoose.connection.on('error', (err) => {
+    console.error('MongoDB connection error:', err);
+});
+
     const app = express();
 app.set('trust proxy', true);
 require('./config/passport')(passport);

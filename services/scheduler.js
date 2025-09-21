@@ -1,5 +1,6 @@
 const cron = require('node-cron');
 const moment = require('moment-timezone');
+const mongoose = require('mongoose');
 const Lesson = require('../models/Lesson');
 const User = require('../models/User');
 
@@ -28,6 +29,12 @@ function startScheduler(bot) {
 
     cron.schedule('*/5 * * * *', async () => {
         try {
+            // Check if MongoDB is connected
+            if (mongoose.connection.readyState !== 1) {
+                console.log('Skipping post-lesson prompt - MongoDB not connected');
+                return;
+            }
+            
             const now = new Date();
             const postLessonLessons = await Lesson.find({
                 status: 'scheduled',
@@ -52,6 +59,11 @@ function startScheduler(bot) {
     // Balance reminder check every hour
     cron.schedule('0 * * * *', async () => {
         try {
+            // Check if MongoDB is connected
+            if (mongoose.connection.readyState !== 1) {
+                console.log('Skipping balance reminders - MongoDB not connected');
+                return;
+            }
             await processBalanceReminders(bot);
         } catch (error) {
             console.error('Scheduler (balance reminders) error:', error);
@@ -61,6 +73,12 @@ function startScheduler(bot) {
 
 async function processReminders(bot, reminderType, minutesBefore) {
         try {
+            // Check if MongoDB is connected
+            if (mongoose.connection.readyState !== 1) {
+                console.log(`Skipping ${reminderType} reminder - MongoDB not connected`);
+                return;
+            }
+            
             const nowUtc = moment.utc();
             const lessons = await Lesson.find({ status: 'scheduled' }).populate('student teacher', 'name telegramChatId notifications timeZone');
 
@@ -108,6 +126,12 @@ async function processReminders(bot, reminderType, minutesBefore) {
 
 async function processBalanceReminders(bot) {
     try {
+        // Check if MongoDB is connected
+        if (mongoose.connection.readyState !== 1) {
+            console.log('Skipping balance reminders - MongoDB not connected');
+            return;
+        }
+        
         const students = await User.find({
             role: 'student',
             telegramChatId: { $exists: true, $ne: null },
