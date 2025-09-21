@@ -8,6 +8,7 @@ const coursesData = {
     roblox: {},
     junior: {},
     minecraft: {},
+    '3ddesigner': {},
 };
 
 // Главная страница
