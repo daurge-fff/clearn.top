@@ -1,100 +1,183 @@
 # clearn.top - CRM & Telegram Bot
 
-This is a comprehensive CRM system with a deeply integrated Telegram bot, built with Node.js and Express. It's designed to manage users, courses, lessons, and payments, with a powerful notification system and a referral program.
+A comprehensive CRM system with deeply integrated Telegram bot for managing courses, lessons, and payments.
 
 ![Screenshot of the dashboard](public/images/thumb.jpg)
 
-## 🌟 Features Overview
+## 🚀 Quick Start
 
-The platform provides different functionality depending on the user's role: administrator, teacher, or student.
+```bash
+# Clone and install
+git clone <repository>
+cd clearn.top
+npm install
 
-### 👤 Common Pages for All Users
+# Run with Docker
+docker-compose up -d --build
+```
 
-*   **Home Page:** Presents an overview of the courses and general information about the platform.
-*   **Informational Pages:** Includes "Terms of Service", "Privacy Policy", "Cookie Policy", and "Refund Policy".
-*   **FAQ Page:** Contains answers to frequently asked questions.
-*   **Payment Result Pages:** Informs the user about a successful or failed payment.
-*   **Login and Registration:** Standard forms for user authentication, including an option to log in with Google. New users can register using a referral code.
+## 🎓 Course Management System
 
-### 👑 Administrator Functionality
+### Flexible Course Management
+- **Configuration**: [`config/courses.js`](config/courses.js) - centralized management of all courses
+- **API**: [`utils/courseManager.js`](utils/courseManager.js) - programmatic interface for course operations
+- **CLI**: [`scripts/manageCourses.js`](scripts/manageCourses.js) - command line interface for management
 
-The administrator has full access to all system functions through the control panel.
+### Available Courses
+- **Scratch** - Visual Programming (7-11 years)
+- **Python Pro** - Python Programming (12+ years)
+- **Roblox** - Roblox Game Development (9-12 years)
+- **Junior Start** - For Youngest Students (5-7 years)
+- **Minecraft** - Minecraft Modding (8-12 years)
+- **3D Designer** - 3D Modeling and Design (12+ years)
 
-*   **Dashboard:** Displays key statistics: total number of students, teachers, and scheduled lessons.
-*   **User Management:**
-    *   View a list of all users with the ability to filter by role (student, teacher, admin) and status (active, inactive, paused).
-    *   Add, edit, and delete users with smart input memory for contact information.
-    *   When editing a user, you can change their name, email, role, contact information, number of paid lessons (for students), status, and assign or change a teacher for a student.
-    *   View a detailed user profile, including balance history.
-    *   Safe balance history management - deleting payment or star adjustment entries no longer affects the user's current balance.
-    *   Ability to export the user list to CSV.
-*   **Lesson Management:**
-    *   View a list of all lessons with filtering options.
-    *   Add, edit, and delete lessons with smart topic input memory.
-    *   Assign students and teachers to lessons.
-    *   Automatic sequential numbering for completed lessons displayed to students.
-*   **Payment Management:**
-    *   View the history of all payments.
-    *   Change the status of a payment.
-*   **Analytics:** Access to an analytics page to track key platform metrics.
+### Course Management
+```bash
+# List all courses
+node scripts/manageCourses.js list
 
-### 🧑‍🏫 Teacher Functionality
+# Hide/show course
+node scripts/manageCourses.js hide minecraft
+node scripts/manageCourses.js show minecraft
 
-Teachers use the control panel to interact with their students and manage their schedule.
+# Change order
+node scripts/manageCourses.js order python 1
 
-*   **Dashboard:** Displays the number of lessons for the current week and the total number of active students.
-*   **Calendar:** An interactive calendar to view their lesson schedule.
-*   **My Students:** A list of all students assigned to the teacher.
-*   **Lesson Management:** 
-    *   Ability to manage their lessons, marking them as completed or canceled.
-    *   Smart input memory for homework assignments and grade comments.
-    *   Enhanced lesson topic management with automatic input retention.
+# Sync with database
+node scripts/manageCourses.js sync
+```
 
-### 🎓 Student Functionality
+## 🌟 Core Features
 
-Students use their personal account to track their progress and schedule.
+### 👤 Common Pages
+- **Home Page** - course overview with 9 language support
+- **Information Pages** - terms, privacy policy, FAQ
+- **Authentication** - login/registration with Google OAuth and referral system
 
-*   **Dashboard:** Displays the number of paid lessons and information about the next scheduled lesson.
-*   **My Lessons:**
-    *   View a list of all their past and future lessons with sequential lesson numbers for completed lessons.
-    *   View payment history.
-    *   Ability to cancel an upcoming lesson (with a reason).
-*   **Progress:** View their progress in various courses.
-*   **Lesson View:** Detailed information about a specific lesson, including materials, homework, and lesson number for completed lessons.
+### 👑 Administrator
+- **Dashboard** - statistics of students, teachers, lessons
+- **User Management** - [`routes/admin/users.ejs`](views/admin/users.ejs)
+- **Lesson Management** - [`routes/admin/lessons.ejs`](views/admin/lessons.ejs)
+- **Payment Management** - [`routes/admin/payments.ejs`](views/admin/payments.ejs)
+- **Analytics** - [`routes/admin/analytics.ejs`](views/admin/analytics.ejs)
 
-## 🤖 Telegram Bot Integration
+### 🧑‍🏫 Teacher
+- **Dashboard** - weekly lesson count, active students
+- **Calendar** - interactive schedule
+- **My Students** - list of assigned students
+- **Lesson Management** - mark completion, cancellation
 
-The project includes a Telegram bot that extends the platform's functionality:
+### 🎓 Student
+- **Dashboard** - paid lessons count, next lesson info
+- **My Lessons** - history and future lessons with sequential numbering
+- **Progress** - track progress across courses
 
-*   **Role-Based Menus:** The bot provides custom keyboards and menus based on the user's role (student, teacher, or admin).
-*   **Schedule Management:** Users can view their schedule (today, this week, this month) via an interactive calendar.
-*   **Lesson Management:**
-    *   Teachers can mark lessons as 'completed' or 'no-show'.
-    *   Students and teachers can cancel upcoming lessons (with a reason).
-*   **Student-Teacher Interaction:**
-    *   Students can view their teacher's contact information.
-    *   Teachers can view a list of their students.
-*   **Balance Management:**
-    *   Students can check their remaining paid lessons.
-    *   Admins can manually adjust a user's lesson balance.
-*   **Notifications:** Users receive notifications about upcoming lessons, schedule changes, and other important events. Admins are notified of new user registrations and payments.
-*   **Referral Program:** Users can get their unique referral link through the bot to invite new users.
-*   **User Search:** Admins can search for users by name or email directly within the bot.
-*   **Settings:** Users can manage their notification preferences and change their emoji avatar.
+## 🤖 Telegram Bot
 
-## 🚀 Enhanced User Experience Features
+### Integration
+- **Handlers**: [`bot/handlers/messageHandler.js`](bot/handlers/messageHandler.js)
+- **Keyboards**: [`bot/keyboards/calendarKeyboards.js`](bot/keyboards/calendarKeyboards.js)
+- **Services**: [`bot/services/`](bot/services/)
 
-*   **Smart Input Memory:** Forms remember previously entered values for frequently used fields:
-    *   Lesson topic in lesson creation forms
-    *   Contact information in user creation forms
-    *   Homework assignments and grade comments in lesson management
-*   **Sequential Lesson Numbering:** Completed lessons are automatically numbered (#1, #2, etc.) for students, providing clear progress tracking.
-*   **Improved Data Integrity:** Balance history management ensures that deleting payment or adjustment records doesn't affect current user balances.
+### Bot Features
+- Schedule management through interactive calendar
+- Mark lessons as completed/no-show
+- View teacher contact information
+- Manage lesson balance
+- Notifications about upcoming lessons
+- Referral program
 
-## 🤝 Referral Program
+## 🛠️ Technical Architecture
 
-The platform includes a referral system to incentivize user growth:
+### Backend
+- **Framework**: Express.js + EJS
+- **Database**: MongoDB with Mongoose
+- **Authentication**: Passport.js (Google OAuth)
+- **Payments**: Robokassa, Monobank, PayPal integration
+- **Notifications**: Telegram Bot API
 
-*   **Unique Referral Links:** Each user gets a unique referral link to share.
-*   **Tracking:** The system tracks who was referred by whom.
-*   **Rewards:** The specific rewards for referring new users can be configured in the admin panel (details on rewards are managed within the application logic).
+### Frontend
+- **Templates**: EJS with 9 language support
+- **Styles**: CSS3 with responsive design
+- **JavaScript**: Vanilla JS with modular architecture
+- **Translations**: [`public/js/translations.js`](public/js/translations.js) (auto-generated)
+
+### File Structure
+```
+├── config/           # Configuration (courses, passport, payments)
+├── models/           # Mongoose models (User, Course, Lesson, Payment)
+├── routes/           # Express routes
+├── views/            # EJS templates
+├── public/           # Static files (CSS, JS, images)
+├── bot/              # Telegram Bot logic
+├── services/         # Business logic (payments, notifications)
+├── scripts/          # Utilities (sync, course management)
+└── utils/            # Helper functions
+```
+
+## 🔧 Deployment
+
+### Docker (Recommended)
+```bash
+docker-compose up -d --build
+```
+
+### Local Development
+```bash
+# Install dependencies
+npm install
+
+# Setup environment variables
+cp .env.example .env
+# Edit .env file
+
+# Run
+npm start
+```
+
+### Environment Variables
+```env
+MONGO_URI=mongodb://...
+SESSION_SECRET=your-secret
+GOOGLE_CLIENT_ID=your-google-id
+GOOGLE_CLIENT_SECRET=your-google-secret
+TELEGRAM_BOT_TOKEN=your-bot-token
+```
+
+## 📊 Monitoring & Logs
+
+- **Logging**: [`config/logger.js`](config/logger.js)
+- **Scheduler**: [`services/scheduler.js`](services/scheduler.js)
+- **Analytics**: [`routes/admin/analytics.ejs`](views/admin/analytics.ejs)
+
+## 🔄 Automation
+
+### On Server Start
+1. Course system initialization
+2. Translation generation for all languages
+3. Course synchronization with database
+4. Telegram bot startup
+
+### Scheduled Tasks
+- Send notifications about upcoming lessons
+- Clean temporary files
+- Data synchronization
+
+## 📚 Documentation
+
+- **API**: [`other/documentation/`](other/documentation/)
+- **Architecture**: [`other/payment-bot/ARCHITECTURE.md`](other/payment-bot/ARCHITECTURE.md)
+- **Deployment**: [`other/payment-bot/DEPLOY.md`](other/payment-bot/DEPLOY.md)
+
+## 🎯 Features
+
+- **Multilingual**: 9 languages (EN, RU, DE, HE, PL, NL, UK, ES, IT)
+- **Smart Memory**: Form input memory for frequently used fields
+- **Sequential Numbering**: Automatic numbering of completed lessons
+- **Referral System**: Unique links for user invitations
+- **Flexible Course Management**: Easy course addition/hiding
+- **Responsive Design**: Works on all devices
+
+## 🚀 Production Ready
+
+The system is fully ready for deployment and requires no additional configuration. All courses, including the new "3D Designer", are automatically activated on startup.
