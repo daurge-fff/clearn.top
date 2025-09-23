@@ -112,7 +112,20 @@ async function handleCalendarCallback(ctx, user, params) {
             const userTz = user.timeZone || 'Europe/Moscow';
             const newDate = moment.tz({year, month, day: 1}, userTz).toDate();
             const keyboard = await createCalendarKeyboard(user, newDate);
-            await ctx.editMessageReplyMarkup(keyboard);
+
+            // Некоторые клиенты Telegram некорректно обновляют только разметку.
+            // Обновим текст сообщения вместе с inline-клавиатурой для надёжности.
+            const currentText = ctx.callbackQuery.message?.text || '📅 Your schedule:';
+            try {
+                await ctx.editMessageText(currentText, { reply_markup: keyboard });
+            } catch (e) {
+                // Если текст не изменился и Telegram возвращает ошибку, попробуем обновить только разметку
+                if (e.message && e.message.includes('message is not modified')) {
+                    await ctx.editMessageReplyMarkup(keyboard);
+                } else {
+                    throw e;
+                }
+            }
             return ctx.answerCbQuery();
         } catch (error) {
             console.error('Error creating calendar navigation:', error);
