@@ -28,21 +28,52 @@
                 <span class="stat-label">Lessons Balance</span>
             </div>
         </div>
-        <% if (student.contact) { %>
-            <div class="stat-card">
-                <div class="stat-icon" style="--icon-bg: rgba(155, 89, 182, 0.2); --icon-color: #9b59b6;"><i class="icon-contact"></i></div>
-                <div class="stat-info">
-                    <span class="stat-number small"><%= student.contact %></span>
-                    <span class="stat-label">Contact</span>
+        <div class="stat-card">
+            <div class="stat-icon" style="--icon-bg: rgba(255, 215, 0, 0.2); --icon-color: #FFD700;"><i class="icon-star"></i></div>
+            <div class="stat-info">
+                <span class="stat-number"><%= student.stars %></span>
+                <span class="stat-label">Stars Balance</span>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="contact-info-card">
+        <h3 class="contact-title">Contact Information</h3>
+        <div class="contact-grid">
+            <div class="contact-item">
+                <div class="contact-icon email-icon">
+                    <i class="icon-email"></i>
+                </div>
+                <div class="contact-details">
+                    <span class="contact-label">Email</span>
+                    <span class="contact-value" title="<%= student.email %>"><%= student.email %></span>
                 </div>
             </div>
-        <% } %>
-        <div class="stat-card">
-            <div class="stat-icon" style="--icon-bg: rgba(82, 215, 123, 0.2); --icon-color: #52d77b;"><i class="icon-email"></i></div>
-            <div class="stat-info">
-                <span class="stat-number small"><%= student.email %></span>
-                <span class="stat-label">Email</span>
+            
+            <% if (student.contact) { %>
+            <div class="contact-item">
+                <div class="contact-icon phone-icon">
+                    <i class="icon-contact"></i>
+                </div>
+                <div class="contact-details">
+                    <span class="contact-label">Phone</span>
+                    <span class="contact-value" title="<%= student.contact %>"><%= student.contact %></span>
+                </div>
             </div>
+            <% } %>
+            
+            <% if (student.telegramUsername) { %>
+            <div class="contact-item">
+                <div class="contact-icon telegram-icon">
+                    <i class="icon-telegram"></i>
+                </div>
+                <div class="contact-details">
+                    <span class="contact-label">Telegram</span>
+                    <span class="contact-value" title="@<%= student.telegramUsername %>">@<%= student.telegramUsername %></span>
+                </div>
+            </div>
+            <% } %>
         </div>
     </div>
 
