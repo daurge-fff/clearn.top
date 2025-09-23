@@ -7,13 +7,25 @@ function getLogsChatId() {
 function formatUserInline(user) {
     if (!user) return '`anonymous`';
     const name = user.name || user.email || user._id || 'unknown';
-    const tg = user.telegramUsername ? ` ( @${escapeMarkdown(user.telegramUsername)} )` : '';
-    return `*${escapeMarkdown(name)}*${tg}`;
-}
+    const email = user.email ? user.email.replace(/<([^>]+)>/, '$1') : null;
+    const tg = user.telegramUsername ? ` (@${escapeMarkdown(user.telegramUsername)})` : '';
+    return `${escapeMarkdown(name)}${email ? ' ' + escapeMarkdown(email) : ''}${tg}`;
+  }
+  
+  // Пример хелпера escapeMarkdown
+  function escapeMarkdown(text = '') {
+    return String(text).replace(/([_*\[\]()~`#+\-=|{}.!])/g, '\\$1');
+  }
+  
+  
+  // Пример хелпера escapeMarkdown
+  function escapeMarkdown(text = '') {
+    return String(text).replace(/([_*\[\]()~`#+\-=|{}.!])/g, '\\$1');
+  }
 
 function escapeMarkdown(text) {
     if (text === null || text === undefined) return '';
-    return String(text).replace(/\\([_*\[\]()~`>#+\-=|{}.!])/g, '$1');
+    return String(text).replace(/\\([_*\[\]()~`<>#+\-=|{}.!])/g, '$1');
 }
 
 async function sendLog(message, extra = {}) {
