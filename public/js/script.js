@@ -649,7 +649,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         updatePayButtonState();
 
+        let manualSubmitting = false;
         confirmButton.addEventListener('click', async () => {
+            if (manualSubmitting) return;
+            manualSubmitting = true;
+            confirmButton.disabled = true;
             const transactionId = transactionIdInput.value.trim();
             const identifier = document.getElementById('payment-identifier').value.trim();
             const errorP = document.getElementById('paypal-manual-error');
@@ -710,6 +714,8 @@ document.addEventListener('DOMContentLoaded', () => {
             } catch (error) {
                 showNotification('Network error. Please try again', 'error');
             }
+            manualSubmitting = false;
+            confirmButton.disabled = false;
         });
     }
 

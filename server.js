@@ -62,6 +62,12 @@ app.set('view engine', 'ejs');
 app.use(express.json()); 
 app.use(express.urlencoded({ extended: false }));
 app.use(methodOverride('_method'));
+// Реальный IP раньше всех роутов
+app.set('trust proxy', true);
+app.use((req, res, next) => {
+    req.realIp = (req.headers['x-forwarded-for'] || '').split(',')[0].trim() || req.ip;
+    next();
+});
 app.use(session({
     secret: process.env.SESSION_SECRET,
     resave: true,
@@ -156,6 +162,12 @@ app.use('/users', require('./routes/users'));
 app.use('/referral', require('./routes/referral'));
 app.use('/dashboard', require('./routes/dashboard'));
 app.use('/api', require('./routes/api'));
+
+// Реальный IP в req.realIp (с учётом proxy)
+app.use((req, res, next) => {
+    req.realIp = (req.headers['x-forwarded-for'] || '').split(',')[0].trim() || req.ip;
+    next();
+});
 
 
 process.on('unhandledRejection', (reason, promise) => {

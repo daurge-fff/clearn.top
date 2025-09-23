@@ -16,6 +16,7 @@ const Grade = require('../models/Grade');
 const Course = require('../models/Course');
 const Payment = require('../models/Payment');
 
+// DEPRECATED: use /api/payments/create
 router.post('/create-payment', async (req, res) => {
     const { amount, currency, description, paymentSystem, identifier } = req.body;
     try {
@@ -27,13 +28,7 @@ router.post('/create-payment', async (req, res) => {
             ...req.body,
             robokassaInvoiceId: robokassaInvoiceId
         });
-        await notifyAdmin(
-            `🧾 *New Invoice Created*\n\n` +
-            `💰 *Amount:* ${amount} ${currency || 'EUR'}\n` +
-            `💳 *System:* ${paymentSystem}\n` +
-            `👤 *Client:* \`${identifier}\`\n` +
-            `📝 *Description:* ${description}`
-        );
+        // Удалено дублирующее уведомление админа, чтобы избежать повторов
         if (paymentSystem === 'robokassa') {
             const merchantLogin = process.env.ROBOKASSA_MERCHANT_LOGIN;
             const isTest = process.env.ROBOKASSA_IS_TEST === '1';

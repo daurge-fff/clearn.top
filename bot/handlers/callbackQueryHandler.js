@@ -55,6 +55,21 @@ async function handleLessonCallback(ctx, user, params, { undoStack }) {
         }
         
         await ctx.editMessageText(`✅ Lesson with ${lesson.student.name} marked as completed.`);
+        // Audit
+        try {
+            const { logLessonStatusChange } = require('../../services/auditService');
+            const moment = require('moment-timezone');
+            await logLessonStatusChange({
+                lessonId,
+                fromStatus: oldStatus,
+                toStatus: 'completed',
+                actor: user,
+                ip: ctx?.state?.ip || null,
+                time: moment.utc(lesson.lessonDate).format('YYYY-MM-DD HH:mm'),
+                courseName: lesson.course?.name,
+                withUser: lesson.student?.name
+            });
+        } catch (e) { console.error('[audit] lesson completed:', e.message); }
         const maxGrade = lesson.isProject ? 25 : 10;
         const gradeKeyboard = { inline_keyboard: [] };
         
@@ -91,6 +106,21 @@ async function handleLessonCallback(ctx, user, params, { undoStack }) {
         }
         
         await ctx.editMessageText(`👻 Lesson with ${lesson.student.name} marked as "no show".`);
+        // Audit
+        try {
+            const { logLessonStatusChange } = require('../../services/auditService');
+            const moment = require('moment-timezone');
+            await logLessonStatusChange({
+                lessonId,
+                fromStatus: oldStatus,
+                toStatus: 'no_show',
+                actor: user,
+                ip: ctx?.state?.ip || null,
+                time: moment.utc(lesson.lessonDate).format('YYYY-MM-DD HH:mm'),
+                courseName: lesson.course?.name,
+                withUser: lesson.student?.name
+            });
+        } catch (e) { console.error('[audit] lesson no_show:', e.message); }
     }
     
     await ctx.answerCbQuery("Status updated. You can undo this from the main menu.");
@@ -264,11 +294,27 @@ async function handleSettingsCallback(ctx, user, params) {
                 console.error("Error in handleSettingsCallback:", error);
             }
         }
+        // Audit: settings notifications toggle
+        try {
+            const { logEvent } = require('../../services/auditService');
+            await logEvent({
+                tags: ['bot','settings','notifications'],
+                title: 'Notifications Toggled',
+                lines: [ `Now: ${user.notifications.lessonReminders ? 'ON' : 'OFF'}` ],
+                actor: { name: ctx.from.first_name || user.name, _id: user._id, telegramUsername: ctx.from.username || user.telegramUsername },
+                ip: null,
+                emoji: '🔔'
+            });
+        } catch (e) { /* silent */ }
     }
 
     if (action === 'change' && params[1] === 'emoji') {
         await stateService.setState(chatId, 'awaiting_new_emoji');
         await ctx.reply("OK, send me the new emoji you'd like to use as your avatar.");
+        try {
+            const { logEvent } = require('../../services/auditService');
+            await logEvent({ tags: ['bot','settings','emoji'], title: 'Emoji Change Requested', lines: [ `User: ${user.name} <${user.email}>` ], actor: { name: ctx.from.first_name || user.name, _id: user._id, telegramUsername: ctx.from.username || user.telegramUsername }, ip: null, emoji: '😀' });
+        } catch (e) { /* silent */ }
     }
     await ctx.answerCbQuery();
 }
@@ -387,6 +433,10 @@ async function handleConfirmMessageById(ctx, user, messageId) {
             }
             
             await ctx.editMessageText(reportMessage);
+            try {
+                const { logEvent } = require('../../services/auditService');
+                await logEvent({ tags: ['bot','broadcast','send'], title: 'Broadcast Sent', lines: [ `Recipients: ${users.length}`, `Success: ${successCount}`, `Failed: ${failCount}` ], actor: user, ip: null, emoji: '📢' });
+            } catch (e) { /* silent */ }
             
             // Log broadcast summary
             console.log(`Broadcast completed - Role: ${role}, Success: ${successCount}, Failed: ${failCount}, Total: ${users.length}`);
@@ -402,6 +452,10 @@ async function handleConfirmMessageById(ctx, user, messageId) {
             try {
                 await ctx.telegram.sendMessage(targetUser.telegramChatId, message);
                 await ctx.editMessageText(`✅ Message sent successfully to ${targetUser.name}!`);
+                try {
+                    const { logEvent } = require('../../services/auditService');
+                    await logEvent({ tags: ['bot','message','send'], title: 'Personal Message Sent', lines: [ `To: ${targetUser.name}` ], actor: user, ip: null, emoji: '✉️' });
+                } catch (e) { /* silent */ }
             } catch (error) {
                 console.error(`Failed to send personal message to ${targetUser.name}:`, error);
                 await ctx.editMessageText(`❌ Failed to send message to ${targetUser.name}. Error: ${error.message}`);
@@ -444,6 +498,7 @@ async function handleCancelMessageById(ctx, user, messageId) {
                 `✅ Nothing was sent to anyone.`
             );
             await ctx.answerCbQuery('Broadcast cancelled');
+            try { const { logEvent } = require('../../services/auditService'); await logEvent({ tags: ['bot','broadcast','cancel'], title: 'Broadcast Cancelled', lines: [], actor: user, ip: null, emoji: '🛑' }); } catch (e) { /* silent */ }
         } else if (metadata.type === 'personal') {
             const { userId } = metadata;
             const targetUser = await User.findById(userId, 'name').lean();
@@ -457,6 +512,7 @@ async function handleCancelMessageById(ctx, user, messageId) {
                 `✅ Nothing was sent.`
             );
             await ctx.answerCbQuery('Message cancelled');
+            try { const { logEvent } = require('../../services/auditService'); await logEvent({ tags: ['bot','message','cancel'], title: 'Personal Message Cancelled', lines: [], actor: user, ip: null, emoji: '🛑' }); } catch (e) { /* silent */ }
         }
         
         // Clean up the stored message

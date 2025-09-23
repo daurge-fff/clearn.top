@@ -17,6 +17,20 @@ router.post('/login', (req, res, next) => {
     passport.authenticate('local', (err, user, info) => {
         if (err) { return next(err); }
         if (!user) {
+            // Audit: failed login
+            try {
+                const { logEvent } = require('../services/auditService');
+                logEvent({
+                    tags: ['auth','login','failed'],
+                    title: 'Login Failed',
+                    lines: [
+                        `Email: ${req.body.email || ''}`
+                    ],
+                    actor: null,
+                    ip: req.realIp,
+                    emoji: '🚫'
+                });
+            } catch (e) { console.error('[audit] login failed:', e.message); }
             const errors = [{ msg: 'Invalid email or password. Please try again.' }];
             return res.render('login', { layout: false, errors, email: req.body.email || '' });
         }
@@ -27,6 +41,18 @@ router.post('/login', (req, res, next) => {
             user.timeZone = req.body.timeZone || user.timeZone || 'Europe/Moscow';
             await user.save();
             
+            // Audit: success login
+            try {
+                const { logEvent } = require('../services/auditService');
+                logEvent({
+                    tags: ['auth','login','success'],
+                    title: 'Login Success',
+                    lines: [ `Email: ${user.email}` ],
+                    actor: user,
+                    ip: req.realIp,
+                    emoji: '🔐'
+                });
+            } catch (e) { console.error('[audit] login success:', e.message); }
             return res.redirect('/dashboard');
         });
     })(req, res, next);
@@ -81,6 +107,22 @@ router.post('/register', async (req, res) => {
         const salt = await bcrypt.genSalt(10);
         newUser.password = await bcrypt.hash(password, salt);
         const savedUser = await newUser.save();
+        // Audit: registration
+        try {
+            const { logEvent } = require('../services/auditService');
+            logEvent({
+                tags: ['auth','register','success'],
+                title: 'User Registered',
+                lines: [
+                    `Email: ${savedUser.email}`,
+                    `Name: ${savedUser.name}`,
+                    `Referral: ${referrer ? referrer.name : 'No'}`
+                ],
+                actor: savedUser,
+                ip: req.realIp,
+                emoji: '🆕'
+            });
+        } catch (e) { console.error('[audit] register:', e.message); }
 
         if (referrer) {
             referrer.referralBonuses = (referrer.referralBonuses || 0) + 1;
@@ -115,6 +157,18 @@ router.post('/register', async (req, res) => {
 router.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
 router.get('/auth/google/callback', passport.authenticate('google', { failureRedirect: '/users/login' }), async (req, res) => {
     await claimPendingPaymentsForUser(req.user);
+    // Audit: google login
+    try {
+        const { logEvent } = require('../services/auditService');
+        logEvent({
+            tags: ['auth','login','google','success'],
+            title: 'Google Login',
+            lines: [ `Email: ${req.user.email}` ],
+            actor: req.user,
+            ip: req.realIp,
+            emoji: '🟦'
+        });
+    } catch (e) { console.error('[audit] google login:', e.message); }
     res.redirect('/dashboard');
 });
 
@@ -122,7 +176,18 @@ router.get('/auth/google/callback', passport.authenticate('google', { failureRed
 router.get('/logout', (req, res, next) => {
     req.logout(function(err) {
         if (err) { return next(err); }
-        
+        // Audit: logout
+        try {
+            const { logEvent } = require('../services/auditService');
+            logEvent({
+                tags: ['auth','logout'],
+                title: 'Logout',
+                lines: [],
+                actor: req.user,
+                ip: req.realIp,
+                emoji: '🔓'
+            });
+        } catch (e) { console.error('[audit] logout:', e.message); }
         res.redirect('/users/login');
     });
 });

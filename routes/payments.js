@@ -41,6 +41,7 @@ router.post('/create', async (req, res) => {
 
         // Получаем информацию о провайдере
         const providerInfo = provider.getProviderInfo();
+        const providerName = (typeof provider.getDisplayName === 'function' && provider.getDisplayName()) || providerInfo.displayName || providerInfo.name || paymentSystem;
         // Примечание: проверка валюты убрана, так как PaymentManager сам обрабатывает конвертацию
 
         // Создаем уникальный ID заказа
@@ -65,15 +66,31 @@ router.post('/create', async (req, res) => {
             identifier
         });
 
-        // Уведомляем администратора
+        // Уведомляем администратора и шлём аудит
         await notifyAdmin(
             `🧾 *New Invoice Created*\n\n` +
             `💰 *Amount:* ${amount} ${currency}\n` +
-            `💳 *System:* ${providerInfo.displayName}\n` +
+            `💳 *System:* ${providerName}\n` +
             `👤 *Client:* \`${identifier}\`\n` +
             `📝 *Description:* ${description}\n` +
             `🆔 *Order ID:* \`${orderId}\``
         );
+
+        try {
+            const { logInvoiceCreated } = require('../services/auditService');
+            await logInvoiceCreated({
+                amount,
+                currency,
+                systemName: providerName,
+                identifier,
+                description,
+                orderId,
+                actor: req.user,
+                ip: req.realIp
+            });
+        } catch (e) {
+            console.error('[audit] failed to log invoice create:', e.message);
+        }
 
         // Обновляем запись платежа с внешним ID
         if (paymentResult.externalId) {
@@ -85,7 +102,7 @@ router.post('/create', async (req, res) => {
         const response = {
             success: true,
             orderId,
-            provider: providerInfo.displayName,
+            provider: providerName,
             isManual: providerInfo.isManual
         };
 
@@ -218,6 +235,18 @@ router.post('/betatransfer/webhook', express.urlencoded({ extended: true }), asy
                         `🆔 *Order:* \`${result.orderId}\`\n` +
                         `✅ *Status:* Payment processed and lessons credited`
                     );
+
+                    try {
+                        const { logPaymentCompleted } = require('../services/auditService');
+                        await logPaymentCompleted({
+                            systemName: 'Betatransfer',
+                            amount: payment.amount,
+                            currency: payment.currency,
+                            identifier: payment.pendingIdentifier,
+                            orderId: result.orderId,
+                            paymentId: payment._id
+                        });
+                    } catch (e) { console.error('[audit] betatransfer complete:', e.message); }
                 } else {
                     await notifyAdmin(
                         `⚠️ *Successful Payment (Betatransfer) - Needs Linking*\n\n` +
@@ -288,6 +317,18 @@ router.post('/robokassa/result', express.urlencoded({ extended: true }), async (
                         `🆔 *Order:* \`${result.orderId}\`\n` +
                         `✅ *Status:* Payment processed and lessons credited`
                     );
+
+                    try {
+                        const { logPaymentCompleted } = require('../services/auditService');
+                        await logPaymentCompleted({
+                            systemName: 'Robokassa',
+                            amount: result.amount,
+                            currency: 'RUB',
+                            identifier: payment.pendingIdentifier,
+                            orderId: result.orderId,
+                            paymentId: payment._id
+                        });
+                    } catch (e) { console.error('[audit] robokassa complete:', e.message); }
                 } else {
                     await notifyAdmin(
                         `⚠️ *Successful Payment (Robokassa) - Needs Linking*\n\n` +
@@ -464,6 +505,20 @@ router.post('/manual-confirm', async (req, res) => {
                     }
                 }
             );
+            // Audit
+            try {
+                const { logManualConfirmationSubmitted } = require('../services/auditService');
+                await logManualConfirmationSubmitted({
+                    systemName: providerName,
+                    amount,
+                    currency,
+                    identifier,
+                    transactionId,
+                    orderId,
+                    actor: req.user,
+                    ip: req.realIp
+                });
+            } catch (e) { console.error('[audit] manual submit:', e.message); }
         } catch (telegramError) {
             console.error('Failed to send manual payment notification to admin:', telegramError.message);
         }

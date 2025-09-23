@@ -239,6 +239,21 @@ async function handleLessonCancellation(ctx, user, lessonId, reason) {
     await lesson.save();
 
     await ctx.reply("✅ Lesson successfully cancelled.");
+
+    // Audit
+    try {
+        const { logLessonCancelled } = require('../services/auditService');
+        const moment = require('moment-timezone');
+        await logLessonCancelled({
+            lessonId,
+            byRole: isStudent ? 'student' : 'teacher',
+            reason,
+            actor: user,
+            ip: ctx?.state?.ip || null,
+            time: moment.utc(lesson.lessonDate).format('YYYY-MM-DD HH:mm'),
+            withUser: isStudent ? (lesson.teacher?.name || '') : (lesson.student?.name || '')
+        });
+    } catch (e) { console.error('[audit] lesson cancel:', e.message); }
 }
 
 async function handleMenuButton(ctx, user, text) {
@@ -362,6 +377,28 @@ function registerMessageHandler(bot, dependencies) {
     bot.command('start', (ctx) => handleStartCommand(ctx));
     bot.command('menu', (ctx) => handleMenuCommand(ctx));
     bot.command('partner', (ctx) => referralService.showReferralInfo(ctx));
+    // /cancel — сброс любого ожидания состояния
+    bot.command('cancel', async (ctx) => {
+        try {
+            const chatId = ctx.chat.id;
+            await stateService.clearState(chatId);
+        await ctx.reply('✅ Cancelled. Returning to menu.');
+            try {
+                const { logEvent } = require('../../services/auditService');
+            await logEvent({
+                    tags: ['bot','command','cancel'],
+                    title: 'Bot Command /cancel',
+                    lines: [],
+                actor: { name: ctx.from.first_name || ctx.from.username || 'Telegram User', _id: ctx.from.id, telegramUsername: ctx.from.username },
+                ip: null,
+                    emoji: '🛑'
+                });
+            } catch (e) { /* silent */ }
+            return handleMenuCommand(ctx);
+        } catch (e) {
+            return ctx.reply('❌ Error while cancelling.');
+        }
+    });
 
     bot.on('text', async (ctx) => {
         const chatId = ctx.chat.id;
@@ -411,6 +448,20 @@ async function handleEmojiChange(ctx, targetUserId, newEmoji) {
     }
 
     const updatedUser = await User.findByIdAndUpdate(targetUserId, { $set: { emojiAvatar: newEmoji } }, { new: true });
+    // clear any pending state related to emoji
+    await stateService.clearState(chatId);
+    // Audit: emoji change
+    try {
+        const { logEvent } = require('../../services/auditService');
+        await logEvent({
+            tags: ['bot','user','emoji','update'],
+            title: 'User Emoji Updated',
+            lines: [ `User: ${updatedUser.name} <${updatedUser.email}>`, `UserID: ${updatedUser._id}`, `Emoji: ${newEmoji}` ],
+            actor: { name: ctx.from.first_name || ctx.from.username || 'Telegram User', _id: ctx.from.id, telegramUsername: ctx.from.username },
+            ip: null,
+            emoji: '😀'
+        });
+    } catch (e) { /* silent */ }
     
     ctx.reply(`✅ Success! *${updatedUser.name}*'s new emoji avatar is now *${newEmoji}*!`, { parse_mode: 'Markdown' });
 }
