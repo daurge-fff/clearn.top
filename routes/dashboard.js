@@ -977,8 +977,6 @@ router.get('/user-profile/:id', ensureAuth, async (req, res) => {
         const userProfile = await User.findById(req.params.id).lean();
         if (!userProfile) return res.status(404).send('User not found');
         
-        console.log('DEBUG: Profile owner timezone:', userProfile.timeZone);
-        console.log('DEBUG: Viewer timezone:', req.user.timeZone);
 
         let lessons = [];
         const lessonQuery = {};
@@ -997,14 +995,10 @@ router.get('/user-profile/:id', ensureAuth, async (req, res) => {
             
             // Convert lesson dates to viewer's timezone
             const userTimeZone = req.user.timeZone || 'Europe/Moscow';
-            console.log('DEBUG: User timezone:', userTimeZone, 'User ID:', req.user._id);
             lessons.forEach(lesson => {
-                console.log('DEBUG: Original lesson date:', lesson.lessonDate);
                 // Конвертируем в нужный часовой пояс и создаем объект Date
                 const momentInTz = moment.utc(lesson.lessonDate).tz(userTimeZone);
                 lesson.localLessonDate = momentInTz.toDate();
-                console.log('DEBUG: Converted lesson date:', lesson.localLessonDate);
-                console.log('DEBUG: Moment in timezone:', momentInTz.format('YYYY-MM-DD HH:mm:ss Z'));
             });
         }
 
@@ -1442,11 +1436,41 @@ router.get('/payments', ensureAuth, ensureRole('admin'), async (req, res) => {
 // @route   POST /dashboard/lessons/:id/status
 router.post('/lessons/:id/status', ensureAuth, ensureRole('admin'), async (req, res) => {
     try {
-        const { status } = req.body;
-        await Lesson.findByIdAndUpdate(req.params.id, { status });
+        const { status: newStatus } = req.body;
+        
+        // Получаем урок с текущим статусом
+        const lesson = await Lesson.findById(req.params.id);
+        if (!lesson) {
+            return res.status(404).json({ success: false, message: 'Lesson not found' });
+        }
+        
+        const oldStatus = lesson.status;
+        
+        // Используем LessonBalanceService для правильного управления балансом
+        const LessonBalanceService = require('../services/lessonBalanceService');
+        const balanceResult = await LessonBalanceService.changeLessonStatus(
+            req.params.id,
+            newStatus,
+            oldStatus,
+            req.user
+        );
+        
+        if (!balanceResult.success) {
+            console.error('Balance change failed:', balanceResult.error);
+            return res.status(500).json({ success: false, message: 'Failed to update balance: ' + balanceResult.error });
+        }
+        
+        // Обновляем статус урока
+        lesson.status = newStatus;
+        await lesson.save();
         
         if (req.headers['content-type'] === 'application/json') {
-            res.json({ success: true, message: 'Status updated successfully' });
+            res.json({ 
+                success: true, 
+                message: 'Status updated successfully',
+                balanceChange: balanceResult.balanceChange,
+                newBalance: balanceResult.newBalance
+            });
         } else {
             res.redirect('/dashboard/lessons');
         }

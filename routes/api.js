@@ -697,31 +697,18 @@ router.put('/lessons/:id/status', ensureAuth, ensureRole('admin'), async (req, r
         const user = lesson.student;
         const oldStatus = lesson.status;
 
-        // Logic for lessonsPaid based on status change
+        // Use LessonBalanceService for consistent balance management
         if (newStatus !== oldStatus) {
-            let lessonsPaidUpdate = 0;
+            const LessonBalanceService = require('../services/lessonBalanceService');
+            const balanceResult = await LessonBalanceService.changeLessonStatus(
+                req.params.id,
+                newStatus,
+                oldStatus,
+                req.user
+            );
 
-            // Case 1: Any status changed to cancelled (return lesson to balance)
-            if (newStatus.startsWith('cancelled_') && !oldStatus.startsWith('cancelled_')) {
-                lessonsPaidUpdate = 1;
-            }
-            // Case 2: Any status changed to no_show (deduct lesson from balance)
-            else if (newStatus === 'no_show') {
-                lessonsPaidUpdate = -1;
-            }
-            // Case 3: A cancelled lesson is rescheduled (deduct lesson from balance)
-            else if (oldStatus.startsWith('cancelled_') && newStatus === 'scheduled') {
-                lessonsPaidUpdate = -1;
-            }
-            // Case 4: A no_show lesson is rescheduled (deduct lesson from balance)
-            else if (oldStatus === 'no_show' && newStatus === 'scheduled') {
-                lessonsPaidUpdate = -1;
-            }
-
-            // Apply updates if there are any changes
-            if (lessonsPaidUpdate !== 0) {
-                user.lessonsPaid += lessonsPaidUpdate;
-                await user.save();
+            if (!balanceResult.success) {
+                return res.status(500).json({ msg: 'Failed to update balance: ' + balanceResult.error });
             }
 
             lesson.status = newStatus;

@@ -197,8 +197,25 @@ async function handleLessonCancellation(ctx, user, lessonId, reason) {
     let newStatus = '';
     if (isStudent) {
         newStatus = 'cancelled_by_student';
-        await User.findByIdAndUpdate(user._id, { $inc: { lessonsPaid: 1 } });
-        
+    } else if (isTeacher) {
+        newStatus = 'cancelled_by_teacher';
+    }
+    
+    // Use LessonBalanceService for consistent balance management
+    const LessonBalanceService = require('../services/lessonBalanceService');
+    const balanceResult = await LessonBalanceService.changeLessonStatus(
+        lessonId,
+        newStatus,
+        lesson.status,
+        user
+    );
+    
+    if (!balanceResult.success) {
+        console.error('Balance change failed during cancellation:', balanceResult.error);
+        // Continue execution even if balance fails
+    }
+    
+    if (isStudent) {
         const teacher = lesson.teacher;
         if (teacher && teacher.telegramChatId) {
             // Получаем часовой пояс учителя для отображения времени
@@ -214,9 +231,6 @@ async function handleLessonCancellation(ctx, user, lessonId, reason) {
             }
         }
     } else if (isTeacher) {
-        newStatus = 'cancelled_by_teacher';
-        // Return lesson to student's balance when teacher cancels
-        await User.findByIdAndUpdate(lesson.student._id, { $inc: { lessonsPaid: 1 } });
         
         const student = lesson.student;
         if (student && student.telegramChatId) {
@@ -344,17 +358,17 @@ async function handleMenuButton(ctx, user, text) {
                         // Update lesson status
                         await Lesson.findByIdAndUpdate(lastAction.data.lessonId, { status: previousStatus });
                         
-                        // Adjust lessonsPaid based on status change (reverse the previous action)
-                        if (currentStatus === 'completed' && previousStatus === 'scheduled') {
-                            // Was completed, now scheduled - no balance change needed
-                        } else if (currentStatus === 'completed' && previousStatus.startsWith('cancelled_')) {
-                            // Was completed, now cancelled - refund the lesson
-                            await User.findByIdAndUpdate(lesson.student._id, { $inc: { lessonsPaid: 1 } });
-                        } else if (currentStatus === 'no_show' && previousStatus === 'scheduled') {
-                            // Was no-show, now scheduled - no balance change needed
-                        } else if (currentStatus === 'no_show' && previousStatus.startsWith('cancelled_')) {
-                            // Was no-show, now cancelled - refund the lesson
-                            await User.findByIdAndUpdate(lesson.student._id, { $inc: { lessonsPaid: 1 } });
+                        // Use LessonBalanceService for consistent balance management
+                        const LessonBalanceService = require('../services/lessonBalanceService');
+                        const balanceResult = await LessonBalanceService.changeLessonStatus(
+                            lastAction.data.lessonId,
+                            previousStatus,
+                            currentStatus,
+                            user
+                        );
+                        
+                        if (!balanceResult.success) {
+                            console.error('Balance change failed during undo:', balanceResult.error);
                         }
                         
                         await ctx.reply(`✅ Action undone. Lesson status reverted to "${previousStatus}".`);
