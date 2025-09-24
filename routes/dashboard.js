@@ -13,6 +13,7 @@ const upload = require('../middleware/upload');
 const Payment = require('../models/Payment');
 const paymentService = require('../services/paymentService');
 const { notifyAllAdmins } = require('../services/notificationService');
+const LessonBalanceService = require('../services/lessonBalanceService');
 
 // Stars are now awarded directly based on the grade score (1:1 ratio)
 
@@ -33,7 +34,7 @@ router.get('/', ensureAuth, async (req, res) => {
             const userTz = req.user.timeZone || 'Europe/Moscow';
             
             if (upcomingLesson) {
-                upcomingLesson.localLessonDate = moment.utc(upcomingLesson.lessonDate).tz(userTz).toDate();
+                upcomingLesson.localLessonDate = moment.tz(upcomingLesson.lessonDate, userTz).toDate();
             }
             
             stats = {
@@ -52,7 +53,7 @@ router.get('/', ensureAuth, async (req, res) => {
             const userTz = req.user.timeZone || 'Europe/Moscow';
             const lessonsThisWeekWithLocalTime = lessonsThisWeek.map(lesson => ({
                 ...lesson,
-                localLessonDate: moment.utc(lesson.lessonDate).tz(userTz).toDate()
+                localLessonDate: moment.tz(lesson.lessonDate, userTz).toDate()
             }));
 
             stats = {
@@ -464,7 +465,7 @@ router.get('/lessons', ensureAuth, ensureRole('admin'), async (req, res) => {
         const userTz = req.user.timeZone || 'Europe/Moscow';
         const lessonsWithLocalTime = lessons.map(lesson => ({
             ...lesson,
-            localLessonDate: moment.utc(lesson.lessonDate).tz(userTz).toDate()
+            localLessonDate: moment.tz(lesson.lessonDate, userTz).toDate()
         }));
         
         const allTeachers = await User.find({ role: 'teacher' }).sort({ name: 1 }).lean();
@@ -503,7 +504,7 @@ router.post('/lessons/add', ensureAuth, ensureRole('admin'), async (req, res) =>
         const lessonNumber = completedLessonsCount + 1;
         const defaultTopic = `Lesson ${lessonNumber}`;
 
-        await Lesson.create({
+        const newLesson = await Lesson.create({
             student,
             teacher,
             course,
@@ -512,6 +513,30 @@ router.post('/lessons/add', ensureAuth, ensureRole('admin'), async (req, res) =>
             topic: topic || defaultTopic
         });
         await User.findByIdAndUpdate(student, { $inc: { lessonsPaid: -1 } });
+        
+        // Audit: lesson creation
+        try {
+            const { logEvent } = require('../services/auditService');
+            const studentData = await User.findById(student).lean();
+            const teacherData = await User.findById(teacher).lean();
+            const courseData = await Course.findById(course).lean();
+            await logEvent({
+                tags: ['dashboard', 'lessons', 'create'],
+                title: 'Lesson Created',
+                lines: [
+                    `Student: ${studentData?.name || 'Unknown'} (${student})`,
+                    `Teacher: ${teacherData?.name || 'Unknown'} (${teacher})`,
+                    `Course: ${courseData?.name || 'Unknown'} (${course})`,
+                    `Date: ${lessonMoment.format('YYYY-MM-DD HH:mm')}`,
+                    `Duration: ${duration} min`,
+                    `Topic: ${topic || defaultTopic}`
+                ],
+                actor: req.user,
+                ip: req.realIp,
+                emoji: '📚'
+            });
+        } catch (e) { console.error('[audit] lesson create:', e.message); }
+        
         res.redirect('/dashboard/lessons');
     } catch (err) {
         console.error(err);
@@ -529,7 +554,7 @@ router.get('/schedule', ensureAuth, ensureRole('teacher'), async (req, res) => {
         const userTz = req.user.timeZone || 'Europe/Moscow';
         const lessonsWithLocalTime = lessons.map(lesson => ({
             ...lesson,
-            localLessonDate: moment.utc(lesson.lessonDate).tz(userTz).toDate()
+            localLessonDate: moment.tz(lesson.lessonDate, userTz).toDate()
         }));
         
         // Добавляем номера уроков для каждого ученика
@@ -559,7 +584,7 @@ router.get('/schedule', ensureAuth, ensureRole('teacher'), async (req, res) => {
     }
 });
 router.get('/my-students', ensureAuth, ensureRole('teacher'), async (req, res) => { try { const teacher = await User.findById(req.user.id).populate('students'); res.render('teacher/my_students', { layout: 'layouts/dashboard', user: req.user, students: teacher.students, page_name: 'students' }); } catch (err) { console.error(err); res.status(500).send('Server Error'); } });
-router.get('/lessons/manage/:id', ensureAuth, async (req, res) => { try { const lesson = await Lesson.findById(req.params.id).populate('student', 'name').populate('course', 'name').lean(); if (!lesson) return res.status(404).send('Lesson not found'); if (req.user.role !== 'admin' && String(lesson.teacher) !== String(req.user.id)) { return res.status(403).send('Forbidden: You are not authorized to manage this lesson.'); } const userTimeZone = req.user.timeZone || 'UTC'; lesson.localLessonDate = moment.tz(lesson.lessonDate, userTimeZone).toDate(); res.render('teacher/lesson_manage', { layout: 'layouts/dashboard', user: req.user, lesson: lesson, page_name: req.user.role === 'admin' ? 'lessons' : 'schedule' }); } catch (err) { console.error(err); res.status(500).send('Server Error'); } });
+router.get('/lessons/manage/:id', ensureAuth, async (req, res) => { try { const lesson = await Lesson.findById(req.params.id).populate('student', 'name').populate('course', 'name').lean(); if (!lesson) return res.status(404).send('Lesson not found'); if (req.user.role !== 'admin' && String(lesson.teacher) !== String(req.user.id)) { return res.status(403).send('Forbidden: You are not authorized to manage this lesson.'); } const userTimeZone = req.user.timeZone || 'Europe/Moscow'; lesson.localLessonDate = moment.tz(lesson.lessonDate, userTimeZone).toDate(); res.render('teacher/lesson_manage', { layout: 'layouts/dashboard', user: req.user, lesson: lesson, page_name: req.user.role === 'admin' ? 'lessons' : 'schedule' }); } catch (err) { console.error(err); res.status(500).send('Server Error'); } });
 // @desc    Просмотр профиля ученика учителем
 // @route   GET /dashboard/student/:id
 router.get('/student/:id', ensureAuth, ensureRole('teacher'), async (req, res) => {
@@ -570,10 +595,11 @@ router.get('/student/:id', ensureAuth, ensureRole('teacher'), async (req, res) =
         const student = await User.findById(req.params.id).lean();
         const lessons = await Lesson.find({ student: req.params.id, teacher: req.user.id }).sort({ lessonDate: -1 }).lean();
 
+        // Use teacher's timezone (viewer's timezone)
         const userTz = req.user.timeZone || 'Europe/Moscow';
         const lessonsWithLocalTime = lessons.map(lesson => ({
             ...lesson,
-            localLessonDate: moment.utc(lesson.lessonDate).tz(userTz).toDate()
+            localLessonDate: moment.tz(lesson.lessonDate, userTz).toDate()
         }));
 
         res.render('teacher/student_profile', {
@@ -598,11 +624,19 @@ router.post('/lessons/manage/:id', ensureAuth, upload, async (req, res) => {
 
         const { status, topic, homework, recordingUrl, notes, score, comment, homeworkStatus, isProject, projectDetails, projectDefenseRecordingUrl } = req.body;
         const originalStatus = lesson.status;
+        const originalTopic = lesson.topic;
 
-        if (originalStatus === 'scheduled' && (status === 'cancelled_by_teacher' || status === 'cancelled_by_student')) {
-            await User.findByIdAndUpdate(lesson.student, { $inc: { lessonsPaid: 1 } });
-        } else if (originalStatus !== 'scheduled' && status === 'scheduled') {
-            await User.findByIdAndUpdate(lesson.student, { $inc: { lessonsPaid: -1 } });
+        // Безопасное изменение статуса урока с управлением балансом
+        const balanceResult = await LessonBalanceService.changeLessonStatus(
+            req.params.id, 
+            status, 
+            originalStatus, 
+            req.user
+        );
+
+        if (!balanceResult.success) {
+            console.error('Balance change failed:', balanceResult.error);
+            // Продолжаем выполнение, но логируем ошибку
         }
 
         lesson.status = status;
@@ -683,6 +717,43 @@ router.post('/lessons/manage/:id', ensureAuth, upload, async (req, res) => {
         // Stars are now only awarded through grading, not for lesson completion
 
         await lesson.save();
+        
+        // Audit: lesson update
+        try {
+            const { logEvent } = require('../services/auditService');
+            const studentData = await User.findById(lesson.student).lean();
+            const teacherData = await User.findById(lesson.teacher).lean();
+            const courseData = await Course.findById(lesson.course).lean();
+            
+            const changes = [];
+            if (originalStatus !== status) changes.push(`Status: ${originalStatus} → ${status}`);
+            if (originalTopic !== topic) changes.push(`Topic: "${originalTopic}" → "${topic}"`);
+            if (homework) changes.push(`Homework: ${homework.substring(0, 50)}${homework.length > 50 ? '...' : ''}`);
+            if (recordingUrl) changes.push(`Recording: ${recordingUrl}`);
+            if (notes) changes.push(`Notes: ${notes.substring(0, 50)}${notes.length > 50 ? '...' : ''}`);
+            if (score) changes.push(`Score: ${score}/${lesson.isProject ? 25 : 10}`);
+            if (isProject) changes.push(`Project: ${projectDetails ? 'Yes' : 'No'}`);
+            if (balanceResult.balanceChange !== 0) {
+                changes.push(`Balance: ${balanceResult.balanceChange > 0 ? '+' : ''}${balanceResult.balanceChange} (New: ${balanceResult.newBalance})`);
+            }
+            
+            if (changes.length > 0) {
+                await logEvent({
+                    tags: ['dashboard', 'lessons', 'update'],
+                    title: 'Lesson Updated',
+                    lines: [
+                        `Student: ${studentData?.name || 'Unknown'} (${lesson.student})`,
+                        `Teacher: ${teacherData?.name || 'Unknown'} (${lesson.teacher})`,
+                        `Course: ${courseData?.name || 'Unknown'} (${lesson.course})`,
+                        `Changes: ${changes.join(', ')}`
+                    ],
+                    actor: req.user,
+                    ip: req.realIp,
+                    emoji: '📝'
+                });
+            }
+        } catch (e) { console.error('[audit] lesson update:', e.message); }
+        
         res.redirect(req.user.role === 'admin' ? '/dashboard/lessons' : '/dashboard/schedule');
     } catch (err) {
         console.error(err);
@@ -759,7 +830,7 @@ router.get('/my-lessons', ensureAuth, ensureRole('student'), async (req, res) =>
         // Добавляем номер урока для проведенных уроков
         let completedLessonNumber = 0;
         const lessonsWithLocalTime = lessons.map(lesson => {
-            const lessonWithTime = { ...lesson, localLessonDate: moment.utc(lesson.lessonDate).tz(userTz).toDate() };
+            const lessonWithTime = { ...lesson, localLessonDate: moment.tz(lesson.lessonDate, userTz).toDate() };
             
             // Увеличиваем счетчик только для проведенных уроков
             if (lesson.status === 'completed') {
@@ -797,12 +868,47 @@ router.post('/lessons/cancel/:id', ensureAuth, ensureRole('student'), async (req
         if (lesson.status !== 'scheduled') { 
             return res.status(400).send('This lesson cannot be cancelled.'); 
         } 
+        // Безопасная отмена урока студентом
+        const balanceResult = await LessonBalanceService.changeLessonStatus(
+            req.params.id,
+            'cancelled_by_student',
+            lesson.status,
+            req.user
+        );
+
+        if (!balanceResult.success) {
+            console.error('Balance change failed during cancellation:', balanceResult.error);
+            // Продолжаем выполнение даже при ошибке баланса
+        }
+
         await Lesson.findByIdAndUpdate(req.params.id, { 
             status: 'cancelled_by_student', 
             cancellationReason: req.body.reason || 'Cancelled by student' 
-        }); 
-        await User.findByIdAndUpdate(req.user.id, { $inc: { lessonsPaid: 1 } }); 
-        res.redirect('/dashboard/my-lessons'); 
+        });
+        
+        // Audit: lesson cancellation by student
+        try {
+            const { logEvent } = require('../services/auditService');
+            const teacherData = await User.findById(lesson.teacher).lean();
+            const courseData = await Course.findById(lesson.course).lean();
+            await logEvent({
+                tags: ['dashboard', 'lessons', 'cancel', 'student'],
+                title: 'Lesson Cancelled by Student',
+                lines: [
+                    `Student: ${req.user.name} (${req.user._id})`,
+                    `Teacher: ${teacherData?.name || 'Unknown'} (${lesson.teacher})`,
+                    `Course: ${courseData?.name || 'Unknown'} (${lesson.course})`,
+                    `Date: ${lesson.lessonDate.toISOString()}`,
+                    `Reason: ${req.body.reason || 'Cancelled by student'}`,
+                    `Balance Change: ${balanceResult.balanceChange > 0 ? '+' : ''}${balanceResult.balanceChange} (New: ${balanceResult.newBalance})`
+                ],
+                actor: req.user,
+                ip: req.realIp,
+                emoji: '❌'
+            });
+        } catch (e) { console.error('[audit] lesson cancel student:', e.message); }
+        
+        res.redirect('/dashboard/my-lessons');
     } catch (err) { 
         console.error(err); 
         res.status(500).send('Server Error'); 
@@ -817,7 +923,7 @@ router.get('/lessons/view/:id', ensureAuth, ensureRole('student'), async (req, r
         const grade = await Grade.findOne({ lesson: lesson._id }).lean();
 
         // Convert lesson date to user's local time
-        const userTimeZone = req.user.timeZone || 'UTC';
+        const userTimeZone = req.user.timeZone || 'Europe/Moscow';
         lesson.localLessonDate = moment.tz(lesson.lessonDate, userTimeZone).toDate();
 
         // Add lesson number for completed lessons
@@ -870,6 +976,9 @@ router.get('/user-profile/:id', ensureAuth, async (req, res) => {
     try {
         const userProfile = await User.findById(req.params.id).lean();
         if (!userProfile) return res.status(404).send('User not found');
+        
+        console.log('DEBUG: Profile owner timezone:', userProfile.timeZone);
+        console.log('DEBUG: Viewer timezone:', req.user.timeZone);
 
         let lessons = [];
         const lessonQuery = {};
@@ -886,10 +995,16 @@ router.get('/user-profile/:id', ensureAuth, async (req, res) => {
                 .sort({ lessonDate: -1 })
                 .lean();
             
-            // Convert lesson dates to user's local time
-            const userTimeZone = req.user.timeZone || 'UTC';
+            // Convert lesson dates to viewer's timezone
+            const userTimeZone = req.user.timeZone || 'Europe/Moscow';
+            console.log('DEBUG: User timezone:', userTimeZone, 'User ID:', req.user._id);
             lessons.forEach(lesson => {
-                lesson.localLessonDate = moment.tz(lesson.lessonDate, userTimeZone).toDate();
+                console.log('DEBUG: Original lesson date:', lesson.lessonDate);
+                // Конвертируем в нужный часовой пояс и создаем объект Date
+                const momentInTz = moment.utc(lesson.lessonDate).tz(userTimeZone);
+                lesson.localLessonDate = momentInTz.toDate();
+                console.log('DEBUG: Converted lesson date:', lesson.localLessonDate);
+                console.log('DEBUG: Moment in timezone:', momentInTz.format('YYYY-MM-DD HH:mm:ss Z'));
             });
         }
 
@@ -1440,6 +1555,29 @@ router.delete('/lessons/:id', ensureAuth, ensureRole('admin'), async (req, res) 
         
         // Always return lesson to balance when deleting
         await User.findByIdAndUpdate(lesson.student, { $inc: { lessonsPaid: 1 } });
+        
+        // Audit: lesson deletion
+        try {
+            const { logEvent } = require('../services/auditService');
+            const studentData = await User.findById(lesson.student).lean();
+            const teacherData = await User.findById(lesson.teacher).lean();
+            const courseData = await Course.findById(lesson.course).lean();
+            await logEvent({
+                tags: ['dashboard', 'lessons', 'delete'],
+                title: 'Lesson Deleted',
+                lines: [
+                    `Student: ${studentData?.name || 'Unknown'} (${lesson.student})`,
+                    `Teacher: ${teacherData?.name || 'Unknown'} (${lesson.teacher})`,
+                    `Course: ${courseData?.name || 'Unknown'} (${lesson.course})`,
+                    `Date: ${lesson.lessonDate.toISOString()}`,
+                    `Topic: ${lesson.topic || 'No topic'}`,
+                    `Status: ${lesson.status}`
+                ],
+                actor: req.user,
+                ip: req.realIp,
+                emoji: '🗑️'
+            });
+        } catch (e) { console.error('[audit] lesson delete:', e.message); }
         
         await Lesson.findByIdAndDelete(req.params.id);
         

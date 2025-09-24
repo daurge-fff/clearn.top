@@ -204,8 +204,8 @@ async function handleLessonCancellation(ctx, user, lessonId, reason) {
             // Получаем часовой пояс учителя для отображения времени
             const teacherData = await User.findById(teacher._id).select('timeZone').lean();
             const teacherTz = teacherData?.timeZone || 'Europe/Moscow';
-            const date = moment.utc(lesson.lessonDate).tz(teacherTz).format('DD/MM/YYYY');
-            const time = moment.utc(lesson.lessonDate).tz(teacherTz).format('HH:mm');
+            const date = moment.tz(lesson.lessonDate, teacherTz).format('DD/MM/YYYY');
+            const time = moment.tz(lesson.lessonDate, teacherTz).format('HH:mm');
             const notification = `⚠️ *Lesson Cancellation*\n\nStudent *${user.name}* has cancelled the lesson scheduled for *${date} at ${time}*.\n\n*Reason:* ${reason}`;
             try {
                 ctx.telegram.sendMessage(teacher.telegramChatId, notification, { parse_mode: 'Markdown' });
@@ -223,8 +223,8 @@ async function handleLessonCancellation(ctx, user, lessonId, reason) {
             // Получаем часовой пояс студента для отображения времени
             const studentData = await User.findById(student._id).select('timeZone').lean();
             const studentTz = studentData?.timeZone || 'Europe/Moscow';
-            const date = moment.utc(lesson.lessonDate).tz(studentTz).format('DD/MM/YYYY');
-            const time = moment.utc(lesson.lessonDate).tz(studentTz).format('HH:mm');
+            const date = moment.tz(lesson.lessonDate, studentTz).format('DD/MM/YYYY');
+            const time = moment.tz(lesson.lessonDate, studentTz).format('HH:mm');
             const notification = `⚠️ *Lesson Cancellation*\n\nYour teacher *${user.name}* has cancelled the lesson scheduled for *${date} at ${time}*.\n\n*Reason:* ${reason}\n\nThe lesson has been returned to your balance.`;
             try {
                 ctx.telegram.sendMessage(student.telegramChatId, notification, { parse_mode: 'Markdown' });
@@ -250,7 +250,7 @@ async function handleLessonCancellation(ctx, user, lessonId, reason) {
             reason,
             actor: user,
             ip: ctx?.state?.ip || null,
-            time: moment.utc(lesson.lessonDate).format('YYYY-MM-DD HH:mm'),
+            time: moment.tz(lesson.lessonDate, 'Europe/Moscow').format('YYYY-MM-DD HH:mm'),
             withUser: isStudent ? (lesson.teacher?.name || '') : (lesson.student?.name || '')
         });
     } catch (e) { console.error('[audit] lesson cancel:', e.message); }
@@ -551,7 +551,7 @@ async function sendTodaysLessons(ctx, user) {
 
     if (lessons.length > 0) {
         lessons.forEach(l => {
-            const time = escapeHtml(moment.utc(l.lessonDate).tz(userTz).format('HH:mm'));
+            const time = escapeHtml(moment.tz(l.lessonDate, userTz).format('HH:mm'));
             const studentName = escapeHtml(l.student.name);
             const courseName = escapeHtml(l.course.name || 'General');
             const status = getStatusEmoji(l.status);

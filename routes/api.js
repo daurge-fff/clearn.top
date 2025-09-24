@@ -421,8 +421,8 @@ router.get('/lessons', ensureAuth, async (req, res) => {
             const otherParty = isStudentRole ? lesson.teacher : lesson.student;
 
             // Конвертируем время урока в часовой пояс пользователя
-            const lessonStart = moment.utc(lesson.lessonDate).tz(userTz).toDate();
-            const lessonEnd = moment.utc(lesson.lessonDate).tz(userTz).add(lesson.duration, 'minutes').toDate();
+            const lessonStart = moment.tz(lesson.lessonDate, userTz).toDate();
+            const lessonEnd = moment.tz(lesson.lessonDate, userTz).add(lesson.duration, 'minutes').toDate();
 
             return {
                 title: otherParty ? `Lesson with ${otherParty.name}` : 'Lesson',
@@ -533,7 +533,7 @@ router.get('/lessons/export', ensureAuth, ensureRole('admin'), async (req, res) 
         const lessons = await Lesson.find({}).populate('student', 'name timeZone').populate('teacher', 'name timeZone').populate('course', 'name').lean();
         const userTz = req.user.timeZone || 'Europe/Moscow';
         const lessonsData = lessons.map(l => ({
-            lesson_date: moment.utc(l.lessonDate).tz(userTz).format('DD/MM/YYYY HH:mm'),
+            lesson_date: moment.tz(l.lessonDate, userTz).format('DD/MM/YYYY HH:mm'),
             student_name: l.student.name,
             teacher_name: l.teacher.name,
             course_name: l.course.name,

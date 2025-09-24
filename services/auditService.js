@@ -8,20 +8,9 @@ function formatUserInline(user) {
     if (!user) return '`anonymous`';
     const name = user.name || user.email || user._id || 'unknown';
     const email = user.email ? user.email.replace(/<([^>]+)>/, '$1') : null;
-    const tg = user.telegramUsername ? ` (@${escapeMarkdown(user.telegramUsername)})` : '';
-    return `${escapeMarkdown(name)}${email ? ' ' + escapeMarkdown(email) : ''}${tg}`;
-  }
-  
-  // Пример хелпера escapeMarkdown
-  function escapeMarkdown(text = '') {
-    return String(text).replace(/([_*\[\]()~`#+\-=|{}.!])/g, '\\$1');
-  }
-  
-  
-  // Пример хелпера escapeMarkdown
-  function escapeMarkdown(text = '') {
-    return String(text).replace(/([_*\[\]()~`#+\-=|{}.!])/g, '\\$1');
-  }
+    const tg = user.telegramUsername ? ` ( @${escapeMarkdown(user.telegramUsername)} )` : '';
+    return `${escapeMarkdown(name)}${tg}${email ? '\n' + escapeMarkdown(email) : ''}`;
+}
 
 function escapeMarkdown(text) {
     if (text === null || text === undefined) return '';
@@ -93,7 +82,7 @@ async function logPaymentCompleted({ systemName, amount, currency, identifier, o
 }
 
 // Lessons
-async function logLessonStatusChange({ lessonId, fromStatus, toStatus, actor, ip, time, courseName, withUser }) {
+async function logLessonStatusChange({ lessonId, fromStatus, toStatus, actor, ip, time, courseName, withUser, balanceChange, newBalance }) {
     const msg = `#lesson #status\n` +
         `🔄 *Lesson Status Changed*\n\n` +
         `📘 Lesson: \`${escapeMarkdown(lessonId)}\`\n` +
@@ -101,6 +90,7 @@ async function logLessonStatusChange({ lessonId, fromStatus, toStatus, actor, ip
         (withUser ? `👥 With: ${escapeMarkdown(withUser)}\n` : '') +
         `➡️ ${escapeMarkdown(fromStatus)} → *${escapeMarkdown(toStatus)}*\n` +
         (time ? `🕒 ${escapeMarkdown(time)}\n` : '') +
+        (balanceChange !== undefined && balanceChange !== 0 ? `💰 Balance: ${balanceChange > 0 ? '+' : ''}${balanceChange} (New: ${newBalance})\n` : '') +
         (actor ? `🧑 Actor: ${formatUserInline(actor)}\nID: ${actor._id}` : '') +
         `${buildIpLine(ip)}`;
     await sendLog(msg, { type: 'lesson_status' });

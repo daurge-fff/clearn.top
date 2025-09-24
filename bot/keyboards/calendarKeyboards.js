@@ -42,7 +42,7 @@ async function createCalendarKeyboard(user, date) {
     const lessonDays = {};
     userLessons.forEach(l => {
         // Конвертируем дату урока в часовой пояс пользователя для определения дня
-        const day = moment.utc(l.lessonDate).tz(userTz).date();
+        const day = moment.tz(l.lessonDate, userTz).date();
         if (!lessonDays[day]) lessonDays[day] = [];
         lessonDays[day].push(l.status);
     });

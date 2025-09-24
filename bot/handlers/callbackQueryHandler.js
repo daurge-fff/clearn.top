@@ -6,6 +6,7 @@ const { getStatusEmoji, createPaginationKeyboard, escapeHtml } = require('../uti
 const stateService = require('../services/stateService');
 const searchService = require('../services/searchService');
 const { approvePayment, declinePayment } = require('../../services/paymentService');
+const LessonBalanceService = require('../../services/lessonBalanceService');
 const moment = require('moment-timezone');
 
 // Stars are now awarded directly based on the grade score (1:1 ratio)
@@ -44,15 +45,20 @@ async function handleLessonCallback(ctx, user, params, { undoStack }) {
     undoStack.push({ chatId, type: 'lesson_status', data: { lessonId, previousStatus: oldStatus } });
 
     if (actionType === 'completed') {
-        await Lesson.findByIdAndUpdate(lessonId, { status: 'completed' });
-        
-        // Adjust lessonsPaid based on status change
-        if (oldStatus === 'scheduled') {
-            // Lesson was scheduled and now completed - no refund needed
-        } else if (oldStatus.startsWith('cancelled_')) {
-            // Lesson was cancelled and now marked as completed - deduct from balance
-            await User.findByIdAndUpdate(lesson.student._id, { $inc: { lessonsPaid: -1 } });
+        // Безопасное изменение статуса урока
+        const balanceResult = await LessonBalanceService.changeLessonStatus(
+            lessonId,
+            'completed',
+            oldStatus,
+            user
+        );
+
+        if (!balanceResult.success) {
+            console.error('Balance change failed:', balanceResult.error);
+            // Продолжаем выполнение даже при ошибке баланса
         }
+
+        await Lesson.findByIdAndUpdate(lessonId, { status: 'completed' });
         
         await ctx.editMessageText(`✅ Lesson with ${lesson.student.name} marked as completed.`);
         // Audit
@@ -65,9 +71,11 @@ async function handleLessonCallback(ctx, user, params, { undoStack }) {
                 toStatus: 'completed',
                 actor: user,
                 ip: ctx?.state?.ip || null,
-                time: moment.utc(lesson.lessonDate).format('YYYY-MM-DD HH:mm'),
+                time: moment.tz(lesson.lessonDate, 'Europe/Moscow').format('YYYY-MM-DD HH:mm'),
                 courseName: lesson.course?.name,
-                withUser: lesson.student?.name
+                withUser: lesson.student?.name,
+                balanceChange: balanceResult.balanceChange,
+                newBalance: balanceResult.newBalance
             });
         } catch (e) { console.error('[audit] lesson completed:', e.message); }
         const maxGrade = lesson.isProject ? 25 : 10;
@@ -92,18 +100,20 @@ async function handleLessonCallback(ctx, user, params, { undoStack }) {
         
         await ctx.reply(`Please rate the ${lesson.isProject ? 'project' : 'lesson'} from 1 to ${maxGrade}:`, { reply_markup: gradeKeyboard });
     } else if (actionType === 'noshow') {
-        await Lesson.findByIdAndUpdate(lessonId, { status: 'no_show' });
-        
-        // Adjust lessonsPaid based on status change - no_show always deducts lesson
-        if (oldStatus === 'scheduled') {
-            // Lesson was scheduled and now no-show - lesson is consumed (no balance change needed)
-        } else if (oldStatus.startsWith('cancelled_')) {
-            // Lesson was cancelled and now marked as no-show - deduct from balance
-            await User.findByIdAndUpdate(lesson.student._id, { $inc: { lessonsPaid: -1 } });
-        } else if (oldStatus === 'completed') {
-            // Lesson was completed and now marked as no-show - deduct from balance
-            await User.findByIdAndUpdate(lesson.student._id, { $inc: { lessonsPaid: -1 } });
+        // Безопасное изменение статуса урока
+        const balanceResult = await LessonBalanceService.changeLessonStatus(
+            lessonId,
+            'no_show',
+            oldStatus,
+            user
+        );
+
+        if (!balanceResult.success) {
+            console.error('Balance change failed:', balanceResult.error);
+            // Продолжаем выполнение даже при ошибке баланса
         }
+
+        await Lesson.findByIdAndUpdate(lessonId, { status: 'no_show' });
         
         await ctx.editMessageText(`👻 Lesson with ${lesson.student.name} marked as "no show".`);
         // Audit
@@ -116,9 +126,11 @@ async function handleLessonCallback(ctx, user, params, { undoStack }) {
                 toStatus: 'no_show',
                 actor: user,
                 ip: ctx?.state?.ip || null,
-                time: moment.utc(lesson.lessonDate).format('YYYY-MM-DD HH:mm'),
+                time: moment.tz(lesson.lessonDate, 'Europe/Moscow').format('YYYY-MM-DD HH:mm'),
                 courseName: lesson.course?.name,
-                withUser: lesson.student?.name
+                withUser: lesson.student?.name,
+                balanceChange: balanceResult.balanceChange,
+                newBalance: balanceResult.newBalance
             });
         } catch (e) { console.error('[audit] lesson no_show:', e.message); }
     }
@@ -199,7 +211,7 @@ async function handleCalendarCallback(ctx, user, params) {
             lessons.forEach(l => {
                 let lw = escapeHtml(user.role === 'student' ? (l.teacher?.name || 'N/A') : (l.student?.name || 'N/A'));
                 const courseName = escapeHtml(l.course?.name || 'General');
-                const time = escapeHtml(moment.utc(l.lessonDate).tz(userTz).format('HH:mm'));
+                const time = escapeHtml(moment.tz(l.lessonDate, userTz).format('HH:mm'));
                 const status = getStatusEmoji(l.status);
                 response += `${status} <b>${time}</b> - ${lw} <i>(${courseName})</i>\n`;
                 if (l.status === 'scheduled') {
@@ -252,8 +264,8 @@ async function sendFilteredLessons(ctx, user, filterType, page = 1) {
 
     let response = `<b>Lessons for this ${filterType} (Page ${page}/${totalPages}):</b>\n\n`;
     lessons.forEach(l => {
-        const date = escapeHtml(moment.utc(l.lessonDate).tz(userTz).format('DD/MM/YYYY'));
-        const time = escapeHtml(moment.utc(l.lessonDate).tz(userTz).format('HH:mm'));
+        const date = escapeHtml(moment.tz(l.lessonDate, userTz).format('DD/MM/YYYY'));
+        const time = escapeHtml(moment.tz(l.lessonDate, userTz).format('HH:mm'));
         const lessonWith = escapeHtml(user.role === 'student' ? (l.teacher?.name || 'N/A') : (l.student?.name || 'N/A'));
         const status = getStatusEmoji(l.status);
 

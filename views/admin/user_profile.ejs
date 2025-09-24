@@ -150,7 +150,7 @@
                     <% if (lessons && lessons.length > 0) { %>
                         <% lessons.forEach(lesson => { %>
                             <tr data-lesson-id="<%= lesson._id %>">
-                                <td><%= new Date(lesson.localLessonDate).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) %></td>
+                                <td><%= new Date(lesson.localLessonDate).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Yekaterinburg' }) %></td>
                                 <td>
                                     <% if (userProfile.role === 'student') { %>
                                         <% if (lesson.teacher) { %>

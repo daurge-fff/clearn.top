@@ -160,7 +160,7 @@ app.get('/download/:filename', (req, res) => {
 app.use('/', require('./routes/index'));
 app.use('/users', require('./routes/users'));
 app.use('/referral', require('./routes/referral'));
-app.use('/dashboard', require('./routes/dashboard'));
+app.use('/dashboard', require('./middleware/auditDashboard'), require('./routes/dashboard'));
 app.use('/api', require('./routes/api'));
 
 // Реальный IP в req.realIp (с учётом proxy)
